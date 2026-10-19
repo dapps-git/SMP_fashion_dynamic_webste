@@ -200,25 +200,48 @@ app.post('/api/auth/login', async (req, res) => {
 
     let adminDoc = null;
     if (mongoose.connection.readyState === 1) {
-      adminDoc = await Admin.findOne({ email: emailInput });
+      try {
+        adminDoc = await Admin.findOne({ email: emailInput });
+      } catch (e) {
+        console.warn('Admin find error:', e.message);
+      }
     }
 
     let passwordHash = adminDoc ? adminDoc.password : null;
-    let adminName = adminDoc ? adminDoc.name : process.env.ADMIN_NAME;
-    let adminEmail = adminDoc ? adminDoc.email : process.env.ADMIN_EMAIL;
+    let adminName = adminDoc ? adminDoc.name : (process.env.ADMIN_NAME || 'Fashion Aura Admin');
+    let adminEmail = adminDoc ? adminDoc.email : (process.env.ADMIN_EMAIL || 'fashionauraadmin@gmail.com');
 
-    // Fallback checking against secure .env hash if DB is disconnected
-    if (!passwordHash && process.env.ADMIN_EMAIL && emailInput === process.env.ADMIN_EMAIL.toLowerCase().trim()) {
-      passwordHash = process.env.ADMIN_PASSWORD_HASH;
-      adminName = process.env.ADMIN_NAME || 'Fashion Aura Admin';
-      adminEmail = process.env.ADMIN_EMAIL;
+    // Default fallback secure bcrypt hash for fashionauraadmin#8989
+    const DEFAULT_HASH = '$2b$10$tbYy3u01G9pojkblapphkOCLmcxMVjtar8kpb5CSoLkR.SA87R9pu';
+    const envEmail = (process.env.ADMIN_EMAIL || 'fashionauraadmin@gmail.com').toLowerCase().trim();
+    const envHash = process.env.ADMIN_PASSWORD_HASH || DEFAULT_HASH;
+
+    // Fallback 1: check against .env or default hash
+    if (!passwordHash && emailInput === envEmail) {
+      passwordHash = envHash;
+    }
+
+    // Fallback 2: check fileDb
+    if (!passwordHash) {
+      const localAdmin = fileDb.getDb().admin;
+      if (localAdmin && emailInput === (localAdmin.email || localAdmin.username || '').toLowerCase().trim()) {
+        passwordHash = localAdmin.password || DEFAULT_HASH;
+        adminName = localAdmin.name || adminName;
+        adminEmail = localAdmin.email || adminEmail;
+      }
     }
 
     if (!passwordHash) {
       return res.status(401).json({ success: false, message: 'Invalid email or password' });
     }
 
-    const isMatch = await bcrypt.compare(passInput, passwordHash);
+    let isMatch = false;
+    if (passwordHash.startsWith('$2a$') || passwordHash.startsWith('$2b$') || passwordHash.startsWith('$2y$')) {
+      isMatch = await bcrypt.compare(passInput, passwordHash);
+    } else {
+      isMatch = (passInput === passwordHash);
+    }
+
     if (!isMatch) {
       return res.status(401).json({ success: false, message: 'Invalid email or password' });
     }
