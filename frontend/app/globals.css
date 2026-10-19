@@ -567,7 +567,7 @@ input, select, textarea {
   }
   .hero-overlay-content {
     position: static !important;
-    padding: 20px 16px 24px !important;
+    padding: 20px 16px calc(64px + env(safe-area-inset-bottom, 0px)) !important;
     background: transparent !important; /* No black effect */
   }
   /* Hero Great Vibes Script Title on Mobile - Positioned directly below the navbar */
