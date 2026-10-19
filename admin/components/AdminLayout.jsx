@@ -25,16 +25,31 @@ export default function AdminLayout({ children, title = 'Dashboard' }) {
 
   useEffect(() => {
     setMounted(true);
-    const token = localStorage.getItem('smp_admin_token');
-    const storedUser = localStorage.getItem('smp_admin_user');
+    const token = typeof window !== 'undefined' ? localStorage.getItem('smp_admin_token') : null;
+    const storedUser = typeof window !== 'undefined' ? localStorage.getItem('smp_admin_user') : null;
     if (!token && pathname !== '/login') {
       router.push('/login');
+      return;
     } else if (storedUser) {
       try {
         setUser(JSON.parse(storedUser));
       } catch (e) {
         setUser({ name: 'SMP Admin', email: 'admin@smp.ae' });
       }
+    }
+
+    if (token && pathname !== '/login') {
+      fetch('http://localhost:5000/api/auth/verify', {
+        headers: { 'Authorization': `Bearer ${token}` }
+      })
+      .then(res => {
+        if (!res.ok) {
+          localStorage.removeItem('smp_admin_token');
+          localStorage.removeItem('smp_admin_user');
+          router.push('/login');
+        }
+      })
+      .catch(() => {});
     }
   }, [pathname, router]);
 

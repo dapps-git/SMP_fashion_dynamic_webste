@@ -2,7 +2,7 @@
 
 import { useState, useEffect, useRef } from 'react';
 import AdminLayout from '../../components/AdminLayout';
-import { getAuthHeaders, getAuthToken } from '../../lib/api';
+import { authFetch, getAuthHeaders, getAuthToken } from '../../lib/api';
 import { 
   Plus, 
   Search, 
@@ -184,11 +184,14 @@ export default function ProductsPage() {
       const method = editingProduct ? 'PUT' : 'POST';
 
       const token = getAuthToken();
-      const headers = token ? { 'Authorization': `Bearer ${token}` } : {};
+      if (!token) {
+        alert('Access token required. Redirecting to Login...');
+        window.location.href = '/login';
+        return;
+      }
 
-      const res = await fetch(url, {
+      const res = await authFetch(url, {
         method,
-        headers,
         body: formPayload
       });
 
@@ -210,9 +213,8 @@ export default function ProductsPage() {
   const handleDelete = async (id) => {
     if (!confirm('Are you sure you want to delete this product?')) return;
     try {
-      const res = await fetch(`http://localhost:5000/api/products/${id}`, {
-        method: 'DELETE',
-        headers: getAuthHeaders()
+      const res = await authFetch(`http://localhost:5000/api/products/${id}`, {
+        method: 'DELETE'
       });
       if (res.ok) {
         setProducts(products.filter(p => p.id !== id));

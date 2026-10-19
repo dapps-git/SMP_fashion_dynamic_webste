@@ -35,7 +35,7 @@ export default function LoginPage() {
       // Store JWT Token & user details
       localStorage.setItem('smp_admin_token', data.token);
       localStorage.setItem('smp_admin_user', JSON.stringify(data.user));
-      router.push('/');
+      window.location.href = '/products';
     } catch (err) {
       setError(err.message || 'Login failed. Please check backend server.');
     } finally {
