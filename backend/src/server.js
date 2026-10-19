@@ -20,7 +20,31 @@ const app = express();
 const PORT = process.env.PORT || 5000;
 const JWT_SECRET = process.env.JWT_SECRET || 'smp_fashion_jwt_sec_99f38e21a7c490bc891f7c0042';
 
-// ─── CORS ────────────────────────────────────────────────────
+// ─── Subpath Compatibility for cPanel Passenger (/SMP) ───────
+app.use((req, res, next) => {
+  if (req.url.startsWith('/SMP') || req.url.startsWith('/smp')) {
+    req.url = req.url.replace(/^\/[Ss][Mm][Pp]/, '') || '/';
+  }
+  next();
+});
+
+// ─── Bulletproof Universal CORS & Preflight ──────────────────
+app.use((req, res, next) => {
+  const origin = req.headers.origin;
+  if (origin) {
+    res.setHeader('Access-Control-Allow-Origin', origin);
+  } else {
+    res.setHeader('Access-Control-Allow-Origin', '*');
+  }
+  res.setHeader('Access-Control-Allow-Methods', 'GET, POST, PUT, PATCH, DELETE, OPTIONS');
+  res.setHeader('Access-Control-Allow-Headers', 'Content-Type, Authorization, X-Requested-With, Accept, Origin');
+  res.setHeader('Access-Control-Allow-Credentials', 'true');
+  
+  if (req.method === 'OPTIONS') {
+    return res.status(204).end();
+  }
+  next();
+});
 app.use(cors({ origin: true, credentials: true }));
 app.use(express.json());
 app.use(express.urlencoded({ extended: true }));
