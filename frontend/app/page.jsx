@@ -372,8 +372,6 @@ ${itemsList}
 *Emirate:* ${emirate}
 *Special Instructions:* ${notes || 'None'}
 ━━━━━━━━━━━━━━━━━━━━━
-✨ *Payment:* Cash / Card on Delivery (Inspect First)
-🚚 *Delivery:* Free Express UAE Delivery
 
 Please confirm my shopping bag order and arrange delivery. Thank you!`;
     } else {
@@ -395,8 +393,6 @@ Please confirm my shopping bag order and arrange delivery. Thank you!`;
 *Emirate:* ${emirate}
 *Special Instructions:* ${notes || 'None'}
 ━━━━━━━━━━━━━━━━━━━━━
-✨ *Payment:* Cash / Card on Delivery (Inspect First)
-🚚 *Delivery:* Free Express Delivery across UAE
 
 Please confirm my order and arrange delivery. Thank you!`;
     }

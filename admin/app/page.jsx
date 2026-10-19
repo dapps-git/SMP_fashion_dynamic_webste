@@ -238,8 +238,6 @@ export default function DashboardPage() {
                 <th>Delivery Address</th>
                 <th>Items Ordered</th>
                 <th>Total</th>
-                <th>Status</th>
-                <th>Action</th>
               </tr>
             </thead>
             <tbody>
@@ -302,31 +300,12 @@ export default function DashboardPage() {
                       <td style={{ fontWeight: '700', color: '#1F1B18' }}>
                         AED {ord.totalPrice}
                       </td>
-                      <td>
-                        <span className={`badge badge-${(ord.status || 'pending').toLowerCase()}`}>
-                          {ord.status}
-                        </span>
-                      </td>
-                      <td>
-                        <select 
-                          value={ord.status} 
-                          onChange={(e) => updateOrderStatus(ord.id, e.target.value)}
-                          className="form-select"
-                          style={{ padding: '6px 10px', fontSize: '12px', width: 'auto' }}
-                        >
-                          <option value="Pending">Pending</option>
-                          <option value="Confirmed">Confirmed</option>
-                          <option value="Shipped">Shipped</option>
-                          <option value="Delivered">Delivered</option>
-                          <option value="Cancelled">Cancelled</option>
-                        </select>
-                      </td>
                     </tr>
                   );
                 })
               ) : (
                 <tr>
-                  <td colSpan="8" style={{ textAlign: 'center', padding: '36px', color: 'var(--color-text-muted)' }}>
+                  <td colSpan="6" style={{ textAlign: 'center', padding: '36px', color: 'var(--color-text-muted)' }}>
                     No orders placed yet. Orders created via storefront WhatsApp checkout will show here immediately.
                   </td>
                 </tr>

@@ -150,7 +150,6 @@ export default function OrdersPage() {
                 <th>Delivery Address</th>
                 <th>Product Items &amp; Images</th>
                 <th>Total Price</th>
-                <th>Status</th>
                 <th style={{ textAlign: 'right' }}>Actions</th>
               </tr>
             </thead>
@@ -276,28 +275,6 @@ export default function OrdersPage() {
                         </div>
                       </td>
 
-                      {/* Status Dropdown */}
-                      <td>
-                        <select 
-                          value={ord.status} 
-                          onChange={(e) => handleStatusChange(ord.id, e.target.value)}
-                          className="form-select"
-                          style={{
-                            padding: '6px 10px',
-                            fontSize: '12px',
-                            fontWeight: '600',
-                            borderColor: ord.status === 'Confirmed' ? '#93C5FD' : (ord.status === 'Delivered' ? '#86EFAC' : '#E8E2D2'),
-                            background: ord.status === 'Delivered' ? '#F0FDF4' : (ord.status === 'Confirmed' ? '#EFF6FF' : '#FFFDF7')
-                          }}
-                        >
-                          <option value="Pending">Pending</option>
-                          <option value="Confirmed">Confirmed</option>
-                          <option value="Shipped">Shipped</option>
-                          <option value="Delivered">Delivered</option>
-                          <option value="Cancelled">Cancelled</option>
-                        </select>
-                      </td>
-
                       {/* Actions */}
                       <td style={{ textAlign: 'right' }}>
                         <div style={{ display: 'flex', alignItems: 'center', justifyContent: 'flex-end', gap: '8px' }}>
@@ -324,7 +301,7 @@ export default function OrdersPage() {
                 })
               ) : (
                 <tr>
-                  <td colSpan="7" style={{ textAlign: 'center', padding: '40px', color: 'var(--color-text-muted)' }}>
+                  <td colSpan="6" style={{ textAlign: 'center', padding: '40px', color: 'var(--color-text-muted)' }}>
                     {loading ? 'Loading customer orders...' : 'No orders found matching the filter.'}
                   </td>
                 </tr>
