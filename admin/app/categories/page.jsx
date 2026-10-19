@@ -2,6 +2,7 @@
 
 import { useState, useEffect } from 'react';
 import AdminLayout from '../../components/AdminLayout';
+import { getAuthHeaders } from '../../lib/api';
 import { Plus, Trash2, Layers, X, Sparkles, Image as ImageIcon } from 'lucide-react';
 
 export default function CategoriesPage() {
@@ -41,7 +42,7 @@ export default function CategoriesPage() {
     try {
       const res = await fetch('http://localhost:5000/api/categories', {
         method: 'POST',
-        headers: { 'Content-Type': 'application/json' },
+        headers: getAuthHeaders(true),
         body: JSON.stringify(formData)
       });
       if (res.ok) {
@@ -63,7 +64,8 @@ export default function CategoriesPage() {
     if (!confirm('Are you sure you want to remove this category?')) return;
     try {
       const res = await fetch(`http://localhost:5000/api/categories/${id}`, {
-        method: 'DELETE'
+        method: 'DELETE',
+        headers: getAuthHeaders(false)
       });
       if (res.ok) {
         setCategories(categories.filter(c => c.id !== id));

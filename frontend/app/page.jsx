@@ -168,6 +168,7 @@ export default function StorefrontPage() {
 
   // Buy Now / Address Modal
   const [orderModalProduct, setOrderModalProduct] = useState(null);
+  const [isCartOrder, setIsCartOrder] = useState(false);
   const [quantity, setQuantity] = useState(1);
   const [customerName, setCustomerName] = useState('');
   const [customerPhone, setCustomerPhone] = useState('');
@@ -275,10 +276,25 @@ Hello SMP, I would like to order these items from my shopping bag.`;
     }
   };
 
-  // Open Buy Now Modal
+  // Open Buy Now Modal for single product
   const handleOpenBuyNow = (product) => {
+    setIsCartOrder(false);
     setOrderModalProduct(product);
     setQuantity(1);
+    setCustomerName('');
+    setCustomerPhone('');
+    setDeliveryAddress('');
+    setEmirate('Dubai');
+    setNotes('');
+    setOrderSuccess(false);
+  };
+
+  // Open Buy Now Modal for entire cart
+  const handleOpenCartBuyNow = () => {
+    if (cart.length === 0) return;
+    setIsCartOrder(true);
+    setOrderModalProduct(cart[0]);
+    setCartDrawerOpen(false);
     setCustomerName('');
     setCustomerPhone('');
     setDeliveryAddress('');
@@ -290,10 +306,28 @@ Hello SMP, I would like to order these items from my shopping bag.`;
   // Submit Order & Open WhatsApp
   const handleConfirmAndContinueWhatsApp = async (e) => {
     e.preventDefault();
-    if (!orderModalProduct) return;
+    if (!orderModalProduct && !isCartOrder) return;
     setSubmittingOrder(true);
 
-    const totalAmount = orderModalProduct.price * quantity;
+    const orderItems = isCartOrder
+      ? cart.map(item => ({
+          productId: item.id,
+          title: item.title,
+          price: item.price,
+          quantity: item.quantity,
+          image: item.image
+        }))
+      : [
+          {
+            productId: orderModalProduct.id,
+            title: orderModalProduct.title,
+            price: orderModalProduct.price,
+            quantity: quantity,
+            image: orderModalProduct.image
+          }
+        ];
+
+    const totalAmount = isCartOrder ? totalCartPrice : orderModalProduct.price * quantity;
 
     // 1. Save order to backend so admin can view full customer details, address, price, quantity, and images
     try {
@@ -306,15 +340,7 @@ Hello SMP, I would like to order these items from my shopping bag.`;
           deliveryAddress,
           emirate,
           notes,
-          items: [
-            {
-              productId: orderModalProduct.id,
-              title: orderModalProduct.title,
-              price: orderModalProduct.price,
-              quantity: quantity,
-              image: orderModalProduct.image
-            }
-          ],
+          items: orderItems,
           totalPrice: totalAmount
         })
       });
@@ -323,8 +349,36 @@ Hello SMP, I would like to order these items from my shopping bag.`;
     }
 
     // 2. Prepare WhatsApp message
-    const formattedMessage =
-      `🛍️ *NEW ORDER - SMP Super Master Products*
+    let formattedMessage = '';
+    if (isCartOrder) {
+      const itemsList = cart.map((item, idx) => 
+        `${idx + 1}. *${item.title}* (${item.brand || 'SMP Luxury'})\n   Qty: ${item.quantity} × AED ${item.price} = AED ${item.quantity * item.price}\n   Image: ${item.image}`
+      ).join('\n\n');
+
+      formattedMessage =
+        `🛍️ *NEW VIP ORDER (SHOPPING BAG) - SMP Super Master Products*
+━━━━━━━━━━━━━━━━━━━━━
+*Cart Items (${cart.length} Products):*
+
+${itemsList}
+
+━━━━━━━━━━━━━━━━━━━━━
+💰 *Total Order Amount:* AED ${totalAmount}
+
+📍 *Customer Delivery Address:*
+*Name:* ${customerName}
+*Phone:* ${customerPhone}
+*Address:* ${deliveryAddress}
+*Emirate:* ${emirate}
+*Special Instructions:* ${notes || 'None'}
+━━━━━━━━━━━━━━━━━━━━━
+✨ *Payment:* Cash / Card on Delivery (Inspect First)
+🚚 *Delivery:* Free Express UAE Delivery
+
+Please confirm my shopping bag order and arrange delivery. Thank you!`;
+    } else {
+      formattedMessage =
+        `🛍️ *NEW ORDER - SMP Super Master Products*
 ━━━━━━━━━━━━━━━━━━━━━
 *Product:* ${orderModalProduct.title}
 *Category:* ${orderModalProduct.categoryName || orderModalProduct.category}
@@ -345,8 +399,14 @@ Hello SMP, I would like to order these items from my shopping bag.`;
 🚚 *Delivery:* Free Express Delivery across UAE
 
 Please confirm my order and arrange delivery. Thank you!`;
+    }
 
     const whatsappUrl = `https://wa.me/${WHATSAPP_NUMBER}?text=${encodeURIComponent(formattedMessage)}`;
+
+    if (isCartOrder) {
+      setCart([]);
+      if (typeof window !== 'undefined') localStorage.removeItem('smp_cart_items');
+    }
 
     setSubmittingOrder(false);
     setOrderSuccess(true);
@@ -484,7 +544,7 @@ Please confirm my order and arrange delivery. Thank you!`;
             <a href="#collections" onClick={() => setActiveCategory('bags')} className="nav-item">Bags</a>
           </nav>
 
-          {/* Right Header Actions: Shopping Cart (Mobile & Desktop) + WhatsApp */}
+          {/* Right Header Actions: Shopping Cart (Mobile & Desktop) */}
           <div className="header-actions">
             <button
               className="header-cart-btn"
@@ -497,17 +557,6 @@ Please confirm my order and arrange delivery. Thank you!`;
                 <span className="header-cart-badge">{totalCartCount}</span>
               )}
             </button>
-
-            <a
-              href={`https://wa.me/${WHATSAPP_NUMBER}?text=Hello%20SMP,%20I%20have%20an%20inquiry.`}
-              target="_blank"
-              rel="noopener noreferrer"
-              className="header-wa-btn"
-              aria-label="Chat on WhatsApp"
-            >
-              <MessageSquare size={16} />
-              <span className="header-wa-text">WhatsApp</span>
-            </a>
           </div>
         </div>
       </header>
@@ -616,7 +665,7 @@ Please confirm my order and arrange delivery. Thank you!`;
 
         <div className="hero-overlay-content">
           <h1 className="hero-title-script">
-            Fashion for your <br className="hero-break-mobile" /><br></br>Passion
+            Fashion for your <br className="hero-break-mobile" />Passion
           </h1>
           <p className="hero-subtitle">
             Timeless pieces. Premium quality. Thoughtfully chosen to elevate your style and complete every moment. Direct delivery with inspection before payment.
@@ -928,44 +977,70 @@ Please confirm my order and arrange delivery. Thank you!`;
                 </div>
               ) : (
                 <form onSubmit={handleConfirmAndContinueWhatsApp}>
-                  {/* Selected Product Summary Box */}
-                  <div style={{ display: 'flex', alignItems: 'center', gap: '12px', padding: '10px 12px', background: '#FAF7EF', border: '1px solid #E8E2D2', borderRadius: '8px', marginBottom: '14px' }}>
-                    <img
-                      src={orderModalProduct.image}
-                      alt={orderModalProduct.title}
-                      style={{ width: '48px', height: '48px', objectFit: 'cover', borderRadius: '4px', border: '1px solid #C18A5B' }}
-                    />
-                    <div style={{ flex: 1, minWidth: 0 }}>
-                      <div style={{ fontSize: '10px', color: 'var(--color-brown)', fontWeight: '700', textTransform: 'uppercase', letterSpacing: '0.5px' }}>
-                        {orderModalProduct.brand}
+                  {/* Selected Cart / Product Summary Box */}
+                  {isCartOrder ? (
+                    <div style={{ padding: '10px 12px', background: '#FAF7EF', border: '1px solid #E8E2D2', borderRadius: '8px', marginBottom: '14px', maxHeight: '160px', overflowY: 'auto' }}>
+                      <div style={{ fontSize: '11px', color: '#66300F', fontWeight: '700', textTransform: 'uppercase', marginBottom: '8px', letterSpacing: '0.5px' }}>
+                        Shopping Bag Items ({cart.length})
                       </div>
-                      <div style={{ fontWeight: '600', fontSize: '13px', color: 'var(--color-text-main)', whiteSpace: 'nowrap', overflow: 'hidden', textOverflow: 'ellipsis' }}>
-                        {orderModalProduct.title}
-                      </div>
-                      <div style={{ fontSize: '12px', fontWeight: '700', color: 'var(--color-dark-brown)', marginTop: '2px' }}>
-                        AED {orderModalProduct.price}
+                      <div style={{ display: 'flex', flexDirection: 'column', gap: '8px' }}>
+                        {cart.map(item => (
+                          <div key={item.id} style={{ display: 'flex', alignItems: 'center', gap: '10px' }}>
+                            <img src={item.image} alt={item.title} style={{ width: '36px', height: '36px', objectFit: 'cover', borderRadius: '4px', border: '1px solid #C18A5B' }} />
+                            <div style={{ flex: 1, minWidth: 0 }}>
+                              <div style={{ fontSize: '12px', fontWeight: '600', color: '#1C1917', whiteSpace: 'nowrap', overflow: 'hidden', textOverflow: 'ellipsis' }}>
+                                {item.title}
+                              </div>
+                              <div style={{ fontSize: '11px', color: '#66300F' }}>
+                                {item.quantity} × AED {item.price}
+                              </div>
+                            </div>
+                            <div style={{ fontSize: '12px', fontWeight: '700', color: '#66300F' }}>
+                              AED {item.quantity * item.price}
+                            </div>
+                          </div>
+                        ))}
                       </div>
                     </div>
+                  ) : orderModalProduct ? (
+                    <div style={{ display: 'flex', alignItems: 'center', gap: '12px', padding: '10px 12px', background: '#FAF7EF', border: '1px solid #E8E2D2', borderRadius: '8px', marginBottom: '14px' }}>
+                      <img
+                        src={orderModalProduct.image}
+                        alt={orderModalProduct.title}
+                        style={{ width: '48px', height: '48px', objectFit: 'cover', borderRadius: '4px', border: '1px solid #C18A5B' }}
+                      />
+                      <div style={{ flex: 1, minWidth: 0 }}>
+                        <div style={{ fontSize: '10px', color: 'var(--color-brown)', fontWeight: '700', textTransform: 'uppercase', letterSpacing: '0.5px' }}>
+                          {orderModalProduct.brand}
+                        </div>
+                        <div style={{ fontWeight: '600', fontSize: '13px', color: 'var(--color-text-main)', whiteSpace: 'nowrap', overflow: 'hidden', textOverflow: 'ellipsis' }}>
+                          {orderModalProduct.title}
+                        </div>
+                        <div style={{ fontSize: '12px', fontWeight: '700', color: 'var(--color-dark-brown)', marginTop: '2px' }}>
+                          AED {orderModalProduct.price}
+                        </div>
+                      </div>
 
-                    {/* Quantity controls */}
-                    <div style={{ display: 'flex', alignItems: 'center', border: '1px solid #DCD5C6', borderRadius: '4px', background: '#fff' }}>
-                      <button
-                        type="button"
-                        onClick={() => setQuantity(Math.max(1, quantity - 1))}
-                        style={{ padding: '2px 8px', fontSize: '13px', fontWeight: '700', color: 'var(--color-dark-brown)', border: 'none', background: 'transparent', cursor: 'pointer' }}
-                      >
-                        -
-                      </button>
-                      <span style={{ padding: '0 6px', fontSize: '12px', fontWeight: '700' }}>{quantity}</span>
-                      <button
-                        type="button"
-                        onClick={() => setQuantity(quantity + 1)}
-                        style={{ padding: '2px 8px', fontSize: '13px', fontWeight: '700', color: 'var(--color-dark-brown)', border: 'none', background: 'transparent', cursor: 'pointer' }}
-                      >
-                        +
-                      </button>
+                      {/* Quantity controls */}
+                      <div style={{ display: 'flex', alignItems: 'center', border: '1px solid #DCD5C6', borderRadius: '4px', background: '#fff' }}>
+                        <button
+                          type="button"
+                          onClick={() => setQuantity(Math.max(1, quantity - 1))}
+                          style={{ padding: '2px 8px', fontSize: '13px', fontWeight: '700', color: 'var(--color-dark-brown)', border: 'none', background: 'transparent', cursor: 'pointer' }}
+                        >
+                          -
+                        </button>
+                        <span style={{ padding: '0 6px', fontSize: '12px', fontWeight: '700' }}>{quantity}</span>
+                        <button
+                          type="button"
+                          onClick={() => setQuantity(quantity + 1)}
+                          style={{ padding: '2px 8px', fontSize: '13px', fontWeight: '700', color: 'var(--color-dark-brown)', border: 'none', background: 'transparent', cursor: 'pointer' }}
+                        >
+                          +
+                        </button>
+                      </div>
                     </div>
-                  </div>
+                  ) : null}
 
                   {/* Customer Full Name */}
                   <div className="form-field">
@@ -1044,7 +1119,7 @@ Please confirm my order and arrange delivery. Thank you!`;
                       Total Amount
                     </div>
                     <div style={{ fontSize: '18px', fontWeight: '800', color: '#66300F' }}>
-                      AED {orderModalProduct.price * quantity}
+                      AED {isCartOrder ? totalCartPrice : (orderModalProduct ? orderModalProduct.price * quantity : 0)}
                     </div>
                   </div>
 
@@ -1159,11 +1234,11 @@ Please confirm my order and arrange delivery. Thank you!`;
                   ✓ Free UAE Delivery &amp; Inspection Before Payment
                 </div>
                 <button
-                  onClick={handleOrderCartWhatsApp}
-                  className="modal-btn-whatsapp"
+                  onClick={handleOpenCartBuyNow}
+                  className="btn-buy-now-solid"
+                  style={{ width: '100%', padding: '14px', fontSize: '13px' }}
                 >
-                  <MessageSquare size={16} />
-                  <span>Order Bag via WhatsApp</span>
+                  <span>BUY NOW</span>
                 </button>
               </div>
             )}

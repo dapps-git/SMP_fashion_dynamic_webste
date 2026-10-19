@@ -8,15 +8,17 @@ const mongoose = require('mongoose');
 const path = require('path');
 const fs = require('fs');
 const jwt = require('jsonwebtoken');
+const bcrypt = require('bcryptjs');
 
 const Category = require('./models/Category');
 const Product = require('./models/Product');
 const Order = require('./models/Order');
+const Admin = require('./models/Admin');
 const fileDb = require('./db');
 
 const app = express();
 const PORT = process.env.PORT || 5000;
-const JWT_SECRET = process.env.JWT_SECRET || 'smp-fashion-jwt-secret-key-2026';
+const JWT_SECRET = process.env.JWT_SECRET || 'smp_fashion_jwt_sec_99f38e21a7c490bc891f7c0042';
 
 // ─── CORS ────────────────────────────────────────────────────
 app.use(cors({ origin: true, credentials: true }));
@@ -27,9 +29,9 @@ app.use(express.urlencoded({ extended: true }));
 const authenticateToken = (req, res, next) => {
   const authHeader = req.headers['authorization'];
   const token = authHeader && (authHeader.startsWith('Bearer ') ? authHeader.split(' ')[1] : authHeader);
-  if (!token) return res.status(401).json({ error: 'Access token required' });
+  if (!token) return res.status(401).json({ error: 'Access token required. Please log in.' });
   jwt.verify(token, JWT_SECRET, (err, user) => {
-    if (err) return res.status(403).json({ error: 'Invalid or expired token' });
+    if (err) return res.status(403).json({ error: 'Invalid or expired token. Please re-authenticate.' });
     req.user = user;
     next();
   });
@@ -72,7 +74,28 @@ const upload = multer({
 
 app.use('/uploads', express.static(localUploadsDir));
 
-// ─── MongoDB Connection ────────────────────────────────────────
+// ─── MongoDB Connection & Admin Sync ──────────────────────────
+async function syncAdminUser() {
+  try {
+    const email = (process.env.ADMIN_EMAIL || '').toLowerCase().trim();
+    const passwordHash = process.env.ADMIN_PASSWORD_HASH;
+    const name = process.env.ADMIN_NAME || 'Fashion Aura Admin';
+    if (!email || !passwordHash) return;
+
+    const existing = await Admin.findOne({ email });
+    if (!existing) {
+      await Admin.create({ email, password: passwordHash, name, role: 'admin' });
+      console.log('✅ Admin user secured in MongoDB with encrypted password hash');
+    } else if (existing.password !== passwordHash) {
+      existing.password = passwordHash;
+      await existing.save();
+      console.log('✅ Admin password hash synchronized in MongoDB');
+    }
+  } catch (err) {
+    console.warn('Admin user sync notice:', err.message);
+  }
+}
+
 async function connectDB() {
   try {
     if (!process.env.MONGODB_URI) {
@@ -83,6 +106,7 @@ async function connectDB() {
       serverSelectionTimeoutMS: 5000
     });
     console.log('✅ Connected to MongoDB Atlas');
+    await syncAdminUser();
     await seedInitialData();
   } catch (err) {
     console.warn('⚠️  MongoDB connection note:', err.message);
@@ -139,42 +163,57 @@ app.get('/api/health', (req, res) => {
   });
 });
 
-// ─── Admin Auth with JWT ──────────────────────────────────────
-app.post('/api/auth/login', (req, res) => {
-  const { username, password } = req.body;
-  const adminEmail = (process.env.ADMIN_EMAIL || 'fashionauraadmin@gmail.com').toLowerCase().trim();
-  const adminPass  = (process.env.ADMIN_PASSWORD || 'fashionauraadmin#8989').trim();
-  const adminName  = process.env.ADMIN_NAME || 'Fashion Aura Admin';
+// ─── Admin Auth with Encrypted Password Hash Verification ─────
+app.post('/api/auth/login', async (req, res) => {
+  try {
+    const { username, password } = req.body;
+    if (!username || !password) {
+      return res.status(400).json({ success: false, message: 'Username and password required' });
+    }
 
-  const userTrimmed = (username || '').toLowerCase().trim();
-  const passTrimmed = (password || '').trim();
+    const emailInput = (username || '').toLowerCase().trim();
+    const passInput = (password || '').trim();
 
-  // Robust credential checks (email, username, variations)
-  const isUserValid = (
-    userTrimmed === adminEmail ||
-    userTrimmed === 'admin' ||
-    userTrimmed === 'fashionauraadmin' ||
-    userTrimmed === 'fashionauraadmin@gmail.com'
-  );
-  const isPassValid = (
-    passTrimmed === adminPass ||
-    passTrimmed === 'admin123' ||
-    passTrimmed === 'fashionauraadmin#8989'
-  );
+    let adminDoc = null;
+    if (mongoose.connection.readyState === 1) {
+      adminDoc = await Admin.findOne({ email: emailInput });
+    }
 
-  if (isUserValid && isPassValid) {
+    let passwordHash = adminDoc ? adminDoc.password : null;
+    let adminName = adminDoc ? adminDoc.name : process.env.ADMIN_NAME;
+    let adminEmail = adminDoc ? adminDoc.email : process.env.ADMIN_EMAIL;
+
+    // Fallback checking against secure .env hash if DB is disconnected
+    if (!passwordHash && process.env.ADMIN_EMAIL && emailInput === process.env.ADMIN_EMAIL.toLowerCase().trim()) {
+      passwordHash = process.env.ADMIN_PASSWORD_HASH;
+      adminName = process.env.ADMIN_NAME || 'Fashion Aura Admin';
+      adminEmail = process.env.ADMIN_EMAIL;
+    }
+
+    if (!passwordHash) {
+      return res.status(401).json({ success: false, message: 'Invalid email or password' });
+    }
+
+    const isMatch = await bcrypt.compare(passInput, passwordHash);
+    if (!isMatch) {
+      return res.status(401).json({ success: false, message: 'Invalid email or password' });
+    }
+
     const token = jwt.sign(
-      { username: adminEmail, email: adminEmail, role: 'admin' },
+      { email: adminEmail, name: adminName, role: 'admin' },
       JWT_SECRET,
       { expiresIn: '7d' }
     );
+
     return res.json({
       success: true,
       token,
-      user: { username: adminEmail, name: adminName, email: adminEmail, role: 'admin' }
+      user: { email: adminEmail, name: adminName, role: 'admin' }
     });
+  } catch (err) {
+    console.error('Authentication error:', err);
+    return res.status(500).json({ success: false, message: 'Server error during authentication' });
   }
-  return res.status(401).json({ success: false, message: 'Invalid email or password' });
 });
 
 app.get('/api/auth/verify', authenticateToken, (req, res) => {
@@ -182,6 +221,7 @@ app.get('/api/auth/verify', authenticateToken, (req, res) => {
 });
 
 // ─── Categories ──────────────────────────────────────────────
+// Public GET for storefront
 app.get('/api/categories', async (req, res) => {
   try {
     if (mongoose.connection.readyState === 1) {
@@ -194,7 +234,8 @@ app.get('/api/categories', async (req, res) => {
   }
 });
 
-app.post('/api/categories', async (req, res) => {
+// Protected mutations
+app.post('/api/categories', authenticateToken, async (req, res) => {
   try {
     const { name, description, image } = req.body;
     if (!name) return res.status(400).json({ error: 'Category name required' });
@@ -211,7 +252,7 @@ app.post('/api/categories', async (req, res) => {
   }
 });
 
-app.delete('/api/categories/:id', async (req, res) => {
+app.delete('/api/categories/:id', authenticateToken, async (req, res) => {
   try {
     if (mongoose.connection.readyState === 1) {
       await Category.findByIdAndDelete(req.params.id);
@@ -225,8 +266,8 @@ app.delete('/api/categories/:id', async (req, res) => {
   }
 });
 
-// ─── Image Upload (Cloudinary) ────────────────────────────────
-app.post('/api/upload', upload.single('image'), async (req, res) => {
+// ─── Image Upload (Protected) ─────────────────────────────────
+app.post('/api/upload', authenticateToken, upload.single('image'), async (req, res) => {
   try {
     if (!req.file) return res.status(400).json({ error: 'No image provided' });
     const url = req.file.path || req.file.secure_url || `http://localhost:${PORT}/uploads/${req.file.filename}`;
@@ -235,6 +276,7 @@ app.post('/api/upload', upload.single('image'), async (req, res) => {
 });
 
 // ─── Products ─────────────────────────────────────────────────
+// Public GET for storefront & catalog browsing
 app.get('/api/products', async (req, res) => {
   try {
     const { category, search, featured } = req.query;
@@ -274,7 +316,8 @@ app.get('/api/products/:id', async (req, res) => {
   }
 });
 
-app.post('/api/products', upload.single('imageFile'), async (req, res) => {
+// Protected product mutations
+app.post('/api/products', authenticateToken, upload.single('imageFile'), async (req, res) => {
   try {
     const { title, category, brand, price, comparePrice, stock, description, badge, details, imageUrl, seoTitle, seoDescription, seoKeywords, slug } = req.body;
     if (!title || !price) return res.status(400).json({ error: 'Title and price are required' });
@@ -315,7 +358,7 @@ app.post('/api/products', upload.single('imageFile'), async (req, res) => {
       details: parsedDetails,
       stock: stock ? parseInt(stock, 10) : 10,
       featured: true, 
-      badge: badge || 'New',
+      badge: badge || '',
       seoTitle: generatedSeoTitle,
       seoDescription: generatedSeoDesc,
       seoKeywords: seoKeywords || `${title}, luxury UAE, ${brand || 'SMP'}, designer fashion`,
@@ -342,7 +385,7 @@ app.post('/api/products', upload.single('imageFile'), async (req, res) => {
   }
 });
 
-app.put('/api/products/:id', upload.single('imageFile'), async (req, res) => {
+app.put('/api/products/:id', authenticateToken, upload.single('imageFile'), async (req, res) => {
   try {
     const { title, category, brand, price, comparePrice, stock, description, badge, details, imageUrl, seoTitle, seoDescription, seoKeywords, slug } = req.body;
 
@@ -395,7 +438,7 @@ app.put('/api/products/:id', upload.single('imageFile'), async (req, res) => {
   }
 });
 
-app.delete('/api/products/:id', async (req, res) => {
+app.delete('/api/products/:id', authenticateToken, async (req, res) => {
   try {
     if (mongoose.connection.readyState === 1) {
       const prod = await Product.findById(req.params.id);
@@ -414,6 +457,7 @@ app.delete('/api/products/:id', async (req, res) => {
 });
 
 // ─── Orders ───────────────────────────────────────────────────
+// Public POST for customer checkout
 app.post('/api/orders', async (req, res) => {
   try {
     const { customerName, customerPhone, deliveryAddress, emirate, notes, items, totalPrice } = req.body;
@@ -440,7 +484,8 @@ app.post('/api/orders', async (req, res) => {
   }
 });
 
-app.get('/api/orders', async (req, res) => {
+// Protected admin order viewing & status management
+app.get('/api/orders', authenticateToken, async (req, res) => {
   try {
     const { status } = req.query;
     if (mongoose.connection.readyState === 1) {
@@ -456,7 +501,7 @@ app.get('/api/orders', async (req, res) => {
   }
 });
 
-app.patch('/api/orders/:id/status', async (req, res) => {
+app.patch('/api/orders/:id/status', authenticateToken, async (req, res) => {
   try {
     const { status } = req.body;
     if (mongoose.connection.readyState === 1) {
@@ -474,7 +519,7 @@ app.patch('/api/orders/:id/status', async (req, res) => {
   }
 });
 
-app.delete('/api/orders/:id', async (req, res) => {
+app.delete('/api/orders/:id', authenticateToken, async (req, res) => {
   try {
     if (mongoose.connection.readyState === 1) {
       await Order.findOneAndDelete({
@@ -490,8 +535,8 @@ app.delete('/api/orders/:id', async (req, res) => {
   }
 });
 
-// ─── Admin Stats ──────────────────────────────────────────────
-app.get('/api/stats', async (req, res) => {
+// ─── Admin Stats (Protected) ──────────────────────────────────
+app.get('/api/stats', authenticateToken, async (req, res) => {
   try {
     if (mongoose.connection.readyState === 1) {
       const [totalOrders, totalProducts, totalCategories, orders] = await Promise.all([
@@ -519,8 +564,8 @@ app.get('/api/stats', async (req, res) => {
 });
 
 // ─── Start Server ─────────────────────────────────────────────
-connectDB().then(() => {
-  app.listen(PORT, () => {
-    console.log(`🚀 SMP Fashion API running on http://localhost:${PORT}`);
-  });
+app.listen(PORT, () => {
+  console.log(`🚀 SMP Fashion API running securely on port ${PORT}`);
+  connectDB();
 });
+

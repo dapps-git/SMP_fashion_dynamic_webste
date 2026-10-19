@@ -2,6 +2,7 @@
 
 import { useState, useEffect, useRef } from 'react';
 import AdminLayout from '../../components/AdminLayout';
+import { getAuthHeaders, getAuthToken } from '../../lib/api';
 import { 
   Plus, 
   Search, 
@@ -37,10 +38,8 @@ export default function ProductsPage() {
     category: 'bags',
     brand: 'SMP Luxury',
     price: '',
-    comparePrice: '',
     stock: '15',
     description: '',
-    badge: 'New',
     details: '',
     imageUrl: '',
     imageFile: null,
@@ -92,10 +91,8 @@ export default function ProductsPage() {
       category: categories[0]?.slug || 'bags',
       brand: 'SMP Luxury',
       price: '',
-      comparePrice: '',
       stock: '15',
       description: '',
-      badge: 'New',
       details: '100% Genuine Materials\nMaster Craftsmanship\nFree Express UAE Delivery',
       imageUrl: '',
       imageFile: null,
@@ -115,10 +112,8 @@ export default function ProductsPage() {
       category: prod.category,
       brand: prod.brand || 'SMP Luxury',
       price: prod.price.toString(),
-      comparePrice: prod.comparePrice ? prod.comparePrice.toString() : '',
       stock: prod.stock ? prod.stock.toString() : '10',
       description: prod.description || '',
-      badge: prod.badge || '',
       details: Array.isArray(prod.details) ? prod.details.join('\n') : '',
       imageUrl: prod.image || '',
       imageFile: null,
@@ -169,10 +164,8 @@ export default function ProductsPage() {
       formPayload.append('category', formData.category);
       formPayload.append('brand', formData.brand);
       formPayload.append('price', formData.price);
-      formPayload.append('comparePrice', formData.comparePrice);
       formPayload.append('stock', formData.stock);
       formPayload.append('description', formData.description);
-      formPayload.append('badge', formData.badge);
       formPayload.append('details', formData.details);
       formPayload.append('seoTitle', formData.seoTitle);
       formPayload.append('seoDescription', formData.seoDescription);
@@ -190,8 +183,12 @@ export default function ProductsPage() {
         : 'http://localhost:5000/api/products';
       const method = editingProduct ? 'PUT' : 'POST';
 
+      const token = getAuthToken();
+      const headers = token ? { 'Authorization': `Bearer ${token}` } : {};
+
       const res = await fetch(url, {
         method,
+        headers,
         body: formPayload
       });
 
@@ -214,7 +211,8 @@ export default function ProductsPage() {
     if (!confirm('Are you sure you want to delete this product?')) return;
     try {
       const res = await fetch(`http://localhost:5000/api/products/${id}`, {
-        method: 'DELETE'
+        method: 'DELETE',
+        headers: getAuthHeaders()
       });
       if (res.ok) {
         setProducts(products.filter(p => p.id !== id));
@@ -289,7 +287,6 @@ export default function ProductsPage() {
                 <th>Category</th>
                 <th>Price (AED)</th>
                 <th>Stock</th>
-                <th>Badge</th>
                 <th style={{ textAlign: 'right' }}>Actions</th>
               </tr>
             </thead>
@@ -349,21 +346,6 @@ export default function ProductsPage() {
                         {p.stock} units
                       </span>
                     </td>
-                    <td>
-                      {p.badge && (
-                        <span style={{
-                          background: '#FAF0E6',
-                          color: '#A45A28',
-                          padding: '3px 8px',
-                          borderRadius: '4px',
-                          fontSize: '11px',
-                          fontWeight: '600',
-                          border: '1px solid #E8D3C0'
-                        }}>
-                          {p.badge}
-                        </span>
-                      )}
-                    </td>
                     <td style={{ textAlign: 'right' }}>
                       <div style={{ display: 'flex', alignItems: 'center', justifyContent: 'flex-end', gap: '8px' }}>
                         <button 
@@ -388,7 +370,7 @@ export default function ProductsPage() {
                 ))
               ) : (
                 <tr>
-                  <td colSpan="6" style={{ textAlign: 'center', padding: '40px', color: 'var(--color-text-muted)' }}>
+                  <td colSpan="5" style={{ textAlign: 'center', padding: '40px', color: 'var(--color-text-muted)' }}>
                     {loading ? 'Loading catalog products...' : 'No products found. Click "Add New Product" to add your first item.'}
                   </td>
                 </tr>
@@ -441,8 +423,8 @@ export default function ProductsPage() {
                   </div>
                 </div>
 
-                {/* Category & Badge */}
-                <div style={{ display: 'grid', gridTemplateColumns: '1fr 1fr', gap: '14px' }}>
+                {/* Category, Pricing & Stock */}
+                <div style={{ display: 'grid', gridTemplateColumns: '1fr 1fr 1fr', gap: '14px' }}>
                   <div className="form-group">
                     <label className="form-label">Category *</label>
                     <select 
@@ -456,20 +438,6 @@ export default function ProductsPage() {
                       ))}
                     </select>
                   </div>
-                  <div className="form-group">
-                    <label className="form-label">Badge Label</label>
-                    <input 
-                      type="text" 
-                      className="form-input" 
-                      value={formData.badge} 
-                      onChange={(e) => setFormData({ ...formData, badge: e.target.value })}
-                      placeholder="Bestseller / New / Trending" 
-                    />
-                  </div>
-                </div>
-
-                {/* Pricing & Stock */}
-                <div style={{ display: 'grid', gridTemplateColumns: '1fr 1fr', gap: '14px' }}>
                   <div className="form-group">
                     <label className="form-label">Price (AED) *</label>
                     <input 

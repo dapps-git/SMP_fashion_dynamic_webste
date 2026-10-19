@@ -2,12 +2,12 @@
 
 import { useState } from 'react';
 import { useRouter } from 'next/navigation';
-import { Lock, User, Eye, EyeOff, ShieldCheck, ArrowRight } from 'lucide-react';
+import { Lock, User, Eye, EyeOff, ArrowRight } from 'lucide-react';
 
 export default function LoginPage() {
   const router = useRouter();
-  const [username, setUsername] = useState('fashionauraadmin@gmail.com');
-  const [password, setPassword] = useState('fashionauraadmin#8989');
+  const [username, setUsername] = useState('');
+  const [password, setPassword] = useState('');
   const [showPassword, setShowPassword] = useState(false);
   const [loading, setLoading] = useState(false);
   const [error, setError] = useState('');
@@ -245,24 +245,6 @@ export default function LoginPage() {
             )}
           </button>
         </form>
-
-        {/* Administrator Credentials Details Box (0px Radius, Preserved) */}
-        <div style={{
-          marginTop: '28px',
-          padding: '14px 16px',
-          background: '#FAF6EE',
-          borderRadius: '0px',
-          border: '1px dashed #C18A5B',
-          fontSize: '12.5px',
-          color: '#5A5148'
-        }}>
-          <div style={{ display: 'flex', alignItems: 'center', gap: '6px', fontWeight: '700', color: '#66300F', marginBottom: '6px' }}>
-            <ShieldCheck size={14} color="#A45A28" />
-            <span>Store Administrator Credentials:</span>
-          </div>
-          <div>Email: <strong style={{ color: '#1F1B18' }}>fashionauraadmin@gmail.com</strong></div>
-          <div style={{ marginTop: '3px' }}>Pass: <strong style={{ color: '#1F1B18' }}>fashionauraadmin#8989</strong></div>
-        </div>
       </div>
     </div>
   );

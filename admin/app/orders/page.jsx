@@ -2,6 +2,7 @@
 
 import { useState, useEffect } from 'react';
 import AdminLayout from '../../components/AdminLayout';
+import { getAuthHeaders } from '../../lib/api';
 import { 
   ShoppingCart, 
   Search, 
@@ -37,7 +38,9 @@ export default function OrdersPage() {
       const url = statusFilter === 'all' 
         ? 'http://localhost:5000/api/orders' 
         : `http://localhost:5000/api/orders?status=${statusFilter}`;
-      const res = await fetch(url);
+      const res = await fetch(url, {
+        headers: getAuthHeaders(false)
+      });
       if (res.ok) {
         const data = await res.json();
         setOrders(data);
@@ -53,7 +56,7 @@ export default function OrdersPage() {
     try {
       const res = await fetch(`http://localhost:5000/api/orders/${orderId}/status`, {
         method: 'PATCH',
-        headers: { 'Content-Type': 'application/json' },
+        headers: getAuthHeaders(true),
         body: JSON.stringify({ status: newStatus })
       });
       if (res.ok) {
@@ -71,7 +74,8 @@ export default function OrdersPage() {
     if (!confirm(`Are you sure you want to delete order ${orderId}?`)) return;
     try {
       const res = await fetch(`http://localhost:5000/api/orders/${orderId}`, {
-        method: 'DELETE'
+        method: 'DELETE',
+        headers: getAuthHeaders(false)
       });
       if (res.ok) {
         setOrders(orders.filter(o => o.id !== orderId));
