@@ -15,7 +15,7 @@ import {
   X,
   Bell
 } from 'lucide-react';
-import { API_BASE } from '@/lib/api';
+import { API_BASE } from '../lib/api';
 
 export default function AdminLayout({ children, title = 'Dashboard' }) {
   const pathname = usePathname();
