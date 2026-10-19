@@ -248,7 +248,6 @@ ${itemList}
 ━━━━━━━━━━━━━━━━━━━━━
 *Total Items:* ${totalCartCount}
 *Grand Total:* AED ${totalCartPrice}
-*Guarantee:* Inspect Before Payment & Free UAE Delivery
 
 Hello SMP, I would like to order these items from my shopping bag.`;
     window.open(`https://wa.me/${WHATSAPP_NUMBER}?text=${encodeURIComponent(msg)}`, '_blank');
