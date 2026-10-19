@@ -23,15 +23,21 @@ export default function AdminLayout({ children, title = 'Dashboard' }) {
   const [user, setUser] = useState(null);
   const [mobileMenuOpen, setMobileMenuOpen] = useState(false);
   const [mounted, setMounted] = useState(false);
+  const [authorized, setAuthorized] = useState(false);
 
   useEffect(() => {
     setMounted(true);
     const token = typeof window !== 'undefined' ? localStorage.getItem('smp_admin_token') : null;
     const storedUser = typeof window !== 'undefined' ? localStorage.getItem('smp_admin_user') : null;
-    if (!token && pathname !== '/login') {
-      router.push('/login');
+
+    if (!token) {
+      if (pathname !== '/login') {
+        router.replace('/login');
+      }
       return;
-    } else if (storedUser) {
+    }
+
+    if (storedUser) {
       try {
         setUser(JSON.parse(storedUser));
       } catch (e) {
@@ -39,7 +45,11 @@ export default function AdminLayout({ children, title = 'Dashboard' }) {
       }
     }
 
-    if (token && pathname !== '/login') {
+    // Token present, grant layout view
+    setAuthorized(true);
+
+    // Verify token with backend
+    if (pathname !== '/login') {
       fetch(`${API_BASE}/auth/verify`, {
         headers: { 'Authorization': `Bearer ${token}` }
       })
@@ -47,7 +57,8 @@ export default function AdminLayout({ children, title = 'Dashboard' }) {
         if (!res.ok) {
           localStorage.removeItem('smp_admin_token');
           localStorage.removeItem('smp_admin_user');
-          router.push('/login');
+          setAuthorized(false);
+          router.replace('/login');
         }
       })
       .catch(() => {});
@@ -57,7 +68,8 @@ export default function AdminLayout({ children, title = 'Dashboard' }) {
   const handleLogout = () => {
     localStorage.removeItem('smp_admin_token');
     localStorage.removeItem('smp_admin_user');
-    router.push('/login');
+    setAuthorized(false);
+    router.replace('/login');
   };
 
   const navItems = [
@@ -67,7 +79,31 @@ export default function AdminLayout({ children, title = 'Dashboard' }) {
     { label: 'Orders', href: '/orders', icon: ShoppingCart },
   ];
 
-  if (!mounted) return null;
+  // Prevent flash: If not mounted or not authorized on protected pages, never render dashboard UI
+  if (!mounted || (!authorized && pathname !== '/login')) {
+    return (
+      <div style={{
+        minHeight: '100vh',
+        background: '#FAF8F5',
+        display: 'flex',
+        alignItems: 'center',
+        justifyContent: 'center',
+        color: '#66300F',
+        fontFamily: 'sans-serif'
+      }}>
+        <div style={{ textAlign: 'center' }}>
+          <img 
+            src="/smp-logo.png" 
+            alt="SMP" 
+            style={{ width: '80px', margin: '0 auto 16px', display: 'block', opacity: 0.8 }} 
+          />
+          <div style={{ fontSize: '13px', letterSpacing: '1.5px', textTransform: 'uppercase', opacity: 0.6, fontWeight: '600' }}>
+            Authenticating Session...
+          </div>
+        </div>
+      </div>
+    );
+  }
 
   return (
     <div className="admin-shell">
