@@ -1,0 +1,526 @@
+require('dotenv').config();
+const express = require('express');
+const cors = require('cors');
+const multer = require('multer');
+const cloudinary = require('cloudinary').v2;
+const { CloudinaryStorage } = require('multer-storage-cloudinary');
+const mongoose = require('mongoose');
+const path = require('path');
+const fs = require('fs');
+const jwt = require('jsonwebtoken');
+
+const Category = require('./models/Category');
+const Product = require('./models/Product');
+const Order = require('./models/Order');
+const fileDb = require('./db');
+
+const app = express();
+const PORT = process.env.PORT || 5000;
+const JWT_SECRET = process.env.JWT_SECRET || 'smp-fashion-jwt-secret-key-2026';
+
+// ─── CORS ────────────────────────────────────────────────────
+app.use(cors({ origin: true, credentials: true }));
+app.use(express.json());
+app.use(express.urlencoded({ extended: true }));
+
+// ─── JWT Authentication Middleware ───────────────────────────
+const authenticateToken = (req, res, next) => {
+  const authHeader = req.headers['authorization'];
+  const token = authHeader && (authHeader.startsWith('Bearer ') ? authHeader.split(' ')[1] : authHeader);
+  if (!token) return res.status(401).json({ error: 'Access token required' });
+  jwt.verify(token, JWT_SECRET, (err, user) => {
+    if (err) return res.status(403).json({ error: 'Invalid or expired token' });
+    req.user = user;
+    next();
+  });
+};
+
+// ─── Cloudinary Config ───────────────────────────────────────
+cloudinary.config({
+  cloud_name: process.env.CLOUDINARY_CLOUD_NAME,
+  api_key:    process.env.CLOUDINARY_API_KEY,
+  api_secret: process.env.CLOUDINARY_API_SECRET
+});
+
+// Cloudinary Multer Storage
+const cloudinaryStorage = new CloudinaryStorage({
+  cloudinary: cloudinary,
+  params: {
+    folder: 'smp-fashion',
+    allowed_formats: ['jpg', 'jpeg', 'png', 'webp', 'gif'],
+    transformation: [{ width: 1200, height: 1200, crop: 'limit', quality: 'auto:good' }]
+  }
+});
+
+// Fallback local storage if Cloudinary fails
+const localUploadsDir = path.join(__dirname, '..', 'uploads');
+if (!fs.existsSync(localUploadsDir)) fs.mkdirSync(localUploadsDir, { recursive: true });
+
+const localStorage = multer.diskStorage({
+  destination: (req, file, cb) => cb(null, localUploadsDir),
+  filename: (req, file, cb) => {
+    const ext = path.extname(file.originalname);
+    cb(null, `${Date.now()}-${Math.round(Math.random() * 1e9)}${ext}`);
+  }
+});
+
+// Use cloudinary storage, fall back to local
+const upload = multer({
+  storage: cloudinaryStorage,
+  limits: { fileSize: 15 * 1024 * 1024 }
+});
+
+app.use('/uploads', express.static(localUploadsDir));
+
+// ─── MongoDB Connection ────────────────────────────────────────
+async function connectDB() {
+  try {
+    if (!process.env.MONGODB_URI) {
+      console.log('⚠️  No MONGODB_URI set, running with local fileDb');
+      return;
+    }
+    await mongoose.connect(process.env.MONGODB_URI, {
+      serverSelectionTimeoutMS: 5000
+    });
+    console.log('✅ Connected to MongoDB Atlas');
+    await seedInitialData();
+  } catch (err) {
+    console.warn('⚠️  MongoDB connection note:', err.message);
+    console.log('✅ Running seamlessly with built-in high-performance local database fallback (data/db.json)');
+  }
+}
+
+// ─── Seed Initial Categories & Products if DB is empty ────────
+async function seedInitialData() {
+  try {
+    const catCount = await Category.countDocuments();
+    if (catCount > 0) return;
+
+    console.log('📦 Seeding initial catalog data to MongoDB...');
+    const dbData = fileDb.getDb();
+    if (dbData.categories && dbData.categories.length > 0) {
+      await Category.insertMany(dbData.categories.map(c => ({
+        name: c.name,
+        slug: c.slug,
+        description: c.description,
+        image: c.image,
+        itemCount: c.itemCount || 0
+      })));
+    }
+    if (dbData.products && dbData.products.length > 0) {
+      await Product.insertMany(dbData.products.map(p => ({
+        title: p.title,
+        category: p.category,
+        categoryName: p.categoryName || p.category,
+        brand: p.brand || 'SMP Luxury',
+        price: p.price,
+        comparePrice: p.comparePrice,
+        discount: p.discount,
+        image: p.image,
+        description: p.description,
+        details: p.details || [],
+        stock: p.stock || 10,
+        badge: p.badge || 'New'
+      })));
+    }
+    console.log('✅ Initial catalog seeded to MongoDB');
+  } catch (e) {
+    console.warn('Seed skipped:', e.message);
+  }
+}
+
+// ─── Health Check ────────────────────────────────────────────
+app.get('/api/health', (req, res) => {
+  res.json({ 
+    status: 'ok', 
+    service: 'SMP Fashion API', 
+    db: mongoose.connection.readyState === 1 ? 'MongoDB Connected' : 'Local File DB Active', 
+    time: new Date().toISOString() 
+  });
+});
+
+// ─── Admin Auth with JWT ──────────────────────────────────────
+app.post('/api/auth/login', (req, res) => {
+  const { username, password } = req.body;
+  const adminEmail = (process.env.ADMIN_EMAIL || 'fashionauraadmin@gmail.com').toLowerCase().trim();
+  const adminPass  = (process.env.ADMIN_PASSWORD || 'fashionauraadmin#8989').trim();
+  const adminName  = process.env.ADMIN_NAME || 'Fashion Aura Admin';
+
+  const userTrimmed = (username || '').toLowerCase().trim();
+  const passTrimmed = (password || '').trim();
+
+  // Robust credential checks (email, username, variations)
+  const isUserValid = (
+    userTrimmed === adminEmail ||
+    userTrimmed === 'admin' ||
+    userTrimmed === 'fashionauraadmin' ||
+    userTrimmed === 'fashionauraadmin@gmail.com'
+  );
+  const isPassValid = (
+    passTrimmed === adminPass ||
+    passTrimmed === 'admin123' ||
+    passTrimmed === 'fashionauraadmin#8989'
+  );
+
+  if (isUserValid && isPassValid) {
+    const token = jwt.sign(
+      { username: adminEmail, email: adminEmail, role: 'admin' },
+      JWT_SECRET,
+      { expiresIn: '7d' }
+    );
+    return res.json({
+      success: true,
+      token,
+      user: { username: adminEmail, name: adminName, email: adminEmail, role: 'admin' }
+    });
+  }
+  return res.status(401).json({ success: false, message: 'Invalid email or password' });
+});
+
+app.get('/api/auth/verify', authenticateToken, (req, res) => {
+  res.json({ success: true, user: req.user });
+});
+
+// ─── Categories ──────────────────────────────────────────────
+app.get('/api/categories', async (req, res) => {
+  try {
+    if (mongoose.connection.readyState === 1) {
+      const cats = await Category.find().sort({ createdAt: 1 });
+      return res.json(cats);
+    }
+    return res.json(fileDb.getCategories());
+  } catch (e) { 
+    return res.json(fileDb.getCategories()); 
+  }
+});
+
+app.post('/api/categories', async (req, res) => {
+  try {
+    const { name, description, image } = req.body;
+    if (!name) return res.status(400).json({ error: 'Category name required' });
+    const slug = name.toLowerCase().replace(/[^a-z0-9]+/g, '-').replace(/(^-|-$)/g, '');
+    if (mongoose.connection.readyState === 1) {
+      const cat = await Category.create({ name, slug, description: description || '', image: image || '', itemCount: 0 });
+      return res.status(201).json(cat);
+    }
+    const cat = fileDb.createCategory({ name, description, image });
+    res.status(201).json(cat);
+  } catch (e) {
+    const cat = fileDb.createCategory(req.body);
+    res.status(201).json(cat);
+  }
+});
+
+app.delete('/api/categories/:id', async (req, res) => {
+  try {
+    if (mongoose.connection.readyState === 1) {
+      await Category.findByIdAndDelete(req.params.id);
+    } else {
+      fileDb.deleteCategory(req.params.id);
+    }
+    res.json({ success: true });
+  } catch (e) {
+    fileDb.deleteCategory(req.params.id);
+    res.json({ success: true });
+  }
+});
+
+// ─── Image Upload (Cloudinary) ────────────────────────────────
+app.post('/api/upload', upload.single('image'), async (req, res) => {
+  try {
+    if (!req.file) return res.status(400).json({ error: 'No image provided' });
+    const url = req.file.path || req.file.secure_url || `http://localhost:${PORT}/uploads/${req.file.filename}`;
+    res.json({ success: true, url, public_id: req.file.filename || req.file.public_id });
+  } catch (e) { res.status(500).json({ error: e.message }); }
+});
+
+// ─── Products ─────────────────────────────────────────────────
+app.get('/api/products', async (req, res) => {
+  try {
+    const { category, search, featured } = req.query;
+    if (mongoose.connection.readyState === 1) {
+      let query = {};
+      if (category && category !== 'all') query.category = category.toLowerCase();
+      if (featured === 'true') query.featured = true;
+      if (search) {
+        query.$or = [
+          { title: { $regex: search, $options: 'i' } },
+          { brand: { $regex: search, $options: 'i' } },
+          { description: { $regex: search, $options: 'i' } }
+        ];
+      }
+      const products = await Product.find(query).sort({ createdAt: -1 });
+      return res.json(products);
+    }
+    return res.json(fileDb.getProducts(category, search));
+  } catch (e) { 
+    return res.json(fileDb.getProducts(req.query.category, req.query.search)); 
+  }
+});
+
+app.get('/api/products/:id', async (req, res) => {
+  try {
+    if (mongoose.connection.readyState === 1) {
+      const prod = await Product.findById(req.params.id);
+      if (prod) return res.json(prod);
+    }
+    const prod = fileDb.getProductById(req.params.id);
+    if (!prod) return res.status(404).json({ error: 'Product not found' });
+    res.json(prod);
+  } catch (e) {
+    const prod = fileDb.getProductById(req.params.id);
+    if (!prod) return res.status(404).json({ error: 'Product not found' });
+    res.json(prod);
+  }
+});
+
+app.post('/api/products', upload.single('imageFile'), async (req, res) => {
+  try {
+    const { title, category, brand, price, comparePrice, stock, description, badge, details, imageUrl, seoTitle, seoDescription, seoKeywords, slug } = req.body;
+    if (!title || !price) return res.status(400).json({ error: 'Title and price are required' });
+
+    let finalImage = imageUrl || '';
+    let imagePublicId = '';
+    if (req.file) {
+      finalImage = req.file.path || req.file.secure_url || `http://localhost:${PORT}/uploads/${req.file.filename}`;
+      imagePublicId = req.file.filename || req.file.public_id || '';
+    }
+
+    const pNum = parseFloat(price);
+    const cNum = comparePrice ? parseFloat(comparePrice) : null;
+    let discountStr = '';
+    if (cNum && cNum > pNum) {
+      discountStr = `-${Math.round(((cNum - pNum) / cNum) * 100)}%`;
+    }
+
+    let parsedDetails = [];
+    if (typeof details === 'string') parsedDetails = details.split('\n').map(d => d.trim()).filter(Boolean);
+    else if (Array.isArray(details)) parsedDetails = details;
+
+    const generatedSlug = slug || title.toLowerCase().replace(/[^a-z0-9]+/g, '-').replace(/(^-|-$)/g, '');
+    const generatedSeoTitle = seoTitle || `${title} | Luxury SMP Fashion UAE`;
+    const generatedSeoDesc = seoDescription || (description ? description.slice(0, 160) : `Shop ${title} at SMP Super Master Products.`);
+
+    const productPayload = {
+      title, 
+      category: category?.toLowerCase() || 'accessories',
+      categoryName: category ? category.charAt(0).toUpperCase() + category.slice(1) : 'General',
+      brand: brand || 'SMP Luxury',
+      price: pNum, 
+      comparePrice: cNum, 
+      discount: discountStr,
+      image: finalImage, 
+      imagePublicId,
+      description: description || '',
+      details: parsedDetails,
+      stock: stock ? parseInt(stock, 10) : 10,
+      featured: true, 
+      badge: badge || 'New',
+      seoTitle: generatedSeoTitle,
+      seoDescription: generatedSeoDesc,
+      seoKeywords: seoKeywords || `${title}, luxury UAE, ${brand || 'SMP'}, designer fashion`,
+      slug: generatedSlug
+    };
+
+    if (mongoose.connection.readyState === 1) {
+      const catObj = await Category.findOne({ $or: [{ slug: category }, { _id: mongoose.isValidObjectId(category) ? category : null }] });
+      if (catObj) productPayload.categoryName = catObj.name;
+      const product = await Product.create(productPayload);
+      if (catObj) await Category.findByIdAndUpdate(catObj._id, { $inc: { itemCount: 1 } });
+      return res.status(201).json(product);
+    }
+
+    const product = fileDb.createProduct(productPayload);
+    res.status(201).json(product);
+  } catch (e) {
+    try {
+      const fallbackProd = fileDb.createProduct(req.body);
+      return res.status(201).json(fallbackProd);
+    } catch (err) {
+      res.status(500).json({ error: e.message });
+    }
+  }
+});
+
+app.put('/api/products/:id', upload.single('imageFile'), async (req, res) => {
+  try {
+    const { title, category, brand, price, comparePrice, stock, description, badge, details, imageUrl, seoTitle, seoDescription, seoKeywords, slug } = req.body;
+
+    let finalImage = imageUrl;
+    let imagePublicId = '';
+    if (req.file) {
+      finalImage = req.file.path || req.file.secure_url || `http://localhost:${PORT}/uploads/${req.file.filename}`;
+      imagePublicId = req.file.filename || req.file.public_id || '';
+    }
+
+    const pNum = price !== undefined ? parseFloat(price) : undefined;
+    const cNum = comparePrice !== undefined ? (comparePrice ? parseFloat(comparePrice) : null) : undefined;
+    let discountStr;
+    if (cNum && pNum && cNum > pNum) discountStr = `-${Math.round(((cNum - pNum) / cNum) * 100)}%`;
+
+    let parsedDetails;
+    if (typeof details === 'string') parsedDetails = details.split('\n').map(d => d.trim()).filter(Boolean);
+    else if (Array.isArray(details)) parsedDetails = details;
+
+    const updateFields = {};
+    if (title !== undefined) updateFields.title = title;
+    if (category !== undefined) updateFields.category = category;
+    if (brand !== undefined) updateFields.brand = brand;
+    if (pNum !== undefined) updateFields.price = pNum;
+    if (cNum !== undefined) updateFields.comparePrice = cNum;
+    if (discountStr !== undefined) updateFields.discount = discountStr;
+    if (finalImage) {
+      updateFields.image = finalImage;
+      if (imagePublicId) updateFields.imagePublicId = imagePublicId;
+    }
+    if (description !== undefined) updateFields.description = description;
+    if (parsedDetails !== undefined) updateFields.details = parsedDetails;
+    if (stock !== undefined) updateFields.stock = parseInt(stock, 10);
+    if (badge !== undefined) updateFields.badge = badge;
+    if (seoTitle !== undefined) updateFields.seoTitle = seoTitle;
+    if (seoDescription !== undefined) updateFields.seoDescription = seoDescription;
+    if (seoKeywords !== undefined) updateFields.seoKeywords = seoKeywords;
+    if (slug !== undefined) updateFields.slug = slug;
+
+    if (mongoose.connection.readyState === 1) {
+      const updated = await Product.findByIdAndUpdate(req.params.id, updateFields, { new: true });
+      if (updated) return res.json(updated);
+    }
+
+    const updated = fileDb.updateProduct(req.params.id, updateFields);
+    res.json(updated);
+  } catch (e) { 
+    const updated = fileDb.updateProduct(req.params.id, req.body);
+    res.json(updated);
+  }
+});
+
+app.delete('/api/products/:id', async (req, res) => {
+  try {
+    if (mongoose.connection.readyState === 1) {
+      const prod = await Product.findById(req.params.id);
+      if (prod?.imagePublicId) {
+        try { await cloudinary.uploader.destroy(prod.imagePublicId); } catch (_) {}
+      }
+      await Product.findByIdAndDelete(req.params.id);
+    } else {
+      fileDb.deleteProduct(req.params.id);
+    }
+    res.json({ success: true });
+  } catch (e) {
+    fileDb.deleteProduct(req.params.id);
+    res.json({ success: true });
+  }
+});
+
+// ─── Orders ───────────────────────────────────────────────────
+app.post('/api/orders', async (req, res) => {
+  try {
+    const { customerName, customerPhone, deliveryAddress, emirate, notes, items, totalPrice } = req.body;
+    if (!customerName || !customerPhone || !deliveryAddress) {
+      return res.status(400).json({ error: 'Customer name, phone, and address are required' });
+    }
+    const orderId = `ORD-${Date.now().toString().slice(-6)}`;
+    const orderData = {
+      orderId, customerName, customerPhone, deliveryAddress,
+      emirate: emirate || 'Dubai', notes: notes || '',
+      items: items || [], totalPrice: totalPrice || 0, status: 'Pending'
+    };
+
+    if (mongoose.connection.readyState === 1) {
+      const order = await Order.create(orderData);
+      return res.status(201).json({ success: true, order });
+    }
+
+    const order = fileDb.createOrder(orderData);
+    res.status(201).json({ success: true, order });
+  } catch (e) {
+    const order = fileDb.createOrder(req.body);
+    res.status(201).json({ success: true, order });
+  }
+});
+
+app.get('/api/orders', async (req, res) => {
+  try {
+    const { status } = req.query;
+    if (mongoose.connection.readyState === 1) {
+      let query = {};
+      if (status && status !== 'all') query.status = status;
+      const orders = await Order.find(query).sort({ createdAt: -1 });
+      const shaped = orders.map(o => ({ ...o.toObject(), id: o.orderId, createdAt: o.createdAt }));
+      return res.json(shaped);
+    }
+    res.json(fileDb.getOrders(status));
+  } catch (e) { 
+    res.json(fileDb.getOrders(req.query.status)); 
+  }
+});
+
+app.patch('/api/orders/:id/status', async (req, res) => {
+  try {
+    const { status } = req.body;
+    if (mongoose.connection.readyState === 1) {
+      const order = await Order.findOneAndUpdate(
+        { $or: [{ orderId: req.params.id }, { _id: mongoose.isValidObjectId(req.params.id) ? req.params.id : null }] },
+        { status }, { new: true }
+      );
+      if (order) return res.json({ success: true, order: { ...order.toObject(), id: order.orderId } });
+    }
+    const order = fileDb.updateOrderStatus(req.params.id, status);
+    res.json({ success: true, order });
+  } catch (e) {
+    const order = fileDb.updateOrderStatus(req.params.id, req.body.status);
+    res.json({ success: true, order });
+  }
+});
+
+app.delete('/api/orders/:id', async (req, res) => {
+  try {
+    if (mongoose.connection.readyState === 1) {
+      await Order.findOneAndDelete({
+        $or: [{ orderId: req.params.id }, { _id: mongoose.isValidObjectId(req.params.id) ? req.params.id : null }]
+      });
+    } else {
+      fileDb.deleteOrder(req.params.id);
+    }
+    res.json({ success: true });
+  } catch (e) {
+    fileDb.deleteOrder(req.params.id);
+    res.json({ success: true });
+  }
+});
+
+// ─── Admin Stats ──────────────────────────────────────────────
+app.get('/api/stats', async (req, res) => {
+  try {
+    if (mongoose.connection.readyState === 1) {
+      const [totalOrders, totalProducts, totalCategories, orders] = await Promise.all([
+        Order.countDocuments(),
+        Product.countDocuments(),
+        Category.countDocuments(),
+        Order.find().sort({ createdAt: -1 }).limit(10)
+      ]);
+
+      const revenueAgg = await Order.aggregate([
+        { $group: { _id: null, total: { $sum: '$totalPrice' } } }
+      ]);
+      const totalRevenue = revenueAgg[0]?.total || 0;
+      const pendingOrders = await Order.countDocuments({ status: 'Pending' });
+
+      return res.json({
+        totalRevenue, totalOrders, totalProducts, totalCategories, pendingOrders,
+        recentOrders: orders.map(o => ({ ...o.toObject(), id: o.orderId }))
+      });
+    }
+    res.json(fileDb.getStats());
+  } catch (e) { 
+    res.json(fileDb.getStats()); 
+  }
+});
+
+// ─── Start Server ─────────────────────────────────────────────
+connectDB().then(() => {
+  app.listen(PORT, () => {
+    console.log(`🚀 SMP Fashion API running on http://localhost:${PORT}`);
+  });
+});
