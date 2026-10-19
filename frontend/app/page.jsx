@@ -30,6 +30,9 @@ import {
 } from 'lucide-react';
 
 const WHATSAPP_NUMBER = '971525973132'; // +971 52 597 3132
+const rawApiUrl = process.env.NEXT_PUBLIC_API_URL || 'http://localhost:5000/api';
+const cleanApiUrl = rawApiUrl.replace(/\/+$/, '');
+const API_BASE = cleanApiUrl.endsWith('/api') ? cleanApiUrl : `${cleanApiUrl}/api`;
 
 // Fallback luxury data if backend is offline during first render
 const FALLBACK_PRODUCTS = [
@@ -261,7 +264,7 @@ Hello SMP, I would like to order these items from my shopping bag.`;
   const fetchProducts = async () => {
     try {
       setLoading(true);
-      const res = await fetch('http://localhost:5000/api/products');
+      const res = await fetch(`${API_BASE}/products`);
       if (res.ok) {
         const data = await res.json();
         if (Array.isArray(data) && data.length > 0) {
@@ -330,7 +333,7 @@ Hello SMP, I would like to order these items from my shopping bag.`;
 
     // 1. Save order to backend so admin can view full customer details, address, price, quantity, and images
     try {
-      await fetch('http://localhost:5000/api/orders', {
+      await fetch(`${API_BASE}/orders`, {
         method: 'POST',
         headers: { 'Content-Type': 'application/json' },
         body: JSON.stringify({

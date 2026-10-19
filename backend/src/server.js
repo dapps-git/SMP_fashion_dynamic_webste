@@ -153,8 +153,8 @@ async function seedInitialData() {
   }
 }
 
-// ─── Health Check ────────────────────────────────────────────
-app.get('/api/health', (req, res) => {
+// ─── Health Check & Root Verification ────────────────────────
+app.get(['/', '/health', '/api/health'], (req, res) => {
   res.json({ 
     status: 'ok', 
     service: 'SMP Fashion API', 

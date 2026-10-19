@@ -3,7 +3,7 @@
 import { useState, useEffect } from 'react';
 import Link from 'next/link';
 import AdminLayout from '../components/AdminLayout';
-import { getAuthHeaders } from '../lib/api';
+import { getAuthHeaders, API_BASE } from '../lib/api';
 import { 
   DollarSign, 
   ShoppingCart, 
@@ -29,7 +29,7 @@ export default function DashboardPage() {
 
   const fetchStats = async () => {
     try {
-      const res = await fetch('http://localhost:5000/api/stats', {
+      const res = await fetch(`${API_BASE}/stats`, {
         headers: getAuthHeaders(false)
       });
       if (res.ok) {
@@ -45,7 +45,7 @@ export default function DashboardPage() {
 
   const updateOrderStatus = async (orderId, newStatus) => {
     try {
-      const res = await fetch(`http://localhost:5000/api/orders/${orderId}/status`, {
+      const res = await fetch(`${API_BASE}/orders/${orderId}/status`, {
         method: 'PATCH',
         headers: getAuthHeaders(true),
         body: JSON.stringify({ status: newStatus })

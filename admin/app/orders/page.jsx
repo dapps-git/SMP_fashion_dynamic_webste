@@ -2,7 +2,7 @@
 
 import { useState, useEffect } from 'react';
 import AdminLayout from '../../components/AdminLayout';
-import { getAuthHeaders } from '../../lib/api';
+import { getAuthHeaders, API_BASE } from '../../lib/api';
 import { 
   ShoppingCart, 
   Search, 
@@ -36,8 +36,8 @@ export default function OrdersPage() {
     try {
       setLoading(true);
       const url = statusFilter === 'all' 
-        ? 'http://localhost:5000/api/orders' 
-        : `http://localhost:5000/api/orders?status=${statusFilter}`;
+        ? `${API_BASE}/orders` 
+        : `${API_BASE}/orders?status=${statusFilter}`;
       const res = await fetch(url, {
         headers: getAuthHeaders(false)
       });
@@ -54,7 +54,7 @@ export default function OrdersPage() {
 
   const handleStatusChange = async (orderId, newStatus) => {
     try {
-      const res = await fetch(`http://localhost:5000/api/orders/${orderId}/status`, {
+      const res = await fetch(`${API_BASE}/orders/${orderId}/status`, {
         method: 'PATCH',
         headers: getAuthHeaders(true),
         body: JSON.stringify({ status: newStatus })
@@ -73,7 +73,7 @@ export default function OrdersPage() {
   const handleDelete = async (orderId) => {
     if (!confirm(`Are you sure you want to delete order ${orderId}?`)) return;
     try {
-      const res = await fetch(`http://localhost:5000/api/orders/${orderId}`, {
+      const res = await fetch(`${API_BASE}/orders/${orderId}`, {
         method: 'DELETE',
         headers: getAuthHeaders(false)
       });

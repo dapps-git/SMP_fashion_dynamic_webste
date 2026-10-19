@@ -15,6 +15,7 @@ import {
   X,
   Bell
 } from 'lucide-react';
+import { API_BASE } from '@/lib/api';
 
 export default function AdminLayout({ children, title = 'Dashboard' }) {
   const pathname = usePathname();
@@ -39,7 +40,7 @@ export default function AdminLayout({ children, title = 'Dashboard' }) {
     }
 
     if (token && pathname !== '/login') {
-      fetch('http://localhost:5000/api/auth/verify', {
+      fetch(`${API_BASE}/auth/verify`, {
         headers: { 'Authorization': `Bearer ${token}` }
       })
       .then(res => {

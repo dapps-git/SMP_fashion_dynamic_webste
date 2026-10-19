@@ -2,7 +2,7 @@
 
 import { useState, useEffect, useRef } from 'react';
 import AdminLayout from '../../components/AdminLayout';
-import { authFetch, getAuthHeaders, getAuthToken } from '../../lib/api';
+import { authFetch, getAuthHeaders, getAuthToken, API_BASE } from '../../lib/api';
 import { 
   Plus, 
   Search, 
@@ -58,8 +58,8 @@ export default function ProductsPage() {
     try {
       setLoading(true);
       const url = selectedCategory === 'all' 
-        ? 'http://localhost:5000/api/products' 
-        : `http://localhost:5000/api/products?category=${selectedCategory}`;
+        ? `${API_BASE}/products` 
+        : `${API_BASE}/products?category=${selectedCategory}`;
       const res = await fetch(url);
       if (res.ok) {
         const data = await res.json();
@@ -74,7 +74,7 @@ export default function ProductsPage() {
 
   const fetchCategories = async () => {
     try {
-      const res = await fetch('http://localhost:5000/api/categories');
+      const res = await fetch(`${API_BASE}/categories`);
       if (res.ok) {
         const data = await res.json();
         setCategories(data);
@@ -179,8 +179,8 @@ export default function ProductsPage() {
       }
 
       const url = editingProduct 
-        ? `http://localhost:5000/api/products/${editingProduct.id}`
-        : 'http://localhost:5000/api/products';
+        ? `${API_BASE}/products/${editingProduct.id}`
+        : `${API_BASE}/products`;
       const method = editingProduct ? 'PUT' : 'POST';
 
       const token = getAuthToken();
@@ -213,7 +213,7 @@ export default function ProductsPage() {
   const handleDelete = async (id) => {
     if (!confirm('Are you sure you want to delete this product?')) return;
     try {
-      const res = await authFetch(`http://localhost:5000/api/products/${id}`, {
+      const res = await authFetch(`${API_BASE}/products/${id}`, {
         method: 'DELETE'
       });
       if (res.ok) {

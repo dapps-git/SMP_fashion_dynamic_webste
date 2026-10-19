@@ -1,4 +1,6 @@
-export const API_BASE = 'http://localhost:5000/api';
+const rawUrl = process.env.NEXT_PUBLIC_API_URL || 'http://localhost:5000/api';
+const cleanUrl = rawUrl.replace(/\/+$/, '');
+export const API_BASE = cleanUrl.endsWith('/api') ? cleanUrl : `${cleanUrl}/api`;
 
 export function getAuthToken() {
   if (typeof window !== 'undefined') {
