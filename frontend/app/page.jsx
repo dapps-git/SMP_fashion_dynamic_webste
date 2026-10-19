@@ -22,6 +22,10 @@ import {
   ExternalLink,
   SlidersHorizontal,
   Menu,
+  ShoppingBag,
+  Trash2,
+  Plus,
+  Minus,
   Home as HomeIcon
 } from 'lucide-react';
 
@@ -172,6 +176,82 @@ export default function StorefrontPage() {
   const [notes, setNotes] = useState('');
   const [submittingOrder, setSubmittingOrder] = useState(false);
   const [orderSuccess, setOrderSuccess] = useState(false);
+
+  // Shopping Cart State
+  const [cart, setCart] = useState([]);
+  const [cartDrawerOpen, setCartDrawerOpen] = useState(false);
+  const [cartToast, setCartToast] = useState(null);
+
+  // Load cart from localStorage on mount
+  useEffect(() => {
+    try {
+      const saved = localStorage.getItem('smp_cart');
+      if (saved) {
+        setCart(JSON.parse(saved));
+      }
+    } catch (e) {}
+  }, []);
+
+  // Update cart in state & localStorage
+  const updateCart = (newCart) => {
+    setCart(newCart);
+    try {
+      localStorage.setItem('smp_cart', JSON.stringify(newCart));
+    } catch (e) {}
+  };
+
+  const addToCart = (product, qty = 1) => {
+    let updated;
+    const existingIndex = cart.findIndex((item) => item.id === product.id);
+    if (existingIndex > -1) {
+      updated = cart.map((item, idx) =>
+        idx === existingIndex ? { ...item, quantity: item.quantity + qty } : item
+      );
+    } else {
+      updated = [...cart, { ...product, quantity: qty }];
+    }
+    updateCart(updated);
+    setCartToast(`Added "${product.title}" to Cart`);
+    setTimeout(() => setCartToast(null), 2500);
+  };
+
+  const removeFromCart = (productId) => {
+    const updated = cart.filter((item) => item.id !== productId);
+    updateCart(updated);
+  };
+
+  const updateQuantity = (productId, delta) => {
+    const updated = cart
+      .map((item) => {
+        if (item.id === productId) {
+          const newQty = item.quantity + delta;
+          return newQty > 0 ? { ...item, quantity: newQty } : null;
+        }
+        return item;
+      })
+      .filter(Boolean);
+    updateCart(updated);
+  };
+
+  const totalCartCount = cart.reduce((sum, item) => sum + item.quantity, 0);
+  const totalCartPrice = cart.reduce((sum, item) => sum + item.price * item.quantity, 0);
+
+  const handleOrderCartWhatsApp = () => {
+    if (cart.length === 0) return;
+    const itemList = cart
+      .map((item, idx) => `${idx + 1}. *${item.title}* (Qty: ${item.quantity}) - AED ${item.price * item.quantity}`)
+      .join('\n');
+    const msg = `🛍️ *NEW CART ORDER - SMP Super Master Products*
+━━━━━━━━━━━━━━━━━━━━━
+${itemList}
+━━━━━━━━━━━━━━━━━━━━━
+*Total Items:* ${totalCartCount}
+*Grand Total:* AED ${totalCartPrice}
+*Guarantee:* Inspect Before Payment & Free UAE Delivery
+
+Hello SMP, I would like to order these items from my shopping bag.`;
+    window.open(`https://wa.me/${WHATSAPP_NUMBER}?text=${encodeURIComponent(msg)}`, '_blank');
+  };
 
   // Fetch products from backend
   useEffect(() => {
@@ -403,6 +483,32 @@ Please confirm my order and arrange delivery. Thank you!`;
             <a href="#collections" onClick={() => setActiveCategory('watches')} className="nav-item">Watches</a>
             <a href="#collections" onClick={() => setActiveCategory('bags')} className="nav-item">Bags</a>
           </nav>
+
+          {/* Right Header Actions: Shopping Cart (Mobile & Desktop) + WhatsApp */}
+          <div className="header-actions">
+            <button
+              className="header-cart-btn"
+              onClick={() => setCartDrawerOpen(true)}
+              aria-label="View Shopping Bag"
+              title="Shopping Bag"
+            >
+              <ShoppingBag size={20} />
+              {totalCartCount > 0 && (
+                <span className="header-cart-badge">{totalCartCount}</span>
+              )}
+            </button>
+
+            <a
+              href={`https://wa.me/${WHATSAPP_NUMBER}?text=Hello%20SMP,%20I%20have%20an%20inquiry.`}
+              target="_blank"
+              rel="noopener noreferrer"
+              className="header-wa-btn"
+              aria-label="Chat on WhatsApp"
+            >
+              <MessageSquare size={16} />
+              <span className="header-wa-text">WhatsApp</span>
+            </a>
+          </div>
         </div>
       </header>
 
@@ -510,7 +616,7 @@ Please confirm my order and arrange delivery. Thank you!`;
 
         <div className="hero-overlay-content">
           <h1 className="hero-title-script">
-            Fashion for your <br className="hero-break-mobile" />Passion
+            Fashion for your <br className="hero-break-mobile" /><br></br>Passion
           </h1>
           <p className="hero-subtitle">
             Timeless pieces. Premium quality. Thoughtfully chosen to elevate your style and complete every moment. Direct delivery with inspection before payment.
@@ -671,14 +777,24 @@ Please confirm my order and arrange delivery. Thank you!`;
                     <span className="editorial-price">AED {p.price}</span>
                   </div>
 
-                  {/* Solid Brown BUY NOW Button without Cart Icon */}
-                  <button
-                    onClick={() => handleOpenBuyNow(p)}
-                    className="btn-buy-now-solid"
-                    title="Order via WhatsApp with Inspection on Delivery"
-                  >
-                    BUY NOW
-                  </button>
+                  {/* Actions Row: BUY NOW + Small Cart Icon */}
+                  <div className="editorial-actions-row">
+                    <button
+                      onClick={() => handleOpenBuyNow(p)}
+                      className="btn-buy-now-solid"
+                      title="Order via WhatsApp with Inspection on Delivery"
+                    >
+                      BUY NOW
+                    </button>
+                    <button
+                      onClick={() => addToCart(p)}
+                      className="btn-card-cart"
+                      title="Add to Cart"
+                      aria-label={`Add ${p.title} to cart`}
+                    >
+                      <ShoppingBag size={14} />
+                    </button>
+                  </div>
                 </div>
               </div>
             ))}
@@ -704,41 +820,34 @@ Please confirm my order and arrange delivery. Thank you!`;
             </div>
 
             <div className="modal-content">
-              <div style={{ position: 'relative', width: '100%', height: '320px', borderRadius: 'var(--radius-lg)', overflow: 'hidden', marginBottom: '20px', background: '#FAF7EF' }}>
+              <div style={{ position: 'relative', width: '100%', height: '300px', borderRadius: '8px', overflow: 'hidden', marginBottom: '16px', background: '#FAF7EF' }}>
                 <img
                   src={viewProduct.image}
                   alt={viewProduct.title}
                   style={{ width: '100%', height: '100%', objectFit: 'cover' }}
                 />
-                {viewProduct.discount && (
-                  <div className="discount-tag">{viewProduct.discount}</div>
-                )}
               </div>
 
+              {/* Clean Price Only - No Discount or Compare Price */}
               <div style={{ display: 'flex', alignItems: 'baseline', gap: '12px', marginBottom: '14px' }}>
-                <span style={{ fontSize: '24px', fontWeight: '800', color: 'var(--color-dark-brown)' }}>
+                <span style={{ fontSize: '22px', fontWeight: '800', color: 'var(--color-dark-brown)' }}>
                   AED {viewProduct.price}
                 </span>
-                {viewProduct.comparePrice && (
-                  <span style={{ fontSize: '15px', color: 'var(--color-text-muted)', textDecoration: 'line-through' }}>
-                    AED {viewProduct.comparePrice}
-                  </span>
-                )}
-                <span style={{ marginLeft: 'auto', fontSize: '12px', color: '#15803D', fontWeight: '700', background: '#DCFCE7', padding: '3px 8px', borderRadius: '4px' }}>
+                <span style={{ marginLeft: 'auto', fontSize: '11px', color: '#15803D', fontWeight: '700', background: '#DCFCE7', padding: '3px 8px', borderRadius: '4px' }}>
                   In Stock - Ready to Dispatch
                 </span>
               </div>
 
-              <p style={{ fontSize: '14px', color: 'var(--color-text-muted)', lineHeight: '1.6', marginBottom: '18px' }}>
+              <p style={{ fontSize: '13.5px', color: 'var(--color-text-muted)', lineHeight: '1.6', marginBottom: '16px' }}>
                 {viewProduct.description}
               </p>
 
               {viewProduct.details && viewProduct.details.length > 0 && (
-                <div style={{ background: '#FAF7EF', padding: '16px', borderRadius: 'var(--radius-md)', border: '1px solid var(--color-border)', marginBottom: '24px' }}>
-                  <h4 style={{ fontSize: '13px', fontWeight: '700', color: 'var(--color-dark-brown)', marginBottom: '8px' }}>
+                <div style={{ background: '#FAF7EF', padding: '14px', borderRadius: '8px', border: '1px solid var(--color-border)', marginBottom: '18px' }}>
+                  <h4 style={{ fontSize: '12px', fontWeight: '700', color: 'var(--color-dark-brown)', marginBottom: '8px' }}>
                     Craftsmanship &amp; Highlights:
                   </h4>
-                  <ul style={{ paddingLeft: '18px', fontSize: '13px', color: '#4B230A', display: 'flex', flexDirection: 'column', gap: '6px' }}>
+                  <ul style={{ paddingLeft: '18px', fontSize: '12.5px', color: '#4B230A', display: 'flex', flexDirection: 'column', gap: '5px' }}>
                     {viewProduct.details.map((d, idx) => (
                       <li key={idx}>{d}</li>
                     ))}
@@ -746,18 +855,32 @@ Please confirm my order and arrange delivery. Thank you!`;
                 </div>
               )}
 
-              <button
-                onClick={() => {
-                  const p = viewProduct;
-                  setViewProduct(null);
-                  handleOpenBuyNow(p);
-                }}
-                className="btn-buy-now"
-                style={{ width: '100%', padding: '14px', fontSize: '15px' }}
-              >
-                <ShoppingCart size={17} />
-                <span>Buy Now with Delivery Address</span>
-              </button>
+              {/* Action Buttons: Add to Cart + Buy Now */}
+              <div style={{ display: 'flex', gap: '10px' }}>
+                <button
+                  onClick={() => {
+                    addToCart(viewProduct);
+                    setViewProduct(null);
+                  }}
+                  className="btn-modal-cart"
+                  title="Add to Cart"
+                >
+                  <ShoppingBag size={17} />
+                  <span>Add to Cart</span>
+                </button>
+
+                <button
+                  onClick={() => {
+                    const p = viewProduct;
+                    setViewProduct(null);
+                    handleOpenBuyNow(p);
+                  }}
+                  className="btn-buy-now-solid"
+                  style={{ flex: 1, margin: 0, padding: '12px 16px', fontSize: '13px' }}
+                >
+                  BUY NOW
+                </button>
+              </div>
             </div>
           </div>
         </div>
@@ -941,7 +1064,120 @@ Please confirm my order and arrange delivery. Thank you!`;
         </div>
       )}
 
+      {/* Slide-in Shopping Cart Drawer */}
+      {cartDrawerOpen && (
+        <div className="cart-drawer-overlay" onClick={() => setCartDrawerOpen(false)}>
+          <div className="cart-drawer" onClick={(e) => e.stopPropagation()}>
+            <div className="cart-drawer-head">
+              <div style={{ display: 'flex', alignItems: 'center', gap: '8px' }}>
+                <ShoppingBag size={18} color="#66300F" />
+                <h3 style={{ fontSize: '15px', fontWeight: '700', color: '#66300F', margin: 0 }}>
+                  Your Shopping Bag ({totalCartCount})
+                </h3>
+              </div>
+              <button
+                onClick={() => setCartDrawerOpen(false)}
+                className="modal-close-btn"
+                aria-label="Close cart"
+              >
+                <X size={18} />
+              </button>
+            </div>
 
+            <div className="cart-drawer-body">
+              {cart.length === 0 ? (
+                <div style={{ textAlign: 'center', padding: '48px 16px', color: '#786F66' }}>
+                  <ShoppingBag size={44} color="#D1C7B7" style={{ margin: '0 auto 16px' }} />
+                  <p style={{ fontSize: '15px', fontWeight: '600', color: '#1C1917', marginBottom: '6px' }}>
+                    Your shopping bag is empty
+                  </p>
+                  <p style={{ fontSize: '12.5px', marginBottom: '20px' }}>
+                    Explore our curated footwear, watches, and handbags.
+                  </p>
+                  <button
+                    onClick={() => setCartDrawerOpen(false)}
+                    className="btn-buy-now-solid"
+                    style={{ maxWidth: '200px', margin: '0 auto', padding: '10px 16px' }}
+                  >
+                    Start Shopping
+                  </button>
+                </div>
+              ) : (
+                <div className="cart-items-list">
+                  {cart.map((item) => (
+                    <div key={item.id} className="cart-item-row">
+                      <img
+                        src={item.image}
+                        alt={item.title}
+                        className="cart-item-img"
+                      />
+                      <div className="cart-item-info">
+                        <div className="cart-item-brand">{item.brand || 'SMP'}</div>
+                        <div className="cart-item-title">{item.title}</div>
+                        <div className="cart-item-price">AED {item.price}</div>
+                        <div className="cart-item-qty-row">
+                          <button
+                            onClick={() => updateQuantity(item.id, -1)}
+                            className="cart-qty-btn"
+                            aria-label="Decrease quantity"
+                          >
+                            <Minus size={11} />
+                          </button>
+                          <span className="cart-qty-val">{item.quantity}</span>
+                          <button
+                            onClick={() => updateQuantity(item.id, 1)}
+                            className="cart-qty-btn"
+                            aria-label="Increase quantity"
+                          >
+                            <Plus size={11} />
+                          </button>
+                        </div>
+                      </div>
+                      <button
+                        onClick={() => removeFromCart(item.id)}
+                        className="cart-item-remove-btn"
+                        title="Remove item"
+                        aria-label="Remove item"
+                      >
+                        <Trash2 size={15} />
+                      </button>
+                    </div>
+                  ))}
+                </div>
+              )}
+            </div>
+
+            {cart.length > 0 && (
+              <div className="cart-drawer-footer">
+                <div style={{ display: 'flex', alignItems: 'center', justifyContent: 'space-between', marginBottom: '10px' }}>
+                  <span style={{ fontSize: '13px', color: '#6A5F54', fontWeight: '500' }}>Subtotal</span>
+                  <span style={{ fontSize: '18px', fontWeight: '800', color: '#66300F' }}>
+                    AED {totalCartPrice}
+                  </span>
+                </div>
+                <div style={{ fontSize: '11px', color: '#15803D', fontWeight: '600', marginBottom: '14px' }}>
+                  ✓ Free UAE Delivery &amp; Inspection Before Payment
+                </div>
+                <button
+                  onClick={handleOrderCartWhatsApp}
+                  className="modal-btn-whatsapp"
+                >
+                  <MessageSquare size={16} />
+                  <span>Order Bag via WhatsApp</span>
+                </button>
+              </div>
+            )}
+          </div>
+        </div>
+      )}
+
+      {/* Floating Add to Cart Toast Notification */}
+      {cartToast && (
+        <div className="cart-toast-notification">
+          <ShoppingBag size={15} />
+          <span>{cartToast}</span>
+        </div>
+      )}
 
       {/* Luxury Footer with Montserrat Light & Transparent Logo */}
       <footer className="site-footer">
