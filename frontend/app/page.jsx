@@ -487,6 +487,8 @@ Please confirm my order and arrange delivery. Thank you!`;
         <div className="top-announcement-track">
           {/* Ticker Set 1 */}
           <div className="top-announcement-group">
+            <span><strong>TABBY &amp; TAMARA AVAILABLE</strong></span>
+            <span className="ticker-dot">|</span>
             <span><strong>100% SECURE SHOPPING</strong></span>
             <span className="ticker-dot">|</span>
             <span><strong>QUALITY CHECK</strong></span>
@@ -498,6 +500,8 @@ Please confirm my order and arrange delivery. Thank you!`;
           </div>
           {/* Ticker Set 2 (Exact duplicate for seamless infinite loop) */}
           <div className="top-announcement-group" aria-hidden="true">
+            <span><strong>TABBY &amp; TAMARA AVAILABLE</strong></span>
+            <span className="ticker-dot">|</span>
             <span><strong>100% SECURE SHOPPING</strong></span>
             <span className="ticker-dot">|</span>
             <span><strong>QUALITY CHECK</strong></span>
