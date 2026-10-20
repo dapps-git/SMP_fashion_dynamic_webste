@@ -657,6 +657,14 @@ Please confirm my order and arrange delivery. Thank you!`;
             alt="Super Master Products Luxury Mobile Banner"
             className="hero-banner-mobile"
           />
+
+          {/* In-Banner Landscape Content for Mobile (Matching Screenshot) */}
+          <div className="hero-landscape-content">
+            <span className="hero-landscape-brand">SMP Atelier</span>
+            <h2 className="hero-landscape-title">Every Step<br /><em>Feels Better</em></h2>
+            <p className="hero-landscape-subtitle">COMFORT &amp; LUXURY FOR YOU</p>
+            <a href="#collections" className="hero-landscape-btn">Shop Now</a>
+          </div>
         </div>
 
 
