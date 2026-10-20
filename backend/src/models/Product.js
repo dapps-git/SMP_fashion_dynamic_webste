@@ -13,6 +13,7 @@ const ProductSchema = new mongoose.Schema({
   description: { type: String, default: '' },
   details: [{ type: String }],
   stock: { type: Number, default: 10 },
+  gender: { type: String, default: '' }, // 'men', 'women', 'unisex'
   featured: { type: Boolean, default: true },
   badge: { type: String, default: 'New' },
   // Dynamic SEO Fields

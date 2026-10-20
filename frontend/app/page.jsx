@@ -94,6 +94,7 @@ const FALLBACK_PRODUCTS = [
     description: 'Two-tone 316L stainless steel with yellow gold PVD plating. Features a deep sunburst dial, luminescent markers, and three precision subdials.',
     details: ['Precision Swiss quartz movement', 'Scratch-resistant Sapphire crystal glass', '100m Water resistance', 'Deployment clasp with safety lock'],
     stock: 7,
+    gender: 'men',
     badge: 'Masterpiece'
   },
   {
@@ -109,7 +110,40 @@ const FALLBACK_PRODUCTS = [
     description: 'Monochromatic satin black steel casing with minimalist rose-gold hour batons and genuine Italian alligator-embossed leather strap.',
     details: ['40mm Slimline casing', 'Anti-reflective sapphire coating', 'Japanese automatic movement', 'Water resistant to 50m'],
     stock: 10,
+    gender: 'men',
     badge: 'Exclusive'
+  },
+  {
+    id: 'prod-7',
+    title: 'Monaco Rose Gold Skeleton Watch',
+    category: 'watches',
+    categoryName: 'Watches',
+    brand: 'SMP Horology',
+    price: 850,
+    comparePrice: 1250,
+    discount: '-32%',
+    image: 'https://images.unsplash.com/photo-1539185441755-769473a23570?auto=format&fit=crop&w=800&q=80',
+    description: 'Exposed mechanical gears in an intricate skeleton framework encased in high-grade 18K rose gold plated alloy.',
+    details: ['Automatic self-winding mechanism', 'Exposed front & exhibition case back', 'Hand-stitched brown leather band', 'Luminous hands'],
+    stock: 5,
+    gender: 'women',
+    badge: 'Hot Seller'
+  },
+  {
+    id: 'prod-7b',
+    title: 'Petite Pearl & Crystal Mesh Watch',
+    category: 'watches',
+    categoryName: 'Watches',
+    brand: 'SMP Horology',
+    price: 720,
+    comparePrice: 950,
+    discount: '-24%',
+    image: 'https://images.unsplash.com/photo-1508685096489-7aacd43bd3b1?auto=format&fit=crop&w=800&q=80',
+    description: 'Ultra-delicate mother-of-pearl dial framed with pavé crystals and a flexible rose-gold Milanese mesh bracelet.',
+    details: ['Mother of pearl iridescent dial', 'Pavé crystal bezel', 'Adjustable Milanese mesh strap', 'Water resistant 30m'],
+    stock: 8,
+    gender: 'women',
+    badge: 'Trending'
   },
   {
     id: 'prod-8',
@@ -161,6 +195,7 @@ const FALLBACK_PRODUCTS = [
 export default function StorefrontPage() {
   const [products, setProducts] = useState(FALLBACK_PRODUCTS);
   const [activeCategory, setActiveCategory] = useState('all');
+  const [activeGender, setActiveGender] = useState('all'); // 'all', 'men', 'women'
   const [priceFilter, setPriceFilter] = useState('all');
   const [showPriceFilter, setShowPriceFilter] = useState(false);
   const [loading, setLoading] = useState(false);
@@ -418,6 +453,20 @@ Please confirm my order and arrange delivery. Thank you!`;
   const filteredProducts = products.filter(p => {
     const matchesCat = activeCategory === 'all' || p.category?.toLowerCase() === activeCategory.toLowerCase();
     if (!matchesCat) return false;
+
+    // Watch Gender Sub-filter (Men / Women / All)
+    if (activeCategory === 'watches' && activeGender !== 'all') {
+      const pGender = (p.gender || '').toLowerCase();
+      const text = `${p.title} ${p.description}`.toLowerCase();
+      if (activeGender === 'men') {
+        const isMen = pGender === 'men' || pGender === 'unisex' || (!pGender && (text.includes('men') || text.includes('chrono') || text.includes('steel') || text.includes('onyx') || text.includes('male')));
+        if (!isMen) return false;
+      } else if (activeGender === 'women') {
+        const isWomen = pGender === 'women' || pGender === 'unisex' || (!pGender && (text.includes('women') || text.includes('rose gold') || text.includes('skeleton') || text.includes('crystal') || text.includes('petite') || text.includes('female')));
+        if (!isWomen) return false;
+      }
+    }
+
     if (priceFilter === 'under-400') return p.price < 400;
     if (priceFilter === '400-600') return p.price >= 400 && p.price <= 600;
     if (priceFilter === 'above-600') return p.price > 600;
@@ -724,14 +773,14 @@ Please confirm my order and arrange delivery. Thank you!`;
           <div className="editorial-filter-bar">
             <div className="editorial-cat-list">
               <button
-                onClick={() => setActiveCategory('all')}
+                onClick={() => { setActiveCategory('all'); setActiveGender('all'); }}
                 className={`editorial-cat-btn ${activeCategory === 'all' ? 'active' : ''}`}
                 style={{ fontSize: '11px', letterSpacing: '1px', textTransform: 'uppercase', fontWeight: activeCategory === 'all' ? '600' : '500' }}
               >
                 ALL
               </button>
               <button
-                onClick={() => setActiveCategory('footwear')}
+                onClick={() => { setActiveCategory('footwear'); setActiveGender('all'); }}
                 className={`editorial-cat-btn ${activeCategory === 'footwear' ? 'active' : ''}`}
                 style={{ fontSize: '11px', letterSpacing: '1px', textTransform: 'uppercase', fontWeight: activeCategory === 'footwear' ? '600' : '500' }}
               >
@@ -745,7 +794,7 @@ Please confirm my order and arrange delivery. Thank you!`;
                 WATCHES
               </button>
               <button
-                onClick={() => setActiveCategory('bags')}
+                onClick={() => { setActiveCategory('bags'); setActiveGender('all'); }}
                 className={`editorial-cat-btn ${activeCategory === 'bags' ? 'active' : ''}`}
                 style={{ fontSize: '11px', letterSpacing: '1px', textTransform: 'uppercase', fontWeight: activeCategory === 'bags' ? '600' : '500' }}
               >
@@ -795,6 +844,30 @@ Please confirm my order and arrange delivery. Thank you!`;
               )}
             </div>
           </div>
+
+          {/* Watch Gender Sub-filter Bar (Men's / Women's Watches) */}
+          {activeCategory === 'watches' && (
+            <div className="watch-gender-subbar">
+              <button
+                onClick={() => setActiveGender('all')}
+                className={`watch-gender-pill ${activeGender === 'all' ? 'active' : ''}`}
+              >
+                All Watches
+              </button>
+              <button
+                onClick={() => setActiveGender('men')}
+                className={`watch-gender-pill ${activeGender === 'men' ? 'active' : ''}`}
+              >
+                Men&apos;s Watches
+              </button>
+              <button
+                onClick={() => setActiveGender('women')}
+                className={`watch-gender-pill ${activeGender === 'women' ? 'active' : ''}`}
+              >
+                Women&apos;s Watches
+              </button>
+            </div>
+          )}
 
           {/* 6 Products in One Row on Laptop View, 2 on Mobile */}
           <div className="products-grid-6col">

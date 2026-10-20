@@ -138,6 +138,7 @@
         "Deployment clasp with safety lock"
       ],
       "stock": 7,
+      "gender": "men",
       "featured": true,
       "badge": "Masterpiece",
       "createdAt": "2026-10-14T08:00:00Z"
@@ -160,6 +161,7 @@
         "Water resistant to 50m"
       ],
       "stock": 10,
+      "gender": "men",
       "featured": true,
       "badge": "Exclusive",
       "createdAt": "2026-10-15T15:00:00Z"
@@ -182,9 +184,33 @@
         "Luminous hands"
       ],
       "stock": 5,
+      "gender": "women",
       "featured": true,
       "badge": "Hot Seller",
       "createdAt": "2026-10-17T11:45:00Z"
+    },
+    {
+      "id": "prod-7b",
+      "title": "Petite Pearl & Crystal Mesh Watch",
+      "category": "watches",
+      "categoryName": "Watches",
+      "brand": "SMP Horology",
+      "price": 720,
+      "comparePrice": 950,
+      "discount": "-24%",
+      "image": "https://images.unsplash.com/photo-1508685096489-7aacd43bd3b1?auto=format&fit=crop&w=800&q=80",
+      "description": "Ultra-delicate mother-of-pearl dial framed with pavé crystals and a flexible rose-gold Milanese mesh bracelet.",
+      "details": [
+        "Mother of pearl iridescent dial",
+        "Pavé crystal bezel",
+        "Adjustable Milanese mesh strap",
+        "Water resistant 30m"
+      ],
+      "stock": 8,
+      "gender": "women",
+      "featured": true,
+      "badge": "Trending",
+      "createdAt": "2026-10-18T10:00:00Z"
     },
     {
       "id": "prod-8",

@@ -337,10 +337,11 @@ app.post('/api/upload', authenticateToken, upload.single('image'), async (req, r
 // Public GET for storefront & catalog browsing
 app.get('/api/products', async (req, res) => {
   try {
-    const { category, search, featured } = req.query;
+    const { category, search, featured, gender } = req.query;
     if (mongoose.connection.readyState === 1) {
       let query = {};
       if (category && category !== 'all') query.category = category.toLowerCase();
+      if (gender && gender !== 'all') query.gender = gender.toLowerCase();
       if (featured === 'true') query.featured = true;
       if (search) {
         query.$or = [
@@ -352,9 +353,9 @@ app.get('/api/products', async (req, res) => {
       const products = await Product.find(query).sort({ createdAt: -1 });
       return res.json(products);
     }
-    return res.json(fileDb.getProducts(category, search));
+    return res.json(fileDb.getProducts(category, search, gender));
   } catch (e) { 
-    return res.json(fileDb.getProducts(req.query.category, req.query.search)); 
+    return res.json(fileDb.getProducts(req.query.category, req.query.search, req.query.gender)); 
   }
 });
 
@@ -377,7 +378,7 @@ app.get('/api/products/:id', async (req, res) => {
 // Protected product mutations
 app.post('/api/products', authenticateToken, upload.single('imageFile'), async (req, res) => {
   try {
-    const { title, category, brand, price, comparePrice, stock, description, badge, details, imageUrl, seoTitle, seoDescription, seoKeywords, slug } = req.body;
+    const { title, category, brand, price, comparePrice, stock, description, badge, details, imageUrl, seoTitle, seoDescription, seoKeywords, slug, gender } = req.body;
     if (!title || !price) return res.status(400).json({ error: 'Title and price are required' });
 
     let finalImage = imageUrl || '';
@@ -406,6 +407,7 @@ app.post('/api/products', authenticateToken, upload.single('imageFile'), async (
       title, 
       category: category?.toLowerCase() || 'accessories',
       categoryName: category ? category.charAt(0).toUpperCase() + category.slice(1) : 'General',
+      gender: gender ? gender.toLowerCase() : '',
       brand: brand || 'SMP Luxury',
       price: pNum, 
       comparePrice: cNum, 
@@ -445,7 +447,7 @@ app.post('/api/products', authenticateToken, upload.single('imageFile'), async (
 
 app.put('/api/products/:id', authenticateToken, upload.single('imageFile'), async (req, res) => {
   try {
-    const { title, category, brand, price, comparePrice, stock, description, badge, details, imageUrl, seoTitle, seoDescription, seoKeywords, slug } = req.body;
+    const { title, category, brand, price, comparePrice, stock, description, badge, details, imageUrl, seoTitle, seoDescription, seoKeywords, slug, gender } = req.body;
 
     let finalImage = imageUrl;
     let imagePublicId = '';
@@ -466,6 +468,7 @@ app.put('/api/products/:id', authenticateToken, upload.single('imageFile'), asyn
     const updateFields = {};
     if (title !== undefined) updateFields.title = title;
     if (category !== undefined) updateFields.category = category;
+    if (gender !== undefined) updateFields.gender = gender ? gender.toLowerCase() : '';
     if (brand !== undefined) updateFields.brand = brand;
     if (pNum !== undefined) updateFields.price = pNum;
     if (cNum !== undefined) updateFields.comparePrice = cNum;

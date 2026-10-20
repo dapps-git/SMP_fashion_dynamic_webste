@@ -348,12 +348,16 @@ function deleteCategory(id) {
 }
 
 // ── Products ──
-function getProducts(category, search) {
+function getProducts(category, search, gender) {
   const db = readDb();
   let list = (db.products || []).map(p => ({ ...p, _id: p._id || p.id }));
   
   if (category && category !== 'all') {
     list = list.filter(p => (p.category || '').toLowerCase() === category.toLowerCase());
+  }
+  
+  if (gender && gender !== 'all') {
+    list = list.filter(p => (p.gender || '').toLowerCase() === gender.toLowerCase());
   }
   
   if (search) {

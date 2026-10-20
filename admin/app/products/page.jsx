@@ -24,6 +24,7 @@ export default function ProductsPage() {
   const [loading, setLoading] = useState(true);
   const [search, setSearch] = useState('');
   const [selectedCategory, setSelectedCategory] = useState('all');
+  const [selectedGender, setSelectedGender] = useState('all');
   
   // Modal state
   const [modalOpen, setModalOpen] = useState(false);
@@ -36,6 +37,7 @@ export default function ProductsPage() {
   const [formData, setFormData] = useState({
     title: '',
     category: 'bags',
+    gender: '', // 'men', 'women', 'unisex'
     brand: 'SMP Luxury',
     price: '',
     stock: '15',
@@ -89,6 +91,7 @@ export default function ProductsPage() {
     setFormData({
       title: '',
       category: categories[0]?.slug || 'bags',
+      gender: '',
       brand: 'SMP Luxury',
       price: '',
       stock: '15',
@@ -110,6 +113,7 @@ export default function ProductsPage() {
     setFormData({
       title: prod.title,
       category: prod.category,
+      gender: prod.gender || '',
       brand: prod.brand || 'SMP Luxury',
       price: prod.price.toString(),
       stock: prod.stock ? prod.stock.toString() : '10',
@@ -162,6 +166,7 @@ export default function ProductsPage() {
       const formPayload = new FormData();
       formPayload.append('title', formData.title);
       formPayload.append('category', formData.category);
+      formPayload.append('gender', formData.gender || '');
       formPayload.append('brand', formData.brand);
       formPayload.append('price', formData.price);
       formPayload.append('stock', formData.stock);
@@ -225,6 +230,22 @@ export default function ProductsPage() {
   };
 
   const filteredProducts = products.filter(p => {
+    if (selectedCategory !== 'all' && p.category?.toLowerCase() !== selectedCategory.toLowerCase()) {
+      return false;
+    }
+    if (selectedCategory === 'watches' && selectedGender !== 'all') {
+      const pGender = (p.gender || '').toLowerCase();
+      const text = `${p.title} ${p.description}`.toLowerCase();
+      if (selectedGender === 'men') {
+        const isMen = pGender === 'men' || pGender === 'unisex' || (!pGender && (text.includes('men') || text.includes('chrono') || text.includes('steel') || text.includes('onyx') || text.includes('male')));
+        if (!isMen) return false;
+      } else if (selectedGender === 'women') {
+        const isWomen = pGender === 'women' || pGender === 'unisex' || (!pGender && (text.includes('women') || text.includes('rose gold') || text.includes('skeleton') || text.includes('pearl') || text.includes('crystal') || text.includes('female')));
+        if (!isWomen) return false;
+      } else if (selectedGender === 'unisex') {
+        if (pGender !== 'unisex') return false;
+      }
+    }
     if (!search) return true;
     const q = search.toLowerCase();
     return p.title.toLowerCase().includes(q) || (p.brand && p.brand.toLowerCase().includes(q));
@@ -267,7 +288,7 @@ export default function ProductsPage() {
           <Filter size={16} color="var(--color-text-muted)" />
           <select 
             value={selectedCategory} 
-            onChange={(e) => setSelectedCategory(e.target.value)}
+            onChange={(e) => { setSelectedCategory(e.target.value); setSelectedGender('all'); }}
             className="form-select"
             style={{ width: 'auto' }}
           >
@@ -276,6 +297,20 @@ export default function ProductsPage() {
               <option key={cat.id} value={cat.slug}>{cat.name}</option>
             ))}
           </select>
+
+          {selectedCategory === 'watches' && (
+            <select 
+              value={selectedGender} 
+              onChange={(e) => setSelectedGender(e.target.value)}
+              className="form-select"
+              style={{ width: 'auto', background: '#F8F4EC', borderColor: '#C8B29B', color: '#66300F', fontWeight: '600' }}
+            >
+              <option value="all">All Watches</option>
+              <option value="men">Men&apos;s Watches</option>
+              <option value="women">Women&apos;s Watches</option>
+              <option value="unisex">Unisex Watches</option>
+            </select>
+          )}
         </div>
       </div>
 
@@ -324,17 +359,34 @@ export default function ProductsPage() {
                       </div>
                     </td>
                     <td>
-                      <span style={{ 
-                        textTransform: 'capitalize', 
-                        padding: '4px 8px', 
-                        background: '#FAF7EF', 
-                        border: '1px solid #E8E2D2',
-                        borderRadius: '6px', 
-                        fontSize: '12px',
-                        fontWeight: '500'
-                      }}>
-                        {p.category}
-                      </span>
+                      <div style={{ display: 'flex', alignItems: 'center', gap: '6px', flexWrap: 'wrap' }}>
+                        <span style={{ 
+                          textTransform: 'capitalize', 
+                          padding: '4px 8px', 
+                          background: '#FAF7EF', 
+                          border: '1px solid #E8E2D2',
+                          borderRadius: '6px', 
+                          fontSize: '12px',
+                          fontWeight: '500'
+                        }}>
+                          {p.category}
+                        </span>
+                        {p.gender && (
+                          <span style={{
+                            padding: '2px 7px',
+                            background: p.gender === 'men' ? '#EFF6FF' : p.gender === 'women' ? '#FDF2F8' : '#F3F4F6',
+                            color: p.gender === 'men' ? '#1D4ED8' : p.gender === 'women' ? '#BE185D' : '#374151',
+                            border: `1px solid ${p.gender === 'men' ? '#BFDBFE' : p.gender === 'women' ? '#FBCFE8' : '#E5E7EB'}`,
+                            borderRadius: '4px',
+                            fontSize: '10px',
+                            fontWeight: '700',
+                            textTransform: 'uppercase',
+                            letterSpacing: '0.5px'
+                          }}>
+                            {p.gender}
+                          </span>
+                        )}
+                      </div>
                     </td>
                     <td style={{ fontWeight: '700', fontSize: '14px', color: '#66300F' }}>
                       AED {p.price}
@@ -425,8 +477,8 @@ export default function ProductsPage() {
                   </div>
                 </div>
 
-                {/* Category, Pricing & Stock */}
-                <div style={{ display: 'grid', gridTemplateColumns: '1fr 1fr 1fr', gap: '14px' }}>
+                {/* Category, Gender, Pricing & Stock */}
+                <div style={{ display: 'grid', gridTemplateColumns: 'repeat(auto-fit, minmax(130px, 1fr))', gap: '14px' }}>
                   <div className="form-group">
                     <label className="form-label">Category *</label>
                     <select 
@@ -438,6 +490,22 @@ export default function ProductsPage() {
                       {categories.map(cat => (
                         <option key={cat.id} value={cat.slug}>{cat.name}</option>
                       ))}
+                    </select>
+                  </div>
+                  <div className="form-group">
+                    <label className="form-label">
+                      Gender {formData.category === 'watches' && <span style={{ color: '#A45A28', fontWeight: '700' }}>*</span>}
+                    </label>
+                    <select 
+                      className="form-select"
+                      value={formData.gender || ''}
+                      onChange={(e) => setFormData({ ...formData, gender: e.target.value })}
+                      style={formData.category === 'watches' ? { borderColor: '#A45A28', background: '#FFFDF9' } : {}}
+                    >
+                      <option value="">Unspecified</option>
+                      <option value="men">Men&apos;s</option>
+                      <option value="women">Women&apos;s</option>
+                      <option value="unisex">Unisex</option>
                     </select>
                   </div>
                   <div className="form-group">

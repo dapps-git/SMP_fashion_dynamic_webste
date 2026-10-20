@@ -1472,6 +1472,49 @@ input, select, textarea {
   box-shadow: 0 2px 6px rgba(0,0,0,0.04);
 }
 
+/* Watch Gender Sub-filter Bar */
+.watch-gender-subbar {
+  display: flex;
+  align-items: center;
+  justify-content: flex-start;
+  gap: 8px;
+  margin-top: -14px;
+  margin-bottom: 24px;
+  overflow-x: auto;
+  padding: 4px 0 8px 0;
+  -webkit-overflow-scrolling: touch;
+}
+
+.watch-gender-pill {
+  font-family: var(--font-sans);
+  font-size: 11px;
+  letter-spacing: 0.8px;
+  text-transform: uppercase;
+  font-weight: 500;
+  color: #786C5E;
+  background: #F7F4EE;
+  border: 1px solid #E8E1D3;
+  padding: 5px 14px;
+  border-radius: var(--radius-full);
+  cursor: pointer;
+  white-space: nowrap;
+  transition: all 0.2s cubic-bezier(0.16, 1, 0.3, 1);
+}
+
+.watch-gender-pill:hover {
+  color: #1F1B18;
+  border-color: #BFA588;
+  background: #FFFFFF;
+}
+
+.watch-gender-pill.active {
+  color: #FFFFFF;
+  background: #66300F;
+  border-color: #66300F;
+  font-weight: 600;
+  box-shadow: 0 2px 6px rgba(102, 48, 15, 0.2);
+}
+
 /* Minimalist Filter Icon Button (No box, no text) */
 .filter-icon-btn {
   display: inline-flex;
