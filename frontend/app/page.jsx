@@ -30,9 +30,18 @@ import {
 } from 'lucide-react';
 
 const WHATSAPP_NUMBER = '971525973132'; // +971 52 597 3132
-const rawApiUrl = process.env.NEXT_PUBLIC_API_URL || 'http://localhost:5000/api';
+const rawApiUrl = process.env.NEXT_PUBLIC_API_URL || 'http://localhost:5005/api';
 const cleanApiUrl = rawApiUrl.replace(/\/+$/, '');
 const API_BASE = cleanApiUrl.endsWith('/api') ? cleanApiUrl : `${cleanApiUrl}/api`;
+
+const BRAND_LOGOS = [
+  { name: 'Richard Mille', src: '/IMG_9307.PNG' },
+  { name: 'Bvlgari', src: '/IMG_9308.PNG' },
+  { name: 'Omega', src: '/IMG_9309.PNG' },
+  { name: 'Chopard', src: '/IMG_9310.PNG' },
+  { name: 'Chaumet Paris', src: '/IMG_9311.PNG' },
+  { name: 'Graff', src: '/IMG_9312.PNG' },
+];
 
 // Fallback luxury data if backend is offline during first render
 const FALLBACK_PRODUCTS = [
@@ -196,6 +205,9 @@ export default function StorefrontPage() {
   const [products, setProducts] = useState(FALLBACK_PRODUCTS);
   const [activeCategory, setActiveCategory] = useState('all');
   const [activeGender, setActiveGender] = useState('all'); // 'all', 'men', 'women'
+  const [activeBrand, setActiveBrand] = useState('all');
+  const [searchQuery, setSearchQuery] = useState('');
+  const [searchOpen, setSearchOpen] = useState(false);
   const [priceFilter, setPriceFilter] = useState('all');
   const [showPriceFilter, setShowPriceFilter] = useState(false);
   const [loading, setLoading] = useState(false);
@@ -467,6 +479,23 @@ Please confirm my order and arrange delivery. Thank you!`;
       }
     }
 
+    // Brand Filter
+    if (activeBrand !== 'all') {
+      const pBrand = (p.brand || '').toLowerCase();
+      const targetBrand = activeBrand.toLowerCase();
+      if (pBrand !== targetBrand && !pBrand.includes(targetBrand)) return false;
+    }
+
+    // Name, Brand, Category, & Description Multi-field Search
+    if (searchQuery.trim()) {
+      const q = searchQuery.toLowerCase().trim();
+      const titleMatch = (p.title || '').toLowerCase().includes(q);
+      const brandMatch = (p.brand || '').toLowerCase().includes(q);
+      const catMatch = (p.category || '').toLowerCase().includes(q) || (p.categoryName || '').toLowerCase().includes(q);
+      const descMatch = (p.description || '').toLowerCase().includes(q);
+      if (!titleMatch && !brandMatch && !catMatch && !descMatch) return false;
+    }
+
     if (priceFilter === 'under-400') return p.price < 400;
     if (priceFilter === '400-600') return p.price >= 400 && p.price <= 600;
     if (priceFilter === 'above-600') return p.price > 600;
@@ -595,8 +624,17 @@ Please confirm my order and arrange delivery. Thank you!`;
             <a href="#collections" onClick={() => setActiveCategory('bags')} className="nav-item">Bags</a>
           </nav>
 
-          {/* Right Header Actions: Shopping Cart (Mobile & Desktop) */}
+          {/* Right Header Actions: Search & Shopping Cart (Mobile & Desktop) */}
           <div className="header-actions">
+            <button
+              className={`header-search-btn ${searchOpen ? 'active' : ''}`}
+              onClick={() => setSearchOpen(!searchOpen)}
+              aria-label="Search catalog by name, brand, or category"
+              title="Search catalog"
+            >
+              <Search size={20} />
+            </button>
+
             <button
               className="header-cart-btn"
               onClick={() => setCartDrawerOpen(true)}
@@ -612,6 +650,66 @@ Please confirm my order and arrange delivery. Thank you!`;
         </div>
       </header>
 
+      {/* Luxury Navbar Dropdown Search Bar with Anti-Auto-Zoom Input */}
+      {searchOpen && (
+        <div className="navbar-search-bar-wrap">
+          <div className="wide-container">
+            <div className="navbar-search-box">
+              <Search size={18} className="navbar-search-icon" />
+              <input
+                type="text"
+                value={searchQuery}
+                onChange={(e) => setSearchQuery(e.target.value)}
+                onKeyDown={(e) => {
+                  if (e.key === 'Enter') {
+                    const el = document.getElementById('collections');
+                    if (el) el.scrollIntoView({ behavior: 'smooth' });
+                  }
+                }}
+                placeholder="Search by product name, brand (Omega, Rolex...), or category..."
+                className="header-search-input"
+                autoFocus
+              />
+              {searchQuery && (
+                <button
+                  type="button"
+                  onClick={() => setSearchQuery('')}
+                  className="navbar-search-clear-btn"
+                  aria-label="Clear search query"
+                  title="Clear search"
+                >
+                  <X size={15} />
+                </button>
+              )}
+              <button
+                type="button"
+                onClick={() => {
+                  const el = document.getElementById('collections');
+                  if (el) el.scrollIntoView({ behavior: 'smooth' });
+                }}
+                className="navbar-search-submit-btn"
+              >
+                <span>Search</span>
+              </button>
+              <button
+                type="button"
+                onClick={() => setSearchOpen(false)}
+                className="navbar-search-close-btn"
+                aria-label="Close search bar"
+                title="Close"
+              >
+                <X size={18} />
+              </button>
+            </div>
+            {searchQuery.trim() && (
+              <div className="navbar-search-feedback">
+                Found <strong>{filteredProducts.length}</strong> {filteredProducts.length === 1 ? 'item' : 'items'} matching &ldquo;{searchQuery}&rdquo; across titles, brands, and categories
+              </div>
+            )}
+          </div>
+        </div>
+      )}
+
       {/* Mobile Navigation Drawer */}
       {mobileMenuOpen && (
         <>
@@ -626,6 +724,32 @@ Please confirm my order and arrange delivery. Thank you!`;
               >
                 <X size={22} />
               </button>
+            </div>
+
+            {/* Mobile Drawer Search Box */}
+            <div className="mobile-drawer-search">
+              <div className="mobile-search-inner">
+                <Search size={16} color="var(--color-text-muted)" />
+                <input
+                  type="text"
+                  value={searchQuery}
+                  onChange={(e) => setSearchQuery(e.target.value)}
+                  placeholder="Search footwear, watches, brands..."
+                  className="mobile-search-input"
+                  onKeyDown={(e) => {
+                    if (e.key === 'Enter') {
+                      setMobileMenuOpen(false);
+                      const el = document.getElementById('collections');
+                      if (el) el.scrollIntoView({ behavior: 'smooth' });
+                    }
+                  }}
+                />
+                {searchQuery && (
+                  <button onClick={() => setSearchQuery('')} className="mobile-search-clear">
+                    <X size={14} />
+                  </button>
+                )}
+              </div>
             </div>
 
             <div className="mobile-drawer-links">
@@ -759,15 +883,38 @@ Please confirm my order and arrange delivery. Thank you!`;
       </section>
 
       {/* ─────────────────────────────────────────────────────────────
+          BRAND LOGOS TRAIN ANIMATION (FORWARD / LEFT DIRECTION)
+          ───────────────────────────────────────────────────────────── */}
+      <section className="brand-train-section" aria-label="Luxury Brands">
+        <div className="brand-train-track brand-train-forward">
+          {[...BRAND_LOGOS, ...BRAND_LOGOS, ...BRAND_LOGOS, ...BRAND_LOGOS].map((brand, idx) => (
+            <div 
+              key={`brand-top-${idx}`} 
+              className="brand-train-item"
+              onClick={() => {
+                setActiveBrand(brand.name);
+                const el = document.getElementById('collections');
+                if (el) el.scrollIntoView({ behavior: 'smooth' });
+              }}
+              title={`Filter by ${brand.name}`}
+              style={{ cursor: 'pointer' }}
+            >
+              <img
+                src={brand.src}
+                alt={brand.name}
+                className="brand-train-logo"
+                loading="lazy"
+              />
+            </div>
+          ))}
+        </div>
+      </section>
+
+      {/* ─────────────────────────────────────────────────────────────
           EDITORIAL LUXURY 6-COLUMN PRODUCT LISTING (Matching Screenshot)
           ───────────────────────────────────────────────────────────── */}
-      <section id="collections" className="products-section" style={{ padding: '48px 0 64px 0' }}>
+      <section id="collections" className="products-section" style={{ padding: '36px 0 64px 0' }}>
         <div className="wide-container">
-
-          {/* Centered ALL PRODUCTS Header */}
-          <div className="all-products-header-wrap">
-            <h2 className="all-products-title">ALL PRODUCTS</h2>
-          </div>
 
           {/* Minimalist Category Filter Bar with Price Filter (Accessories Removed) */}
           <div className="editorial-filter-bar">
@@ -802,48 +949,93 @@ Please confirm my order and arrange delivery. Thank you!`;
               </button>
             </div>
 
-            {/* Minimalist Filter Icon (No box, no text) */}
-            <div style={{ position: 'relative' }}>
-              <button
-                onClick={() => setShowPriceFilter(!showPriceFilter)}
-                className={`filter-icon-btn ${priceFilter !== 'all' ? 'active' : ''}`}
-                title="Filter by Price"
-                aria-label="Filter by Price"
+            {/* Minimalist Filter Icon & Brand Dropdown */}
+            <div style={{ display: 'flex', alignItems: 'center', gap: '10px' }}>
+              <select
+                value={activeBrand}
+                onChange={(e) => setActiveBrand(e.target.value)}
+                className="editorial-brand-select"
+                aria-label="Filter by Brand"
               >
-                <SlidersHorizontal size={18} />
-                {priceFilter !== 'all' && <span className="filter-active-dot" />}
-              </button>
+                <option value="all">All Brands</option>
+                {BRAND_LOGOS.map((b) => (
+                  <option key={b.name} value={b.name}>{b.name}</option>
+                ))}
+                <option value="SMP Luxury">SMP Luxury</option>
+              </select>
 
-              {showPriceFilter && (
-                <div className="price-filter-dropdown">
-                  <button
-                    onClick={() => { setPriceFilter('all'); setShowPriceFilter(false); }}
-                    className={`price-opt-btn ${priceFilter === 'all' ? 'active' : ''}`}
-                  >
-                    All Prices
-                  </button>
-                  <button
-                    onClick={() => { setPriceFilter('under-400'); setShowPriceFilter(false); }}
-                    className={`price-opt-btn ${priceFilter === 'under-400' ? 'active' : ''}`}
-                  >
-                    Under AED 400
-                  </button>
-                  <button
-                    onClick={() => { setPriceFilter('400-600'); setShowPriceFilter(false); }}
-                    className={`price-opt-btn ${priceFilter === '400-600' ? 'active' : ''}`}
-                  >
-                    AED 400 - AED 600
-                  </button>
-                  <button
-                    onClick={() => { setPriceFilter('above-600'); setShowPriceFilter(false); }}
-                    className={`price-opt-btn ${priceFilter === 'above-600' ? 'active' : ''}`}
-                  >
-                    Above AED 600
-                  </button>
-                </div>
-              )}
+              <div style={{ position: 'relative' }}>
+                <button
+                  onClick={() => setShowPriceFilter(!showPriceFilter)}
+                  className={`filter-icon-btn ${priceFilter !== 'all' ? 'active' : ''}`}
+                  title="Filter by Price"
+                  aria-label="Filter by Price"
+                >
+                  <SlidersHorizontal size={18} />
+                  {priceFilter !== 'all' && <span className="filter-active-dot" />}
+                </button>
+
+                {showPriceFilter && (
+                  <div className="price-filter-dropdown">
+                    <button
+                      onClick={() => { setPriceFilter('all'); setShowPriceFilter(false); }}
+                      className={`price-opt-btn ${priceFilter === 'all' ? 'active' : ''}`}
+                    >
+                      All Prices
+                    </button>
+                    <button
+                      onClick={() => { setPriceFilter('under-400'); setShowPriceFilter(false); }}
+                      className={`price-opt-btn ${priceFilter === 'under-400' ? 'active' : ''}`}
+                    >
+                      Under AED 400
+                    </button>
+                    <button
+                      onClick={() => { setPriceFilter('400-600'); setShowPriceFilter(false); }}
+                      className={`price-opt-btn ${priceFilter === '400-600' ? 'active' : ''}`}
+                    >
+                      AED 400 - AED 600
+                    </button>
+                    <button
+                      onClick={() => { setPriceFilter('above-600'); setShowPriceFilter(false); }}
+                      className={`price-opt-btn ${priceFilter === 'above-600' ? 'active' : ''}`}
+                    >
+                      Above AED 600
+                    </button>
+                  </div>
+                )}
+              </div>
             </div>
           </div>
+
+          {/* Active Brand Indicator Filter Chip */}
+          {activeBrand !== 'all' && (
+            <div className="active-brand-indicator-bar">
+              <span style={{ fontSize: '11.5px', letterSpacing: '1px', textTransform: 'uppercase', color: 'var(--color-text-muted)' }}>
+                Active Brand:
+              </span>
+              <span className="active-brand-chip">
+                {activeBrand}
+                <button onClick={() => setActiveBrand('all')} title="Clear brand filter" className="clear-brand-btn">
+                  <X size={12} />
+                </button>
+              </span>
+            </div>
+          )}
+
+          {/* Active Search Query Indicator Chip */}
+          {searchQuery.trim() && (
+            <div className="active-search-indicator-bar">
+              <span style={{ fontSize: '11.5px', letterSpacing: '1px', textTransform: 'uppercase', color: 'var(--color-text-muted)' }}>
+                Search:
+              </span>
+              <span className="active-search-chip">
+                &ldquo;{searchQuery}&rdquo; ({filteredProducts.length} {filteredProducts.length === 1 ? 'match' : 'matches'})
+                <button onClick={() => setSearchQuery('')} title="Clear search" className="clear-search-btn">
+                  <X size={12} />
+                </button>
+              </span>
+            </div>
+          )}
 
           {/* Watch Gender Sub-filter Bar (Men's / Women's Watches) */}
           {activeCategory === 'watches' && (
@@ -1336,6 +1528,34 @@ Please confirm my order and arrange delivery. Thank you!`;
           <span>{cartToast}</span>
         </div>
       )}
+
+      {/* ─────────────────────────────────────────────────────────────
+          BRAND LOGOS TRAIN ANIMATION (OPPOSITE / RIGHT DIRECTION - ABOVE FOOTER)
+          ───────────────────────────────────────────────────────────── */}
+      <section className="brand-train-section brand-train-footer-wrap" aria-label="Luxury Brands">
+        <div className="brand-train-track brand-train-reverse">
+          {[...BRAND_LOGOS, ...BRAND_LOGOS, ...BRAND_LOGOS, ...BRAND_LOGOS].map((brand, idx) => (
+            <div 
+              key={`brand-bot-${idx}`} 
+              className="brand-train-item"
+              onClick={() => {
+                setActiveBrand(brand.name);
+                const el = document.getElementById('collections');
+                if (el) el.scrollIntoView({ behavior: 'smooth' });
+              }}
+              title={`Filter by ${brand.name}`}
+              style={{ cursor: 'pointer' }}
+            >
+              <img
+                src={brand.src}
+                alt={brand.name}
+                className="brand-train-logo"
+                loading="lazy"
+              />
+            </div>
+          ))}
+        </div>
+      </section>
 
       {/* Luxury Footer with Montserrat Light & Transparent Logo */}
       <footer className="site-footer">

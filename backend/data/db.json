@@ -37,7 +37,7 @@
       "title": "Burgundy Leather Top Handle Bag",
       "category": "bags",
       "categoryName": "Bags",
-      "brand": "SMP Luxury",
+      "brand": "Omega",
       "price": 490,
       "comparePrice": 650,
       "discount": "-25%",
@@ -52,7 +52,14 @@
       "stock": 12,
       "featured": true,
       "badge": "Bestseller",
-      "createdAt": "2026-10-15T10:00:00Z"
+      "createdAt": "2026-10-15T10:00:00Z",
+      "gender": "",
+      "seoTitle": "Burgundy Leather Top Handle Bag | Luxury SMP Fashion UAE",
+      "seoDescription": "Sculpted calfskin leather with polished gold-tone hardware clasp. Features reinforced top handles and a detachable shoulder strap for effortless versatility.",
+      "seoKeywords": "",
+      "slug": "burgundy-leather-top-handle-bag",
+      "_id": "prod-1",
+      "updatedAt": "2026-10-21T14:03:36.478Z"
     },
     {
       "id": "prod-2",
@@ -439,6 +446,57 @@
       "paymentMethod": "Cash / Card on Delivery (Inspect First)",
       "status": "Delivered",
       "createdAt": "2026-10-16T19:10:00Z"
+    }
+  ],
+  "brands": [
+    {
+      "id": "brand-1",
+      "name": "Richard Mille",
+      "slug": "richard-mille",
+      "logo": "/IMG_9307.PNG",
+      "description": "Ultra-high-end luxury Swiss watches and horological innovation"
+    },
+    {
+      "id": "brand-2",
+      "name": "Bvlgari",
+      "slug": "bvlgari",
+      "logo": "/IMG_9308.PNG",
+      "description": "Iconic Italian luxury master jeweler and grand complication horology"
+    },
+    {
+      "id": "brand-3",
+      "name": "Omega",
+      "slug": "omega",
+      "logo": "/IMG_9309.PNG",
+      "description": "Prestigious Swiss precision timepieces and master chronometers"
+    },
+    {
+      "id": "brand-4",
+      "name": "Chopard",
+      "slug": "chopard",
+      "logo": "/IMG_9310.PNG",
+      "description": "Exquisite artisan Swiss luxury watches and high jewelry"
+    },
+    {
+      "id": "brand-5",
+      "name": "Chaumet Paris",
+      "slug": "chaumet-paris",
+      "logo": "/IMG_9311.PNG",
+      "description": "Place Vendôme Parisian royal jeweler and high-end watchmaker"
+    },
+    {
+      "id": "brand-6",
+      "name": "Graff",
+      "slug": "graff",
+      "logo": "/IMG_9312.PNG",
+      "description": "Unrivaled high-jewelry maison and diamond-set master horology"
+    },
+    {
+      "id": "brand-7",
+      "name": "SMP Luxury",
+      "slug": "smp-luxury",
+      "logo": "/smp-logo.png",
+      "description": "SMP Atelier flagship handcrafted footwear and fine leather"
     }
   ]
 }

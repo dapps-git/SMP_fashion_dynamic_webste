@@ -44,6 +44,57 @@ const INITIAL_DATA = {
       itemCount: 2
     }
   ],
+  brands: [
+    {
+      id: 'brand-1',
+      name: 'Richard Mille',
+      slug: 'richard-mille',
+      logo: '/IMG_9307.PNG',
+      description: 'Ultra-high-end luxury Swiss watches and horological innovation'
+    },
+    {
+      id: 'brand-2',
+      name: 'Bvlgari',
+      slug: 'bvlgari',
+      logo: '/IMG_9308.PNG',
+      description: 'Iconic Italian luxury master jeweler and grand complication horology'
+    },
+    {
+      id: 'brand-3',
+      name: 'Omega',
+      slug: 'omega',
+      logo: '/IMG_9309.PNG',
+      description: 'Prestigious Swiss precision timepieces and master chronometers'
+    },
+    {
+      id: 'brand-4',
+      name: 'Chopard',
+      slug: 'chopard',
+      logo: '/IMG_9310.PNG',
+      description: 'Exquisite artisan Swiss luxury watches and high jewelry'
+    },
+    {
+      id: 'brand-5',
+      name: 'Chaumet Paris',
+      slug: 'chaumet-paris',
+      logo: '/IMG_9311.PNG',
+      description: 'Place Vendôme Parisian royal jeweler and high-end watchmaker'
+    },
+    {
+      id: 'brand-6',
+      name: 'Graff',
+      slug: 'graff',
+      logo: '/IMG_9312.PNG',
+      description: 'Unrivaled high-jewelry maison and diamond-set master horology'
+    },
+    {
+      id: 'brand-7',
+      name: 'SMP Luxury',
+      slug: 'smp-luxury',
+      logo: '/smp-logo.png',
+      description: 'SMP Atelier flagship handcrafted footwear and fine leather'
+    }
+  ],
   products: [
     {
       id: 'prod-1',
@@ -299,6 +350,7 @@ function readDb() {
     if (!data.products) data.products = INITIAL_DATA.products;
     if (!data.orders) data.orders = INITIAL_DATA.orders;
     if (!data.admin) data.admin = INITIAL_DATA.admin;
+    if (!data.brands || data.brands.length === 0) data.brands = INITIAL_DATA.brands;
     return data;
   } catch (err) {
     console.error('Error reading DB, using initial data:', err);
@@ -347,8 +399,40 @@ function deleteCategory(id) {
   return true;
 }
 
+// ── Brands ──
+function getBrands() {
+  const db = readDb();
+  return (db.brands || []).map(b => ({ ...b, _id: b._id || b.id }));
+}
+
+function createBrand({ name, description, logo }) {
+  const db = readDb();
+  const slug = name.toLowerCase().replace(/[^a-z0-9]+/g, '-').replace(/(^-|-$)/g, '');
+  const id = `brand-${Date.now()}`;
+  const newBrand = {
+    id,
+    _id: id,
+    name,
+    slug,
+    description: description || '',
+    logo: logo || '',
+    createdAt: new Date().toISOString()
+  };
+  if (!db.brands) db.brands = [];
+  db.brands.push(newBrand);
+  writeDb(db);
+  return newBrand;
+}
+
+function deleteBrand(id) {
+  const db = readDb();
+  db.brands = (db.brands || []).filter(b => b.id !== id && b._id !== id);
+  writeDb(db);
+  return true;
+}
+
 // ── Products ──
-function getProducts(category, search, gender) {
+function getProducts(category, search, gender, brand) {
   const db = readDb();
   let list = (db.products || []).map(p => ({ ...p, _id: p._id || p.id }));
   
@@ -358,6 +442,11 @@ function getProducts(category, search, gender) {
   
   if (gender && gender !== 'all') {
     list = list.filter(p => (p.gender || '').toLowerCase() === gender.toLowerCase());
+  }
+
+  if (brand && brand !== 'all') {
+    const targetBrand = brand.toLowerCase();
+    list = list.filter(p => (p.brand || '').toLowerCase() === targetBrand || (p.brand || '').toLowerCase().includes(targetBrand));
   }
   
   if (search) {
@@ -489,6 +578,9 @@ module.exports = {
   getCategories,
   createCategory,
   deleteCategory,
+  getBrands,
+  createBrand,
+  deleteBrand,
   getProducts,
   getProductById,
   createProduct,

@@ -25,6 +25,8 @@ export default function ProductsPage() {
   const [search, setSearch] = useState('');
   const [selectedCategory, setSelectedCategory] = useState('all');
   const [selectedGender, setSelectedGender] = useState('all');
+  const [selectedBrand, setSelectedBrand] = useState('all');
+  const [brands, setBrands] = useState([]);
   
   // Modal state
   const [modalOpen, setModalOpen] = useState(false);
@@ -54,7 +56,28 @@ export default function ProductsPage() {
   useEffect(() => {
     fetchProducts();
     fetchCategories();
+    fetchBrands();
   }, [selectedCategory]);
+
+  const fetchBrands = async () => {
+    try {
+      const res = await fetch(`${API_BASE}/brands`);
+      if (res.ok) {
+        const data = await res.json();
+        setBrands(data && data.length > 0 ? data : [
+          { name: 'Richard Mille' },
+          { name: 'Bvlgari' },
+          { name: 'Omega' },
+          { name: 'Chopard' },
+          { name: 'Chaumet Paris' },
+          { name: 'Graff' },
+          { name: 'SMP Luxury' }
+        ]);
+      }
+    } catch (err) {
+      console.error('Failed to load brands:', err);
+    }
+  };
 
   const fetchProducts = async () => {
     try {
@@ -233,6 +256,11 @@ export default function ProductsPage() {
     if (selectedCategory !== 'all' && p.category?.toLowerCase() !== selectedCategory.toLowerCase()) {
       return false;
     }
+    if (selectedBrand !== 'all') {
+      const pBrand = (p.brand || '').toLowerCase();
+      const target = selectedBrand.toLowerCase();
+      if (pBrand !== target && !pBrand.includes(target)) return false;
+    }
     if (selectedCategory === 'watches' && selectedGender !== 'all') {
       const pGender = (p.gender || '').toLowerCase();
       const text = `${p.title} ${p.description}`.toLowerCase();
@@ -295,6 +323,24 @@ export default function ProductsPage() {
             <option value="all">All Categories</option>
             {categories.map(cat => (
               <option key={cat.id} value={cat.slug}>{cat.name}</option>
+            ))}
+          </select>
+
+          {/* Brand Filter */}
+          <select 
+            value={selectedBrand} 
+            onChange={(e) => setSelectedBrand(e.target.value)}
+            className="form-select"
+            style={{ 
+              width: 'auto', 
+              fontWeight: selectedBrand !== 'all' ? '600' : 'normal', 
+              borderColor: selectedBrand !== 'all' ? '#A45A28' : undefined,
+              background: selectedBrand !== 'all' ? '#FAF7EF' : undefined
+            }}
+          >
+            <option value="all">All Brands</option>
+            {brands.map((b, idx) => (
+              <option key={b.id || b._id || idx} value={b.name}>{b.name}</option>
             ))}
           </select>
 
@@ -466,14 +512,21 @@ export default function ProductsPage() {
                     />
                   </div>
                   <div className="form-group">
-                    <label className="form-label">Brand / Atelier</label>
+                    <label className="form-label">Brand / Atelier *</label>
                     <input 
                       type="text" 
                       className="form-input" 
                       value={formData.brand} 
                       onChange={(e) => setFormData({ ...formData, brand: e.target.value })}
-                      placeholder="SMP Luxury" 
+                      placeholder="e.g. Richard Mille, Rolex, SMP Luxury" 
+                      list="brand-suggestions"
+                      required
                     />
+                    <datalist id="brand-suggestions">
+                      {brands.map((b, idx) => (
+                        <option key={b.id || b._id || idx} value={b.name} />
+                      ))}
+                    </datalist>
                   </div>
                 </div>
 

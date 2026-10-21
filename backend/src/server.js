@@ -11,6 +11,7 @@ const jwt = require('jsonwebtoken');
 const bcrypt = require('bcryptjs');
 
 const Category = require('./models/Category');
+const Brand = require('./models/Brand');
 const Product = require('./models/Product');
 const Order = require('./models/Order');
 const Admin = require('./models/Admin');
@@ -190,9 +191,10 @@ app.get(['/', '/health', '/api/health'], (req, res) => {
 // ─── Admin Auth with Encrypted Password Hash Verification ─────
 app.post('/api/auth/login', async (req, res) => {
   try {
-    const { username, password } = req.body;
+    const username = req.body.username || req.body.email;
+    const password = req.body.password;
     if (!username || !password) {
-      return res.status(400).json({ success: false, message: 'Username and password required' });
+      return res.status(400).json({ success: false, message: 'Username/email and password required' });
     }
 
     const emailInput = (username || '').toLowerCase().trim();
@@ -324,6 +326,50 @@ app.delete('/api/categories/:id', authenticateToken, async (req, res) => {
   }
 });
 
+// ─── Brands ───────────────────────────────────────────────────
+app.get('/api/brands', async (req, res) => {
+  try {
+    if (mongoose.connection.readyState === 1) {
+      const brands = await Brand.find({}).sort({ name: 1 });
+      if (brands && brands.length > 0) return res.json(brands);
+    }
+    return res.json(fileDb.getBrands());
+  } catch (e) {
+    return res.json(fileDb.getBrands());
+  }
+});
+
+app.post('/api/brands', authenticateToken, async (req, res) => {
+  try {
+    const { name, description, logo } = req.body;
+    if (!name) return res.status(400).json({ error: 'Brand name is required' });
+    const slug = name.toLowerCase().replace(/[^a-z0-9]+/g, '-').replace(/(^-|-$)/g, '');
+    if (mongoose.connection.readyState === 1) {
+      const brand = await Brand.create({ name, slug, description: description || '', logo: logo || '' });
+      return res.status(201).json(brand);
+    }
+    const brand = fileDb.createBrand({ name, description, logo });
+    res.status(201).json(brand);
+  } catch (e) {
+    const brand = fileDb.createBrand(req.body);
+    res.status(201).json(brand);
+  }
+});
+
+app.delete('/api/brands/:id', authenticateToken, async (req, res) => {
+  try {
+    if (mongoose.connection.readyState === 1) {
+      await Brand.findByIdAndDelete(req.params.id);
+    } else {
+      fileDb.deleteBrand(req.params.id);
+    }
+    res.json({ success: true });
+  } catch (e) {
+    fileDb.deleteBrand(req.params.id);
+    res.json({ success: true });
+  }
+});
+
 // ─── Image Upload (Protected) ─────────────────────────────────
 app.post('/api/upload', authenticateToken, upload.single('image'), async (req, res) => {
   try {
@@ -337,11 +383,12 @@ app.post('/api/upload', authenticateToken, upload.single('image'), async (req, r
 // Public GET for storefront & catalog browsing
 app.get('/api/products', async (req, res) => {
   try {
-    const { category, search, featured, gender } = req.query;
+    const { category, search, featured, gender, brand } = req.query;
     if (mongoose.connection.readyState === 1) {
       let query = {};
       if (category && category !== 'all') query.category = category.toLowerCase();
       if (gender && gender !== 'all') query.gender = gender.toLowerCase();
+      if (brand && brand !== 'all') query.brand = { $regex: brand, $options: 'i' };
       if (featured === 'true') query.featured = true;
       if (search) {
         query.$or = [
@@ -353,9 +400,9 @@ app.get('/api/products', async (req, res) => {
       const products = await Product.find(query).sort({ createdAt: -1 });
       return res.json(products);
     }
-    return res.json(fileDb.getProducts(category, search, gender));
+    return res.json(fileDb.getProducts(category, search, gender, brand));
   } catch (e) { 
-    return res.json(fileDb.getProducts(req.query.category, req.query.search, req.query.gender)); 
+    return res.json(fileDb.getProducts(req.query.category, req.query.search, req.query.gender, req.query.brand)); 
   }
 });
 

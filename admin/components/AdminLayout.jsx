@@ -13,7 +13,8 @@ import {
   User,
   Menu,
   X,
-  Bell
+  Bell,
+  Sparkles
 } from 'lucide-react';
 import { API_BASE } from '../lib/api';
 
@@ -76,6 +77,7 @@ export default function AdminLayout({ children, title = 'Dashboard' }) {
     { label: 'Dashboard', href: '/', icon: LayoutDashboard },
     { label: 'Products', href: '/products', icon: Package },
     { label: 'Categories', href: '/categories', icon: Layers },
+    { label: 'Brands', href: '/brands', icon: Sparkles },
     { label: 'Orders', href: '/orders', icon: ShoppingCart },
   ];
 
@@ -146,7 +148,7 @@ export default function AdminLayout({ children, title = 'Dashboard' }) {
             Customer Store
           </div>
           <a 
-            href="http://localhost:3000" 
+            href="http://localhost:3002" 
             target="_blank" 
             rel="noopener noreferrer" 
             className="nav-link"
