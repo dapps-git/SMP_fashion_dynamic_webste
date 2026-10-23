@@ -1429,90 +1429,261 @@ input, select, textarea {
 
 .editorial-filter-bar {
   display: flex;
-  align-items: center;
-  justify-content: space-between;
-  border-top: 1px solid var(--color-border);
-  border-bottom: 1px solid var(--color-border);
-  padding: 12px 0;
-  margin-bottom: 28px;
-  gap: 16px;
+  flex-direction: column;
+  gap: 14px;
+  margin-bottom: 24px;
 }
 
 .editorial-cat-list {
   display: flex;
   align-items: center;
-  gap: 10px;
-  overflow-x: auto;
-  padding-bottom: 2px;
+  gap: 28px;
+  border-bottom: 1px solid #ECE7DE;
+  padding-bottom: 0;
+  width: 100%;
 }
 
 .editorial-cat-btn {
   font-family: var(--font-sans);
   font-size: 13px;
+  letter-spacing: 0.3px;
+  text-transform: none; /* Normal letters, not capital */
   font-weight: 500;
-  color: #555047;
+  color: #78716C;
   background: transparent;
-  border: 1px solid transparent;
-  padding: 6px 16px;
-  border-radius: var(--radius-full);
+  border: none;
+  border-bottom: 2px solid transparent;
+  padding: 8px 4px 10px 4px;
   cursor: pointer;
   white-space: nowrap;
   transition: all 0.2s ease;
+  position: relative;
+  margin-bottom: -1px;
 }
 
 .editorial-cat-btn:hover {
-  color: var(--color-dark-brown);
+  color: #1F1B18;
 }
 
 .editorial-cat-btn.active {
-  color: var(--color-dark-brown);
-  background: #ffffff;
-  border-color: #D1C7B7;
+  color: #66300F;
+  border-bottom: 2px solid #66300F;
   font-weight: 600;
-  box-shadow: 0 2px 6px rgba(0,0,0,0.04);
+  text-transform: none;
+  background: transparent;
+  box-shadow: none;
 }
 
-/* Watch Gender Sub-filter Bar */
+/* Square-type Filter Controls: Side-by-side Brand & Filter Boxes */
+.editorial-boxes-row {
+  display: flex;
+  align-items: center;
+  gap: 12px;
+  width: 100%;
+  max-width: 580px;
+}
+
+/* Left Box: All Brands Dropdown Container */
+.editorial-select-wrap {
+  position: relative;
+  flex: 1.25;
+}
+
+.editorial-select-box {
+  width: 100%;
+  height: 42px;
+  background: #FFFFFF;
+  border: 1px solid #E2D9CC;
+  border-radius: 8px;
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  padding: 0 12px;
+  cursor: pointer;
+  transition: all 0.2s ease;
+  text-transform: none;
+}
+
+.editorial-select-box:hover {
+  border-color: #BFA588;
+  box-shadow: 0 2px 6px rgba(0, 0, 0, 0.04);
+}
+
+.editorial-select-box.active {
+  border-color: #66300F;
+  background: #FAF7F2;
+}
+
+.editorial-box-icon {
+  color: #4A3E33;
+  flex-shrink: 0;
+}
+
+/* Brand name text inside filter box with REDUCED font size and normal letters */
+.editorial-brand-name-text {
+  flex: 1;
+  font-size: 11.5px; /* Reduced compact font size */
+  font-weight: 500;
+  color: #2C2621;
+  white-space: nowrap;
+  overflow: hidden;
+  text-overflow: ellipsis;
+  letter-spacing: 0.2px;
+  text-transform: none; /* Normal letters, not capital */
+  text-align: left;
+  margin: 0 8px;
+}
+
+.editorial-box-chevron {
+  color: #78716C;
+  flex-shrink: 0;
+}
+
+/* Custom Sleek Brand Filter Dropdown */
+.brand-filter-dropdown {
+  position: absolute;
+  top: calc(100% + 6px);
+  left: 0;
+  background: #ffffff;
+  border: 1px solid #E5DFD5;
+  border-radius: 8px;
+  box-shadow: 0 10px 25px rgba(102, 48, 15, 0.12);
+  padding: 5px;
+  display: flex;
+  flex-direction: column;
+  gap: 2px;
+  z-index: 60;
+  min-width: 165px;
+  width: 100%;
+  max-height: 250px;
+  overflow-y: auto;
+}
+
+.brand-opt-btn {
+  padding: 7px 10px;
+  text-align: left;
+  font-size: 11.5px; /* Reduced compact font */
+  font-weight: 500;
+  color: #2C2621;
+  background: none;
+  border: none;
+  border-radius: 5px;
+  cursor: pointer;
+  transition: all 0.15s ease;
+  width: 100%;
+  text-transform: none; /* Normal letters, not capital */
+}
+
+.brand-opt-btn:hover {
+  background: #FAF6EE;
+  color: #66300F;
+}
+
+.brand-opt-btn.active {
+  background: #66300F;
+  color: #ffffff;
+  font-weight: 600;
+}
+
+/* Right Box: Filter Button */
+.editorial-filter-wrap {
+  position: relative;
+  flex: 0.95;
+}
+
+.editorial-filter-box-btn {
+  width: 100%;
+  height: 42px;
+  background: #FFFFFF;
+  border: 1px solid #E2D9CC;
+  border-radius: 8px;
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  padding: 0 12px;
+  cursor: pointer;
+  transition: all 0.2s ease;
+  text-transform: none;
+}
+
+.editorial-filter-box-btn:hover {
+  border-color: #BFA588;
+  box-shadow: 0 2px 6px rgba(0, 0, 0, 0.04);
+}
+
+.editorial-filter-box-btn.active {
+  border-color: #66300F;
+  background: #FAF7F2;
+}
+
+.editorial-filter-box-left {
+  display: flex;
+  align-items: center;
+  gap: 8px;
+}
+
+.editorial-filter-label-text {
+  font-size: 11.5px; /* Reduced compact font */
+  font-weight: 500;
+  color: #2C2621;
+  text-transform: none; /* Normal letters */
+}
+
+.editorial-filter-badge {
+  background: #66300F;
+  color: #FFFFFF;
+  font-size: 11px;
+  font-weight: 700;
+  width: 20px;
+  height: 20px;
+  border-radius: 50%;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  flex-shrink: 0;
+}
+
+/* Watch Gender Sub-filter Bar (Square box, no background) */
 .watch-gender-subbar {
   display: flex;
   align-items: center;
   justify-content: flex-start;
   gap: 8px;
-  margin-top: -14px;
-  margin-bottom: 24px;
+  margin-top: -6px;
+  margin-bottom: 22px;
   overflow-x: auto;
-  padding: 4px 0 8px 0;
+  padding: 2px 0 6px 0;
   -webkit-overflow-scrolling: touch;
 }
 
 .watch-gender-pill {
   font-family: var(--font-sans);
-  font-size: 11px;
-  letter-spacing: 0.8px;
-  text-transform: uppercase;
+  font-size: 11.5px;
+  letter-spacing: 0.2px;
+  text-transform: none; /* Normal letters, not capital */
   font-weight: 500;
-  color: #786C5E;
-  background: #F7F4EE;
-  border: 1px solid #E8E1D3;
-  padding: 5px 14px;
-  border-radius: var(--radius-full);
+  color: #6B6258;
+  background: transparent; /* No background color */
+  border: 1px solid #DCD5C6;
+  padding: 6px 13px;
+  border-radius: 6px; /* Square box type */
   cursor: pointer;
   white-space: nowrap;
-  transition: all 0.2s cubic-bezier(0.16, 1, 0.3, 1);
+  transition: all 0.2s ease;
 }
 
 .watch-gender-pill:hover {
-  color: #1F1B18;
-  border-color: #BFA588;
-  background: #FFFFFF;
+  color: #66300F;
+  border-color: #66300F;
+  background: transparent;
 }
 
 .watch-gender-pill.active {
-  color: #FFFFFF;
-  background: #66300F;
-  border-color: #66300F;
+  color: #66300F;
+  background: transparent; /* No background color */
+  border: 1.5px solid #66300F;
   font-weight: 600;
-  box-shadow: 0 2px 6px rgba(102, 48, 15, 0.2);
+  box-shadow: none;
 }
 
 /* Minimalist Filter Icon Button (No box, no text) */
@@ -1589,6 +1760,7 @@ input, select, textarea {
 .editorial-card {
   display: flex;
   flex-direction: column;
+  height: 100%;
   position: relative;
   background: transparent;
   transition: transform 0.2s ease;
@@ -1601,14 +1773,14 @@ input, select, textarea {
 .editorial-img-wrap {
   position: relative;
   width: 100%;
-  aspect-ratio: 1 / 1.15;
+  aspect-ratio: 1 / 1; /* Pure square image */
   background: #F7F5EE;
   border-radius: 8px;
   overflow: hidden;
   display: flex;
   align-items: center;
   justify-content: center;
-  margin-bottom: 10px;
+  margin-bottom: 8px;
   border: 1px solid #EFEAE0;
   cursor: pointer;
 }
@@ -1669,20 +1841,16 @@ input, select, textarea {
 .editorial-info {
   display: flex;
   flex-direction: column;
-  gap: 4px;
   flex: 1;
 }
 
 .editorial-title-row {
-  display: flex;
-  justify-content: space-between;
-  align-items: flex-start;
-  gap: 8px;
+  margin-bottom: 4px;
 }
 
 .editorial-title {
   font-family: var(--font-sans);
-  font-size: 13px;
+  font-size: 12.5px;
   font-weight: 500;
   color: #1C1917;
   line-height: 1.35;
@@ -1690,8 +1858,16 @@ input, select, textarea {
   -webkit-line-clamp: 2;
   -webkit-box-orient: vertical;
   overflow: hidden;
-  height: 35px;
-  flex: 1;
+  height: 34px; /* Fixed height for clean grid alignment */
+  margin: 0;
+}
+
+.editorial-price-row {
+  display: flex;
+  align-items: center;
+  margin-top: 2px;
+  margin-bottom: 8px;
+  min-height: 20px;
 }
 
 .editorial-price {
@@ -1783,7 +1959,7 @@ input, select, textarea {
   display: flex;
   align-items: center;
   gap: 6px;
-  margin-top: 8px;
+  margin-top: auto; /* Aligns buttons across all cards evenly */
   width: 100%;
 }
 
@@ -2234,14 +2410,23 @@ input, select, textarea {
   }
 }
 
+.navbar-search-row {
+  display: flex;
+  align-items: center;
+  gap: 12px;
+  width: 100%;
+}
+
 .navbar-search-box {
+  flex: 1;
+  min-width: 0;
   display: flex;
   align-items: center;
   gap: 10px;
   background: #FFFFFF;
   border: 1.5px solid #ECE6DC;
   border-radius: 30px;
-  padding: 6px 14px 6px 16px;
+  padding: 8px 14px 8px 16px;
   transition: border-color 0.2s ease, box-shadow 0.2s ease;
 }
 
@@ -2261,7 +2446,7 @@ input, select, textarea {
   outline: none;
   background: transparent;
   font-family: var(--font-sans);
-  font-size: 14px;
+  font-size: 16px; /* 16px prevents mobile auto-zoom */
   color: #1C1917;
   padding: 6px 4px;
 }
@@ -2314,25 +2499,22 @@ input, select, textarea {
 .navbar-search-close-btn {
   background: transparent;
   border: none;
-  color: var(--color-text-muted);
+  color: #78716C;
   cursor: pointer;
-  padding: 4px;
+  width: 36px;
+  height: 36px;
+  border-radius: 50%;
   display: flex;
   align-items: center;
   justify-content: center;
   flex-shrink: 0;
-  transition: color 0.2s ease;
+  transition: all 0.2s ease;
+  padding: 0;
 }
 
 .navbar-search-close-btn:hover {
+  background: #F1ECE0;
   color: #1C1917;
-}
-
-.navbar-search-feedback {
-  margin-top: 10px;
-  font-size: 12.5px;
-  color: var(--color-text-muted);
-  text-align: center;
 }
 
 /* Mobile Drawer Search Box */
@@ -2437,6 +2619,65 @@ input, select, textarea {
   .navbar-search-submit-btn {
     padding: 7px 12px;
     font-size: 11px;
+  }
+
+  /* Properly structured mobile filter bar with no button format and clean 2-row layout */
+  .editorial-filter-bar {
+    flex-direction: column !important;
+    align-items: stretch !important;
+    gap: 10px !important;
+    padding: 10px 0 12px 0 !important;
+    margin-bottom: 22px !important;
+  }
+
+  .editorial-cat-list {
+    display: flex !important;
+    justify-content: space-between !important;
+    align-items: center !important;
+    width: 100% !important;
+    gap: 4px !important;
+    overflow-x: visible !important;
+    padding: 0 !important;
+    border-bottom: 1px solid #ECE7DE !important;
+  }
+
+  .editorial-cat-btn {
+    flex: 1 !important;
+    text-align: center !important;
+    font-size: 11px !important;
+    letter-spacing: 0.8px !important;
+    padding: 7px 2px 9px 2px !important;
+  }
+
+  .editorial-boxes-row {
+    display: flex !important;
+    align-items: center !important;
+    width: 100% !important;
+    gap: 10px !important;
+    max-width: 100% !important;
+  }
+
+  .editorial-select-box {
+    height: 38px !important;
+    padding: 0 10px !important;
+    flex: 1.2 !important;
+  }
+
+  .editorial-brand-name-text {
+    font-size: 11px !important; /* Reduced font size on mobile */
+  }
+
+  .editorial-filter-wrap {
+    flex: 0.9 !important;
+  }
+
+  .editorial-filter-box-btn {
+    height: 38px !important;
+    padding: 0 10px !important;
+  }
+
+  .editorial-filter-label-text {
+    font-size: 11.5px !important;
   }
 }
 

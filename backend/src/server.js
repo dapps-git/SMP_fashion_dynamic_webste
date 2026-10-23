@@ -394,6 +394,7 @@ app.get('/api/products', async (req, res) => {
         query.$or = [
           { title: { $regex: search, $options: 'i' } },
           { brand: { $regex: search, $options: 'i' } },
+          { color: { $regex: search, $options: 'i' } },
           { description: { $regex: search, $options: 'i' } }
         ];
       }
@@ -425,7 +426,7 @@ app.get('/api/products/:id', async (req, res) => {
 // Protected product mutations
 app.post('/api/products', authenticateToken, upload.single('imageFile'), async (req, res) => {
   try {
-    const { title, category, brand, price, comparePrice, stock, description, badge, details, imageUrl, seoTitle, seoDescription, seoKeywords, slug, gender } = req.body;
+    const { title, category, brand, price, comparePrice, stock, description, badge, details, imageUrl, seoTitle, seoDescription, seoKeywords, slug, gender, color, sizes } = req.body;
     if (!title || !price) return res.status(400).json({ error: 'Title and price are required' });
 
     let finalImage = imageUrl || '';
@@ -446,6 +447,13 @@ app.post('/api/products', authenticateToken, upload.single('imageFile'), async (
     if (typeof details === 'string') parsedDetails = details.split('\n').map(d => d.trim()).filter(Boolean);
     else if (Array.isArray(details)) parsedDetails = details;
 
+    let parsedSizes = [];
+    if (typeof sizes === 'string') {
+      parsedSizes = sizes.split(',').map(s => s.trim()).filter(Boolean);
+    } else if (Array.isArray(sizes)) {
+      parsedSizes = sizes.map(s => String(s).trim()).filter(Boolean);
+    }
+
     const generatedSlug = slug || title.toLowerCase().replace(/[^a-z0-9]+/g, '-').replace(/(^-|-$)/g, '');
     const generatedSeoTitle = seoTitle || `${title} | Luxury SMP Fashion UAE`;
     const generatedSeoDesc = seoDescription || (description ? description.slice(0, 160) : `Shop ${title} at SMP Super Master Products.`);
@@ -455,6 +463,8 @@ app.post('/api/products', authenticateToken, upload.single('imageFile'), async (
       category: category?.toLowerCase() || 'accessories',
       categoryName: category ? category.charAt(0).toUpperCase() + category.slice(1) : 'General',
       gender: gender ? gender.toLowerCase() : '',
+      color: color ? color.trim() : '',
+      sizes: parsedSizes,
       brand: brand || 'SMP Luxury',
       price: pNum, 
       comparePrice: cNum, 
@@ -494,7 +504,7 @@ app.post('/api/products', authenticateToken, upload.single('imageFile'), async (
 
 app.put('/api/products/:id', authenticateToken, upload.single('imageFile'), async (req, res) => {
   try {
-    const { title, category, brand, price, comparePrice, stock, description, badge, details, imageUrl, seoTitle, seoDescription, seoKeywords, slug, gender } = req.body;
+    const { title, category, brand, price, comparePrice, stock, description, badge, details, imageUrl, seoTitle, seoDescription, seoKeywords, slug, gender, color, sizes } = req.body;
 
     let finalImage = imageUrl;
     let imagePublicId = '';
@@ -512,10 +522,18 @@ app.put('/api/products/:id', authenticateToken, upload.single('imageFile'), asyn
     if (typeof details === 'string') parsedDetails = details.split('\n').map(d => d.trim()).filter(Boolean);
     else if (Array.isArray(details)) parsedDetails = details;
 
+    let parsedSizes;
+    if (sizes !== undefined) {
+      if (typeof sizes === 'string') parsedSizes = sizes.split(',').map(s => s.trim()).filter(Boolean);
+      else if (Array.isArray(sizes)) parsedSizes = sizes.map(s => String(s).trim()).filter(Boolean);
+    }
+
     const updateFields = {};
     if (title !== undefined) updateFields.title = title;
     if (category !== undefined) updateFields.category = category;
     if (gender !== undefined) updateFields.gender = gender ? gender.toLowerCase() : '';
+    if (color !== undefined) updateFields.color = color ? color.trim() : '';
+    if (parsedSizes !== undefined) updateFields.sizes = parsedSizes;
     if (brand !== undefined) updateFields.brand = brand;
     if (pNum !== undefined) updateFields.price = pNum;
     if (cNum !== undefined) updateFields.comparePrice = cNum;

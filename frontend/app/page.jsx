@@ -26,7 +26,9 @@ import {
   Trash2,
   Plus,
   Minus,
-  Home as HomeIcon
+  Home as HomeIcon,
+  Tag,
+  ChevronDown
 } from 'lucide-react';
 
 const WHATSAPP_NUMBER = '971525973132'; // +971 52 597 3132
@@ -58,6 +60,7 @@ const FALLBACK_PRODUCTS = [
     description: 'Sculpted calfskin leather with polished gold-tone hardware clasp. Features reinforced top handles and a detachable shoulder strap for effortless versatility.',
     details: ['100% Genuine Italian Calfskin', '24K Gold electroplated lock', 'Interior slip & zip compartments', 'Protective bottom metal studs'],
     stock: 12,
+    color: 'Burgundy',
     badge: 'Bestseller'
   },
   {
@@ -73,6 +76,7 @@ const FALLBACK_PRODUCTS = [
     description: 'Deep forest green smooth leather with arched satin-brass hardware. Clean geometric lines create a statement silhouette for evening galas or daytime poise.',
     details: ['Smooth textured box calfskin', 'Solid brass arch handle', 'Magnetic snap closure', 'Suede interior lining'],
     stock: 8,
+    color: 'Emerald Forest Green',
     badge: 'New Arrival'
   },
   {
@@ -88,6 +92,7 @@ const FALLBACK_PRODUCTS = [
     description: 'Lustrous ivory pleated satin adorned with a luminous simulated freshwater pearl handle and crystal-pavé floral kiss-lock closure.',
     details: ['Pleated silk-satin shell', 'Graduated pearl arch handle', 'Crystal-encrusted jeweled clasp', 'Includes delicate chain strap'],
     stock: 15,
+    color: 'Ivory Pearl White',
     badge: 'Limited Edition'
   },
   {
@@ -104,6 +109,7 @@ const FALLBACK_PRODUCTS = [
     details: ['Precision Swiss quartz movement', 'Scratch-resistant Sapphire crystal glass', '100m Water resistance', 'Deployment clasp with safety lock'],
     stock: 7,
     gender: 'men',
+    color: 'Two-Tone Steel & Gold',
     badge: 'Masterpiece'
   },
   {
@@ -120,6 +126,7 @@ const FALLBACK_PRODUCTS = [
     details: ['40mm Slimline casing', 'Anti-reflective sapphire coating', 'Japanese automatic movement', 'Water resistant to 50m'],
     stock: 10,
     gender: 'men',
+    color: 'Obsidian Black',
     badge: 'Exclusive'
   },
   {
@@ -136,6 +143,7 @@ const FALLBACK_PRODUCTS = [
     details: ['Automatic self-winding mechanism', 'Exposed front & exhibition case back', 'Hand-stitched brown leather band', 'Luminous hands'],
     stock: 5,
     gender: 'women',
+    color: '18K Rose Gold',
     badge: 'Hot Seller'
   },
   {
@@ -152,6 +160,7 @@ const FALLBACK_PRODUCTS = [
     details: ['Mother of pearl iridescent dial', 'Pavé crystal bezel', 'Adjustable Milanese mesh strap', 'Water resistant 30m'],
     stock: 8,
     gender: 'women',
+    color: 'Rose Gold & Pearl',
     badge: 'Trending'
   },
   {
@@ -167,6 +176,8 @@ const FALLBACK_PRODUCTS = [
     description: 'Burnished cognac calfskin loafers accented with brushed brass horsebit hardware. Hand-stitched apron toe and cushioned leather insole.',
     details: ['Handcrafted Blake-stitched sole', 'Full grain burnished leather', 'Memory foam comfort arch support', 'Non-slip rubber heel insert'],
     stock: 14,
+    color: 'Burnished Cognac Brown',
+    sizes: ['7', '8', '9', '10', '11'],
     badge: 'Classic'
   },
   {
@@ -182,6 +193,8 @@ const FALLBACK_PRODUCTS = [
     description: 'Flawless nude patent leather pointed-toe pumps with a sleek 85mm stiletto heel. Engineered for posture-perfect comfort.',
     details: ['High-shine mirror patent finish', 'Padded goat leather lining', 'Sculpted 85mm heel', 'Iconic red-tinted edge detailing'],
     stock: 11,
+    color: 'Nude Blush Beige',
+    sizes: ['36', '37', '38', '39', '40'],
     badge: 'Signature'
   },
   {
@@ -197,6 +210,8 @@ const FALLBACK_PRODUCTS = [
     description: 'Crisp white calfskin leather with monogram brown embossed suede heel tab and lightweight vulcanized rubber platform.',
     details: ['Supple Italian calfskin upper', 'Perforated toe ventilation', 'Breathable terry lining', 'Durable cupsole with logo tread'],
     stock: 22,
+    color: 'Crisp White & Monogram Brown',
+    sizes: ['7', '8', '9', '10', '11'],
     badge: 'New'
   }
 ];
@@ -210,11 +225,14 @@ export default function StorefrontPage() {
   const [searchOpen, setSearchOpen] = useState(false);
   const [priceFilter, setPriceFilter] = useState('all');
   const [showPriceFilter, setShowPriceFilter] = useState(false);
+  const [showBrandFilter, setShowBrandFilter] = useState(false);
   const [loading, setLoading] = useState(false);
   const [mobileMenuOpen, setMobileMenuOpen] = useState(false);
 
   // Quick View Modal
   const [viewProduct, setViewProduct] = useState(null);
+  const [selectedSize, setSelectedSize] = useState('');
+  const [orderSize, setOrderSize] = useState('');
 
   // Buy Now / Address Modal
   const [orderModalProduct, setOrderModalProduct] = useState(null);
@@ -251,30 +269,33 @@ export default function StorefrontPage() {
     } catch (e) {}
   };
 
-  const addToCart = (product, qty = 1) => {
+  const addToCart = (product, qty = 1, sizeChoice) => {
+    const chosenSize = sizeChoice !== undefined ? sizeChoice : (product.sizes && product.sizes.length > 0 ? (selectedSize || product.sizes[0]) : '');
+    const itemKey = chosenSize ? `${product.id}-${chosenSize}` : product.id;
     let updated;
-    const existingIndex = cart.findIndex((item) => item.id === product.id);
+    const existingIndex = cart.findIndex((item) => (item.cartKey || item.id) === itemKey);
     if (existingIndex > -1) {
       updated = cart.map((item, idx) =>
         idx === existingIndex ? { ...item, quantity: item.quantity + qty } : item
       );
     } else {
-      updated = [...cart, { ...product, quantity: qty }];
+      updated = [...cart, { ...product, cartKey: itemKey, size: chosenSize, quantity: qty }];
     }
     updateCart(updated);
-    setCartToast(`Added "${product.title}" to Cart`);
+    setCartToast(`Added "${product.title}"${chosenSize ? ` (Size: ${chosenSize})` : ''} to Cart`);
     setTimeout(() => setCartToast(null), 2500);
   };
 
   const removeFromCart = (productId) => {
-    const updated = cart.filter((item) => item.id !== productId);
+    const updated = cart.filter((item) => item.cartKey ? item.cartKey !== productId : item.id !== productId);
     updateCart(updated);
   };
 
   const updateQuantity = (productId, delta) => {
     const updated = cart
       .map((item) => {
-        if (item.id === productId) {
+        const key = item.cartKey || item.id;
+        if (key === productId) {
           const newQty = item.quantity + delta;
           return newQty > 0 ? { ...item, quantity: newQty } : null;
         }
@@ -290,7 +311,7 @@ export default function StorefrontPage() {
   const handleOrderCartWhatsApp = () => {
     if (cart.length === 0) return;
     const itemList = cart
-      .map((item, idx) => `${idx + 1}. *${item.title}* (Qty: ${item.quantity}) - AED ${item.price * item.quantity}`)
+      .map((item, idx) => `${idx + 1}. *${item.title}* (${item.brand || 'SMP Luxury'})${item.color ? ` [Color: ${item.color}]` : ''}${item.size ? ` [Size: ${item.size}]` : ''} (Qty: ${item.quantity}) - AED ${item.price * item.quantity}`)
       .join('\n');
     const msg = `🛍️ *NEW CART ORDER - SMP Super Master Products*
 ━━━━━━━━━━━━━━━━━━━━━
@@ -326,9 +347,11 @@ Hello SMP, I would like to order these items from my shopping bag.`;
   };
 
   // Open Buy Now Modal for single product
-  const handleOpenBuyNow = (product) => {
+  const handleOpenBuyNow = (product, sizeChoice) => {
     setIsCartOrder(false);
     setOrderModalProduct(product);
+    const resolvedSize = sizeChoice !== undefined ? sizeChoice : (product.sizes && product.sizes.length > 0 ? (selectedSize || product.sizes[0]) : '');
+    setOrderSize(resolvedSize);
     setQuantity(1);
     setCustomerName('');
     setCustomerPhone('');
@@ -343,6 +366,7 @@ Hello SMP, I would like to order these items from my shopping bag.`;
     if (cart.length === 0) return;
     setIsCartOrder(true);
     setOrderModalProduct(cart[0]);
+    setOrderSize('');
     setCartDrawerOpen(false);
     setCustomerName('');
     setCustomerPhone('');
@@ -364,7 +388,9 @@ Hello SMP, I would like to order these items from my shopping bag.`;
           title: item.title,
           price: item.price,
           quantity: item.quantity,
-          image: item.image
+          image: item.image,
+          color: item.color || '',
+          size: item.size || ''
         }))
       : [
           {
@@ -372,7 +398,9 @@ Hello SMP, I would like to order these items from my shopping bag.`;
             title: orderModalProduct.title,
             price: orderModalProduct.price,
             quantity: quantity,
-            image: orderModalProduct.image
+            image: orderModalProduct.image,
+            color: orderModalProduct.color || '',
+            size: orderSize || ''
           }
         ];
 
@@ -401,7 +429,7 @@ Hello SMP, I would like to order these items from my shopping bag.`;
     let formattedMessage = '';
     if (isCartOrder) {
       const itemsList = cart.map((item, idx) => 
-        `${idx + 1}. *${item.title}* (${item.brand || 'SMP Luxury'})\n   Qty: ${item.quantity} × AED ${item.price} = AED ${item.quantity * item.price}\n   Image: ${item.image}`
+        `${idx + 1}. *${item.title}* (${item.brand || 'SMP Luxury'})${item.color ? `\n   Color: ${item.color}` : ''}${item.size ? `\n   Size: ${item.size}` : ''}\n   Qty: ${item.quantity} × AED ${item.price} = AED ${item.quantity * item.price}\n   Image: ${item.image}`
       ).join('\n\n');
 
       formattedMessage =
@@ -428,7 +456,7 @@ Please confirm my shopping bag order and arrange delivery. Thank you!`;
         `🛍️ *NEW ORDER - SMP Super Master Products*
 ━━━━━━━━━━━━━━━━━━━━━
 *Product:* ${orderModalProduct.title}
-*Category:* ${orderModalProduct.categoryName || orderModalProduct.category}
+*Category:* ${orderModalProduct.categoryName || orderModalProduct.category}${orderModalProduct.color ? `\n*Color:* ${orderModalProduct.color}` : ''}${orderSize ? `\n*Size:* ${orderSize}` : ''}
 *Quantity:* ${quantity}
 *Price:* AED ${orderModalProduct.price}
 *Total Amount:* AED ${totalAmount}
@@ -501,6 +529,8 @@ Please confirm my order and arrange delivery. Thank you!`;
     if (priceFilter === 'above-600') return p.price > 600;
     return true;
   });
+
+  const activeFilterCount = (activeBrand !== 'all' ? 1 : 0) + (priceFilter !== 'all' ? 1 : 0);
 
   // Dynamic SEO JSON-LD structured data for Google rich snippets
   const jsonLd = {
@@ -654,43 +684,35 @@ Please confirm my order and arrange delivery. Thank you!`;
       {searchOpen && (
         <div className="navbar-search-bar-wrap">
           <div className="wide-container">
-            <div className="navbar-search-box">
-              <Search size={18} className="navbar-search-icon" />
-              <input
-                type="text"
-                value={searchQuery}
-                onChange={(e) => setSearchQuery(e.target.value)}
-                onKeyDown={(e) => {
-                  if (e.key === 'Enter') {
-                    const el = document.getElementById('collections');
-                    if (el) el.scrollIntoView({ behavior: 'smooth' });
-                  }
-                }}
-                placeholder="Search by product name, brand (Omega, Rolex...), or category..."
-                className="header-search-input"
-                autoFocus
-              />
-              {searchQuery && (
-                <button
-                  type="button"
-                  onClick={() => setSearchQuery('')}
-                  className="navbar-search-clear-btn"
-                  aria-label="Clear search query"
-                  title="Clear search"
-                >
-                  <X size={15} />
-                </button>
-              )}
-              <button
-                type="button"
-                onClick={() => {
-                  const el = document.getElementById('collections');
-                  if (el) el.scrollIntoView({ behavior: 'smooth' });
-                }}
-                className="navbar-search-submit-btn"
-              >
-                <span>Search</span>
-              </button>
+            <div className="navbar-search-row">
+              <div className="navbar-search-box">
+                <Search size={18} className="navbar-search-icon" />
+                <input
+                  type="text"
+                  value={searchQuery}
+                  onChange={(e) => setSearchQuery(e.target.value)}
+                  onKeyDown={(e) => {
+                    if (e.key === 'Enter') {
+                      const el = document.getElementById('collections');
+                      if (el) el.scrollIntoView({ behavior: 'smooth' });
+                    }
+                  }}
+                  placeholder="Search footwear, watches, bags..."
+                  className="header-search-input"
+                />
+                {searchQuery && (
+                  <button
+                    type="button"
+                    onClick={() => setSearchQuery('')}
+                    className="navbar-search-clear-btn"
+                    aria-label="Clear search query"
+                    title="Clear search"
+                  >
+                    <X size={14} />
+                  </button>
+                )}
+              </div>
+
               <button
                 type="button"
                 onClick={() => setSearchOpen(false)}
@@ -698,14 +720,9 @@ Please confirm my order and arrange delivery. Thank you!`;
                 aria-label="Close search bar"
                 title="Close"
               >
-                <X size={18} />
+                <X size={20} />
               </button>
             </div>
-            {searchQuery.trim() && (
-              <div className="navbar-search-feedback">
-                Found <strong>{filteredProducts.length}</strong> {filteredProducts.length === 1 ? 'item' : 'items'} matching &ldquo;{searchQuery}&rdquo; across titles, brands, and categories
-              </div>
-            )}
           </div>
         </div>
       )}
@@ -916,86 +933,137 @@ Please confirm my order and arrange delivery. Thank you!`;
       <section id="collections" className="products-section" style={{ padding: '36px 0 64px 0' }}>
         <div className="wide-container">
 
-          {/* Minimalist Category Filter Bar with Price Filter (Accessories Removed) */}
+          {/* Minimalist Category Filter Bar with Price Filter (Clean Luxury Editorial Tabs) */}
           <div className="editorial-filter-bar">
             <div className="editorial-cat-list">
               <button
                 onClick={() => { setActiveCategory('all'); setActiveGender('all'); }}
                 className={`editorial-cat-btn ${activeCategory === 'all' ? 'active' : ''}`}
-                style={{ fontSize: '11px', letterSpacing: '1px', textTransform: 'uppercase', fontWeight: activeCategory === 'all' ? '600' : '500' }}
               >
-                ALL
+                All
               </button>
               <button
                 onClick={() => { setActiveCategory('footwear'); setActiveGender('all'); }}
                 className={`editorial-cat-btn ${activeCategory === 'footwear' ? 'active' : ''}`}
-                style={{ fontSize: '11px', letterSpacing: '1px', textTransform: 'uppercase', fontWeight: activeCategory === 'footwear' ? '600' : '500' }}
               >
-                FOOTWEAR
+                Footwear
               </button>
               <button
                 onClick={() => setActiveCategory('watches')}
                 className={`editorial-cat-btn ${activeCategory === 'watches' ? 'active' : ''}`}
-                style={{ fontSize: '11px', letterSpacing: '1px', textTransform: 'uppercase', fontWeight: activeCategory === 'watches' ? '600' : '500' }}
               >
-                WATCHES
+                Watches
               </button>
               <button
                 onClick={() => { setActiveCategory('bags'); setActiveGender('all'); }}
                 className={`editorial-cat-btn ${activeCategory === 'bags' ? 'active' : ''}`}
-                style={{ fontSize: '11px', letterSpacing: '1px', textTransform: 'uppercase', fontWeight: activeCategory === 'bags' ? '600' : '500' }}
               >
-                BAGS
+                Bags
               </button>
             </div>
 
-            {/* Minimalist Filter Icon & Brand Dropdown */}
-            <div style={{ display: 'flex', alignItems: 'center', gap: '10px' }}>
-              <select
-                value={activeBrand}
-                onChange={(e) => setActiveBrand(e.target.value)}
-                className="editorial-brand-select"
-                aria-label="Filter by Brand"
-              >
-                <option value="all">All Brands</option>
-                {BRAND_LOGOS.map((b) => (
-                  <option key={b.name} value={b.name}>{b.name}</option>
-                ))}
-                <option value="SMP Luxury">SMP Luxury</option>
-              </select>
-
-              <div style={{ position: 'relative' }}>
+            {/* Minimalist Filter Controls: Square-type Brand & Filter Boxes */}
+            <div className="editorial-boxes-row">
+              {/* Left Box: All Brands Dropdown Box */}
+              <div className="editorial-select-wrap">
                 <button
-                  onClick={() => setShowPriceFilter(!showPriceFilter)}
-                  className={`filter-icon-btn ${priceFilter !== 'all' ? 'active' : ''}`}
-                  title="Filter by Price"
-                  aria-label="Filter by Price"
+                  type="button"
+                  onClick={() => {
+                    setShowBrandFilter(!showBrandFilter);
+                    setShowPriceFilter(false);
+                  }}
+                  className={`editorial-select-box ${showBrandFilter || activeBrand !== 'all' ? 'active' : ''}`}
+                  aria-label="Filter by Brand"
                 >
-                  <SlidersHorizontal size={18} />
-                  {priceFilter !== 'all' && <span className="filter-active-dot" />}
+                  <Tag size={15} className="editorial-box-icon" />
+                  <span className="editorial-brand-name-text">
+                    {activeBrand === 'all' ? 'All brands' : activeBrand}
+                  </span>
+                  <ChevronDown
+                    size={14}
+                    className="editorial-box-chevron"
+                    style={{
+                      transform: showBrandFilter ? 'rotate(180deg)' : 'none',
+                      transition: 'transform 0.2s ease'
+                    }}
+                  />
+                </button>
+
+                {showBrandFilter && (
+                  <div className="brand-filter-dropdown">
+                    <button
+                      type="button"
+                      onClick={() => { setActiveBrand('all'); setShowBrandFilter(false); }}
+                      className={`brand-opt-btn ${activeBrand === 'all' ? 'active' : ''}`}
+                    >
+                      All brands
+                    </button>
+                    {BRAND_LOGOS.map((b) => (
+                      <button
+                        type="button"
+                        key={b.name}
+                        onClick={() => { setActiveBrand(b.name); setShowBrandFilter(false); }}
+                        className={`brand-opt-btn ${activeBrand === b.name ? 'active' : ''}`}
+                      >
+                        {b.name}
+                      </button>
+                    ))}
+                    <button
+                      type="button"
+                      onClick={() => { setActiveBrand('SMP Luxury'); setShowBrandFilter(false); }}
+                      className={`brand-opt-btn ${activeBrand === 'SMP Luxury' ? 'active' : ''}`}
+                    >
+                      SMP Luxury
+                    </button>
+                  </div>
+                )}
+              </div>
+
+              {/* Right Box: Filter Button Box */}
+              <div className="editorial-filter-wrap">
+                <button
+                  type="button"
+                  onClick={() => {
+                    setShowPriceFilter(!showPriceFilter);
+                    setShowBrandFilter(false);
+                  }}
+                  className={`editorial-filter-box-btn ${showPriceFilter || priceFilter !== 'all' ? 'active' : ''}`}
+                  aria-label="Open Filter"
+                >
+                  <div className="editorial-filter-box-left">
+                    <SlidersHorizontal size={15} className="editorial-box-icon" />
+                    <span className="editorial-filter-label-text">Filter</span>
+                  </div>
+                  {activeFilterCount > 0 && (
+                    <span className="editorial-filter-badge">{activeFilterCount}</span>
+                  )}
                 </button>
 
                 {showPriceFilter && (
                   <div className="price-filter-dropdown">
                     <button
+                      type="button"
                       onClick={() => { setPriceFilter('all'); setShowPriceFilter(false); }}
                       className={`price-opt-btn ${priceFilter === 'all' ? 'active' : ''}`}
                     >
-                      All Prices
+                      All prices
                     </button>
                     <button
+                      type="button"
                       onClick={() => { setPriceFilter('under-400'); setShowPriceFilter(false); }}
                       className={`price-opt-btn ${priceFilter === 'under-400' ? 'active' : ''}`}
                     >
                       Under AED 400
                     </button>
                     <button
+                      type="button"
                       onClick={() => { setPriceFilter('400-600'); setShowPriceFilter(false); }}
                       className={`price-opt-btn ${priceFilter === '400-600' ? 'active' : ''}`}
                     >
                       AED 400 - AED 600
                     </button>
                     <button
+                      type="button"
                       onClick={() => { setPriceFilter('above-600'); setShowPriceFilter(false); }}
                       className={`price-opt-btn ${priceFilter === 'above-600' ? 'active' : ''}`}
                     >
@@ -1068,7 +1136,10 @@ Please confirm my order and arrange delivery. Thank you!`;
                 {/* Image Wrap without badge or wishlist icon */}
                 <div
                   className="editorial-img-wrap"
-                  onClick={() => setViewProduct(p)}
+                  onClick={() => {
+                    setViewProduct(p);
+                    setSelectedSize(p.sizes && p.sizes.length > 0 ? p.sizes[0] : '');
+                  }}
                   style={{ cursor: 'pointer' }}
                 >
                   <img
@@ -1088,7 +1159,10 @@ Please confirm my order and arrange delivery. Thank you!`;
                   <div className="editorial-title-row">
                     <h3
                       className="editorial-title"
-                      onClick={() => setViewProduct(p)}
+                      onClick={() => {
+                        setViewProduct(p);
+                        setSelectedSize(p.sizes && p.sizes.length > 0 ? p.sizes[0] : '');
+                      }}
                       style={{ cursor: 'pointer' }}
                       title={p.title}
                     >
@@ -1096,22 +1170,22 @@ Please confirm my order and arrange delivery. Thank you!`;
                     </h3>
                   </div>
 
-                  {/* Clean price only (no discount strikethrough) */}
-                  <div style={{ display: 'flex', alignItems: 'baseline', marginTop: '2px' }}>
+                  {/* Clean price row without color display (color only shown in inner page) */}
+                  <div className="editorial-price-row">
                     <span className="editorial-price">AED {p.price}</span>
                   </div>
 
                   {/* Actions Row: BUY NOW + Small Cart Icon */}
                   <div className="editorial-actions-row">
                     <button
-                      onClick={() => handleOpenBuyNow(p)}
+                      onClick={() => handleOpenBuyNow(p, p.sizes && p.sizes.length > 0 ? p.sizes[0] : '')}
                       className="btn-buy-now-solid"
                       title="Order via WhatsApp with Inspection on Delivery"
                     >
                       BUY NOW
                     </button>
                     <button
-                      onClick={() => addToCart(p)}
+                      onClick={() => addToCart(p, 1, p.sizes && p.sizes.length > 0 ? p.sizes[0] : '')}
                       className="btn-card-cart"
                       title="Add to Cart"
                       aria-label={`Add ${p.title} to cart`}
@@ -1153,7 +1227,7 @@ Please confirm my order and arrange delivery. Thank you!`;
               </div>
 
               {/* Clean Price Only - No Discount or Compare Price */}
-              <div style={{ display: 'flex', alignItems: 'baseline', gap: '12px', marginBottom: '14px' }}>
+              <div style={{ display: 'flex', alignItems: 'baseline', gap: '12px', marginBottom: '12px' }}>
                 <span style={{ fontSize: '22px', fontWeight: '800', color: 'var(--color-dark-brown)' }}>
                   AED {viewProduct.price}
                 </span>
@@ -1161,6 +1235,58 @@ Please confirm my order and arrange delivery. Thank you!`;
                   In Stock - Ready to Dispatch
                 </span>
               </div>
+
+              {/* Product Color Spec */}
+              {viewProduct.color && (
+                <div style={{ display: 'flex', alignItems: 'center', gap: '8px', marginBottom: '14px' }}>
+                  <span style={{ fontSize: '11px', textTransform: 'uppercase', letterSpacing: '1px', color: 'var(--color-text-muted)', fontWeight: '600' }}>
+                    Color:
+                  </span>
+                  <span style={{ fontSize: '12.5px', fontWeight: '600', color: 'var(--color-dark-brown)', background: '#FAF7EF', border: '1px solid #E8E2D5', padding: '3px 10px', borderRadius: '4px' }}>
+                    {viewProduct.color}
+                  </span>
+                </div>
+              )}
+
+              {/* Optional Sizes Selector (e.g. Footwears) */}
+              {viewProduct.sizes && viewProduct.sizes.length > 0 && (
+                <div style={{ marginBottom: '16px', background: '#FAF7EF', padding: '12px 14px', borderRadius: '8px', border: '1px solid #E8E2D5' }}>
+                  <div style={{ display: 'flex', alignItems: 'center', justifyContent: 'space-between', marginBottom: '8px' }}>
+                    <span style={{ fontSize: '11px', textTransform: 'uppercase', letterSpacing: '1px', color: '#66300F', fontWeight: '700' }}>
+                      Available Sizes <span style={{ textTransform: 'none', fontWeight: 'normal', color: 'var(--color-text-muted)' }}>(Optional)</span>:
+                    </span>
+                    {selectedSize && (
+                      <span style={{ fontSize: '11.5px', color: '#66300F', fontWeight: '700' }}>
+                        Selected: {selectedSize}
+                      </span>
+                    )}
+                  </div>
+                  <div style={{ display: 'flex', gap: '8px', flexWrap: 'wrap' }}>
+                    {viewProduct.sizes.map((sz) => (
+                      <button
+                        key={sz}
+                        type="button"
+                        onClick={() => setSelectedSize(selectedSize === sz ? '' : sz)}
+                        style={{
+                          minWidth: '40px',
+                          height: '34px',
+                          padding: '0 12px',
+                          borderRadius: '6px',
+                          border: selectedSize === sz ? '1.5px solid #66300F' : '1px solid #D8D0C3',
+                          background: selectedSize === sz ? '#66300F' : '#FFFFFF',
+                          color: selectedSize === sz ? '#FFFFFF' : '#332E29',
+                          fontWeight: selectedSize === sz ? '700' : '500',
+                          fontSize: '12px',
+                          cursor: 'pointer',
+                          transition: 'all 0.15s ease'
+                        }}
+                      >
+                        {sz}
+                      </button>
+                    ))}
+                  </div>
+                </div>
+              )}
 
               <p style={{ fontSize: '13.5px', color: 'var(--color-text-muted)', lineHeight: '1.6', marginBottom: '16px' }}>
                 {viewProduct.description}
@@ -1183,7 +1309,7 @@ Please confirm my order and arrange delivery. Thank you!`;
               <div style={{ display: 'flex', gap: '10px' }}>
                 <button
                   onClick={() => {
-                    addToCart(viewProduct);
+                    addToCart(viewProduct, 1, selectedSize);
                     setViewProduct(null);
                   }}
                   className="btn-modal-cart"
@@ -1196,8 +1322,9 @@ Please confirm my order and arrange delivery. Thank you!`;
                 <button
                   onClick={() => {
                     const p = viewProduct;
+                    const sz = selectedSize;
                     setViewProduct(null);
-                    handleOpenBuyNow(p);
+                    handleOpenBuyNow(p, sz);
                   }}
                   className="btn-buy-now-solid"
                   style={{ flex: 1, margin: 0, padding: '12px 16px', fontSize: '13px' }}
@@ -1266,8 +1393,10 @@ Please confirm my order and arrange delivery. Thank you!`;
                               <div style={{ fontSize: '12px', fontWeight: '600', color: '#1C1917', whiteSpace: 'nowrap', overflow: 'hidden', textOverflow: 'ellipsis' }}>
                                 {item.title}
                               </div>
-                              <div style={{ fontSize: '11px', color: '#66300F' }}>
-                                {item.quantity} × AED {item.price}
+                              <div style={{ fontSize: '11px', color: '#66300F', display: 'flex', gap: '6px', flexWrap: 'wrap' }}>
+                                <span>{item.quantity} × AED {item.price}</span>
+                                {item.color && <span>• {item.color}</span>}
+                                {item.size && <span>• Size {item.size}</span>}
                               </div>
                             </div>
                             <div style={{ fontSize: '12px', fontWeight: '700', color: '#66300F' }}>
@@ -1291,8 +1420,20 @@ Please confirm my order and arrange delivery. Thank you!`;
                         <div style={{ fontWeight: '600', fontSize: '13px', color: 'var(--color-text-main)', whiteSpace: 'nowrap', overflow: 'hidden', textOverflow: 'ellipsis' }}>
                           {orderModalProduct.title}
                         </div>
-                        <div style={{ fontSize: '12px', fontWeight: '700', color: 'var(--color-dark-brown)', marginTop: '2px' }}>
-                          AED {orderModalProduct.price}
+                        <div style={{ display: 'flex', alignItems: 'center', gap: '8px', flexWrap: 'wrap', marginTop: '2px' }}>
+                          <span style={{ fontSize: '12px', fontWeight: '700', color: 'var(--color-dark-brown)' }}>
+                            AED {orderModalProduct.price}
+                          </span>
+                          {orderModalProduct.color && (
+                            <span style={{ fontSize: '10.5px', color: '#66300F', background: '#F4EFE6', padding: '1px 6px', borderRadius: '3px', fontWeight: '600' }}>
+                              Color: {orderModalProduct.color}
+                            </span>
+                          )}
+                          {orderSize && (
+                            <span style={{ fontSize: '10.5px', color: '#1E40AF', background: '#EFF6FF', padding: '1px 6px', borderRadius: '3px', fontWeight: '600' }}>
+                              Size: {orderSize}
+                            </span>
+                          )}
                         </div>
                       </div>
 

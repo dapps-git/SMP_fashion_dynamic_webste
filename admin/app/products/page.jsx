@@ -40,6 +40,8 @@ export default function ProductsPage() {
     title: '',
     category: 'bags',
     gender: '', // 'men', 'women', 'unisex'
+    color: '',
+    sizes: '',
     brand: 'SMP Luxury',
     price: '',
     stock: '15',
@@ -115,6 +117,8 @@ export default function ProductsPage() {
       title: '',
       category: categories[0]?.slug || 'bags',
       gender: '',
+      color: '',
+      sizes: '',
       brand: 'SMP Luxury',
       price: '',
       stock: '15',
@@ -137,6 +141,8 @@ export default function ProductsPage() {
       title: prod.title,
       category: prod.category,
       gender: prod.gender || '',
+      color: prod.color || '',
+      sizes: Array.isArray(prod.sizes) ? prod.sizes.join(', ') : (prod.sizes || ''),
       brand: prod.brand || 'SMP Luxury',
       price: prod.price.toString(),
       stock: prod.stock ? prod.stock.toString() : '10',
@@ -190,6 +196,8 @@ export default function ProductsPage() {
       formPayload.append('title', formData.title);
       formPayload.append('category', formData.category);
       formPayload.append('gender', formData.gender || '');
+      formPayload.append('color', formData.color || '');
+      formPayload.append('sizes', formData.sizes || '');
       formPayload.append('brand', formData.brand);
       formPayload.append('price', formData.price);
       formPayload.append('stock', formData.stock);
@@ -398,8 +406,20 @@ export default function ProductsPage() {
                           <div style={{ fontWeight: '600', fontSize: '14px', color: '#1F1B18' }}>
                             {p.title}
                           </div>
-                          <div style={{ fontSize: '11px', color: 'var(--color-text-muted)' }}>
-                            ID: {p.id}
+                          <div style={{ display: 'flex', alignItems: 'center', gap: '6px', flexWrap: 'wrap', marginTop: '2px' }}>
+                            <span style={{ fontSize: '11px', color: 'var(--color-text-muted)' }}>
+                              ID: {p.id}
+                            </span>
+                            {p.color && (
+                              <span style={{ fontSize: '10.5px', color: '#66300F', background: '#F8F4EC', border: '1px solid #E8DEC8', padding: '1px 6px', borderRadius: '4px', fontWeight: '600' }}>
+                                Color: {p.color}
+                              </span>
+                            )}
+                            {p.sizes && p.sizes.length > 0 && (
+                              <span style={{ fontSize: '10.5px', color: '#1E40AF', background: '#EFF6FF', border: '1px solid #BFDBFE', padding: '1px 6px', borderRadius: '4px', fontWeight: '600' }}>
+                                Sizes: {Array.isArray(p.sizes) ? p.sizes.join(', ') : p.sizes}
+                              </span>
+                            )}
                           </div>
                         </div>
                       </div>
@@ -531,7 +551,7 @@ export default function ProductsPage() {
                 </div>
 
                 {/* Category, Gender, Pricing & Stock */}
-                <div style={{ display: 'grid', gridTemplateColumns: 'repeat(auto-fit, minmax(130px, 1fr))', gap: '14px' }}>
+                <div style={{ display: 'grid', gridTemplateColumns: 'repeat(4, 1fr)', gap: '14px' }}>
                   <div className="form-group">
                     <label className="form-label">Category *</label>
                     <select 
@@ -581,6 +601,32 @@ export default function ProductsPage() {
                       value={formData.stock} 
                       onChange={(e) => setFormData({ ...formData, stock: e.target.value })}
                       placeholder="15" 
+                    />
+                  </div>
+                </div>
+
+                {/* Color & Sizes (Optional) */}
+                <div style={{ display: 'grid', gridTemplateColumns: '1fr 1fr', gap: '14px' }}>
+                  <div className="form-group">
+                    <label className="form-label">Color / Shade</label>
+                    <input 
+                      type="text" 
+                      className="form-input" 
+                      value={formData.color} 
+                      onChange={(e) => setFormData({ ...formData, color: e.target.value })}
+                      placeholder="e.g. Emerald Green, Rose Gold, Burgundy, Black"
+                    />
+                  </div>
+                  <div className="form-group">
+                    <label className="form-label">
+                      Available Sizes <span style={{ color: 'var(--color-text-muted)', fontSize: '11px', fontWeight: 'normal' }}>(Optional - e.g. Footwear)</span>
+                    </label>
+                    <input 
+                      type="text" 
+                      className="form-input" 
+                      value={formData.sizes} 
+                      onChange={(e) => setFormData({ ...formData, sizes: e.target.value })}
+                      placeholder="e.g. 7, 8, 9, 10 or EU 40, 41, 42"
                     />
                   </div>
                 </div>

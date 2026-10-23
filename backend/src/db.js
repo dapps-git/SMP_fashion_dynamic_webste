@@ -454,6 +454,7 @@ function getProducts(category, search, gender, brand) {
     list = list.filter(p => 
       (p.title || '').toLowerCase().includes(s) ||
       (p.brand || '').toLowerCase().includes(s) ||
+      (p.color || '').toLowerCase().includes(s) ||
       (p.description || '').toLowerCase().includes(s)
     );
   }

@@ -54,6 +54,7 @@
       "badge": "Bestseller",
       "createdAt": "2026-10-15T10:00:00Z",
       "gender": "",
+      "color": "Burgundy",
       "seoTitle": "Burgundy Leather Top Handle Bag | Luxury SMP Fashion UAE",
       "seoDescription": "Sculpted calfskin leather with polished gold-tone hardware clasp. Features reinforced top handles and a detachable shoulder strap for effortless versatility.",
       "seoKeywords": "",
@@ -81,6 +82,7 @@
       "stock": 8,
       "featured": true,
       "badge": "New Arrival",
+      "color": "Emerald Forest Green",
       "createdAt": "2026-10-16T11:00:00Z"
     },
     {
@@ -103,6 +105,7 @@
       "stock": 15,
       "featured": true,
       "badge": "Limited Edition",
+      "color": "Ivory Pearl White",
       "createdAt": "2026-10-16T14:30:00Z"
     },
     {
@@ -125,6 +128,7 @@
       "stock": 19,
       "featured": true,
       "badge": "Trending",
+      "color": "Glossy Burgundy",
       "createdAt": "2026-10-17T09:20:00Z"
     },
     {
@@ -148,6 +152,7 @@
       "gender": "men",
       "featured": true,
       "badge": "Masterpiece",
+      "color": "Two-Tone Steel & Gold",
       "createdAt": "2026-10-14T08:00:00Z"
     },
     {
@@ -171,6 +176,7 @@
       "gender": "men",
       "featured": true,
       "badge": "Exclusive",
+      "color": "Obsidian Black",
       "createdAt": "2026-10-15T15:00:00Z"
     },
     {
@@ -194,6 +200,7 @@
       "gender": "women",
       "featured": true,
       "badge": "Hot Seller",
+      "color": "18K Rose Gold",
       "createdAt": "2026-10-17T11:45:00Z"
     },
     {
@@ -217,6 +224,7 @@
       "gender": "women",
       "featured": true,
       "badge": "Trending",
+      "color": "Rose Gold & Pearl",
       "createdAt": "2026-10-18T10:00:00Z"
     },
     {
@@ -239,6 +247,7 @@
       "stock": 14,
       "featured": true,
       "badge": "Classic",
+      "color": "Burnished Cognac Brown",
       "createdAt": "2026-10-13T12:00:00Z"
     },
     {
@@ -261,6 +270,7 @@
       "stock": 11,
       "featured": true,
       "badge": "Signature",
+      "color": "Nude Blush Beige",
       "createdAt": "2026-10-15T18:00:00Z"
     },
     {
@@ -283,6 +293,7 @@
       "stock": 22,
       "featured": true,
       "badge": "New",
+      "color": "Crisp White & Monogram Brown",
       "createdAt": "2026-10-17T16:10:00Z"
     }
   ],

@@ -379,26 +379,34 @@ button, input, select, textarea {
   background: rgba(28, 17, 10, 0.65);
   backdrop-filter: blur(4px);
   display: flex;
-  align-items: flex-start;
+  align-items: center;
   justify-content: center;
   z-index: 1000;
   padding: 24px 16px;
   overflow-y: auto;
 }
 
+.modal-overlay::-webkit-scrollbar {
+  width: 6px;
+}
+.modal-overlay::-webkit-scrollbar-thumb {
+  background: #D8CEBE;
+  border-radius: 4px;
+}
+
 .modal-card {
   background: #ffffff;
-  border-radius: var(--radius-lg);
-  max-width: 680px;
-  width: 100%;
+  border-radius: 14px;
+  max-width: 780px;
+  width: 96%;
   max-height: calc(100vh - 48px);
   display: flex;
   flex-direction: column;
-  box-shadow: var(--shadow-lg);
+  box-shadow: 0 24px 48px rgba(0, 0, 0, 0.16);
   border: 1px solid var(--color-border);
   animation: fadeIn 0.2s ease-out;
   overflow: hidden;
-  margin: auto 0;
+  margin: auto;
 }
 
 .modal-card form {
@@ -424,6 +432,22 @@ button, input, select, textarea {
   overflow-y: auto;
   flex: 1;
   min-height: 0;
+  scrollbar-width: thin;
+  scrollbar-color: #D8CEBE #FAF8F5;
+}
+
+.modal-body::-webkit-scrollbar {
+  width: 6px;
+}
+.modal-body::-webkit-scrollbar-track {
+  background: #FAF8F5;
+}
+.modal-body::-webkit-scrollbar-thumb {
+  background: #D8CEBE;
+  border-radius: 4px;
+}
+.modal-body::-webkit-scrollbar-thumb:hover {
+  background: #66300F;
 }
 
 .modal-footer {

@@ -14,6 +14,8 @@ const ProductSchema = new mongoose.Schema({
   details: [{ type: String }],
   stock: { type: Number, default: 10 },
   gender: { type: String, default: '' }, // 'men', 'women', 'unisex'
+  color: { type: String, default: '' }, // e.g. 'Emerald Green', 'Burgundy'
+  sizes: [{ type: String }], // Optional sizes, e.g. ['7', '8', '9'] or ['EU 40', 'EU 41']
   featured: { type: Boolean, default: true },
   badge: { type: String, default: 'New' },
   // Dynamic SEO Fields
