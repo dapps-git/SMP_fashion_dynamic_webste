@@ -654,18 +654,23 @@ Please confirm my order and arrange delivery. Thank you!`;
             <a href="#collections" onClick={() => setActiveCategory('bags')} className="nav-item">Bags</a>
           </nav>
 
-          {/* Right Header Actions: Search & Shopping Cart (Mobile & Desktop) */}
+          {/* Right Header Actions: Search Button & Shopping Cart */}
           <div className="header-actions">
             <button
-              className={`header-search-btn ${searchOpen ? 'active' : ''}`}
-              onClick={() => setSearchOpen(!searchOpen)}
-              aria-label="Search catalog by name, brand, or category"
-              title="Search catalog"
+              id="headerSearchBtn"
+              type="button"
+              className="header-search-btn"
+              onClick={() => setSearchOpen(true)}
+              aria-label="Search products"
+              title="Search products"
             >
               <Search size={20} />
+              {searchQuery && <span className="header-search-active-dot" />}
             </button>
 
             <button
+              id="headerCartBtn"
+              type="button"
               className="header-cart-btn"
               onClick={() => setCartDrawerOpen(true)}
               aria-label="View Shopping Bag"
@@ -680,49 +685,54 @@ Please confirm my order and arrange delivery. Thank you!`;
         </div>
       </header>
 
-      {/* Luxury Navbar Dropdown Search Bar with Anti-Auto-Zoom Input */}
+      {/* Floating Capsule Search Modal Overlay (Exact match to reference screenshot) */}
       {searchOpen && (
-        <div className="navbar-search-bar-wrap">
-          <div className="wide-container">
-            <div className="navbar-search-row">
-              <div className="navbar-search-box">
-                <Search size={18} className="navbar-search-icon" />
-                <input
-                  type="text"
-                  value={searchQuery}
-                  onChange={(e) => setSearchQuery(e.target.value)}
-                  onKeyDown={(e) => {
-                    if (e.key === 'Enter') {
-                      const el = document.getElementById('collections');
-                      if (el) el.scrollIntoView({ behavior: 'smooth' });
-                    }
-                  }}
-                  placeholder="Search footwear, watches, bags..."
-                  className="header-search-input"
-                />
-                {searchQuery && (
-                  <button
-                    type="button"
-                    onClick={() => setSearchQuery('')}
-                    className="navbar-search-clear-btn"
-                    aria-label="Clear search query"
-                    title="Clear search"
-                  >
-                    <X size={14} />
-                  </button>
-                )}
-              </div>
-
-              <button
-                type="button"
-                onClick={() => setSearchOpen(false)}
-                className="navbar-search-close-btn"
-                aria-label="Close search bar"
-                title="Close"
-              >
-                <X size={20} />
-              </button>
-            </div>
+        <div
+          id="searchModalOverlay"
+          className="search-modal-backdrop"
+          onClick={() => setSearchOpen(false)}
+          role="dialog"
+          aria-modal="true"
+          aria-label="Search products"
+        >
+          <div
+            className="search-modal-pill"
+            onClick={(e) => e.stopPropagation()}
+          >
+            <Search size={20} className="search-modal-icon" />
+            <input
+              id="searchModalInput"
+              type="text"
+              value={searchQuery}
+              onChange={(e) => setSearchQuery(e.target.value)}
+              placeholder="Search..."
+              className="search-modal-input"
+              autoFocus
+              onKeyDown={(e) => {
+                if (e.key === 'Escape') setSearchOpen(false);
+                if (e.key === 'Enter') {
+                  setSearchOpen(false);
+                  const el = document.getElementById('collections');
+                  if (el) el.scrollIntoView({ behavior: 'smooth' });
+                }
+              }}
+            />
+            <button
+              id="searchModalCloseBtn"
+              type="button"
+              onClick={() => {
+                if (searchQuery) {
+                  setSearchQuery('');
+                } else {
+                  setSearchOpen(false);
+                }
+              }}
+              className="search-modal-close"
+              aria-label={searchQuery ? "Clear search" : "Close search"}
+              title={searchQuery ? "Clear search" : "Close search"}
+            >
+              <X size={18} />
+            </button>
           </div>
         </div>
       )}
@@ -1090,20 +1100,7 @@ Please confirm my order and arrange delivery. Thank you!`;
             </div>
           )}
 
-          {/* Active Search Query Indicator Chip */}
-          {searchQuery.trim() && (
-            <div className="active-search-indicator-bar">
-              <span style={{ fontSize: '11.5px', letterSpacing: '1px', textTransform: 'uppercase', color: 'var(--color-text-muted)' }}>
-                Search:
-              </span>
-              <span className="active-search-chip">
-                &ldquo;{searchQuery}&rdquo; ({filteredProducts.length} {filteredProducts.length === 1 ? 'match' : 'matches'})
-                <button onClick={() => setSearchQuery('')} title="Clear search" className="clear-search-btn">
-                  <X size={12} />
-                </button>
-              </span>
-            </div>
-          )}
+
 
           {/* Watch Gender Sub-filter Bar (Men's / Women's Watches) */}
           {activeCategory === 'watches' && (
