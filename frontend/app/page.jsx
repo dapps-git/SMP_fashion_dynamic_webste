@@ -1,6 +1,6 @@
 'use client';
 
-import { useState, useEffect } from 'react';
+import React, { useState, useEffect } from 'react';
 import {
   Eye,
   ShoppingCart,
@@ -595,7 +595,11 @@ Please confirm my order and arrange delivery. Thank you!`;
         <div className="top-announcement-track">
           {/* Ticker Set 1 */}
           <div className="top-announcement-group">
-            <span><strong>TABBY &amp; TAMARA AVAILABLE</strong></span>
+            <span className="ticker-badge-item">
+              <img src="/tabby-badge.png" alt="Tabby" className="ticker-payment-badge" />
+              <img src="/tamara-badge.png" alt="Tamara" className="ticker-payment-badge" />
+              <strong>AVAILABLE</strong>
+            </span>
             <span className="ticker-dot">|</span>
             <span><strong>100% SECURE SHOPPING</strong></span>
             <span className="ticker-dot">|</span>
@@ -608,7 +612,11 @@ Please confirm my order and arrange delivery. Thank you!`;
           </div>
           {/* Ticker Set 2 (Exact duplicate for seamless infinite loop) */}
           <div className="top-announcement-group" aria-hidden="true">
-            <span><strong>TABBY &amp; TAMARA AVAILABLE</strong></span>
+            <span className="ticker-badge-item">
+              <img src="/tabby-badge.png" alt="Tabby" className="ticker-payment-badge" />
+              <img src="/tamara-badge.png" alt="Tamara" className="ticker-payment-badge" />
+              <strong>AVAILABLE</strong>
+            </span>
             <span className="ticker-dot">|</span>
             <span><strong>100% SECURE SHOPPING</strong></span>
             <span className="ticker-dot">|</span>
@@ -909,33 +917,6 @@ Please confirm my order and arrange delivery. Thank you!`;
         </div>
       </section>
 
-      {/* ─────────────────────────────────────────────────────────────
-          BRAND LOGOS TRAIN ANIMATION (FORWARD / LEFT DIRECTION)
-          ───────────────────────────────────────────────────────────── */}
-      <section className="brand-train-section" aria-label="Luxury Brands">
-        <div className="brand-train-track brand-train-forward">
-          {[...BRAND_LOGOS, ...BRAND_LOGOS, ...BRAND_LOGOS, ...BRAND_LOGOS].map((brand, idx) => (
-            <div 
-              key={`brand-top-${idx}`} 
-              className="brand-train-item"
-              onClick={() => {
-                setActiveBrand(brand.name);
-                const el = document.getElementById('collections');
-                if (el) el.scrollIntoView({ behavior: 'smooth' });
-              }}
-              title={`Filter by ${brand.name}`}
-              style={{ cursor: 'pointer' }}
-            >
-              <img
-                src={brand.src}
-                alt={brand.name}
-                className="brand-train-logo"
-                loading="lazy"
-              />
-            </div>
-          ))}
-        </div>
-      </section>
 
       {/* ─────────────────────────────────────────────────────────────
           EDITORIAL LUXURY 6-COLUMN PRODUCT LISTING (Matching Screenshot)
@@ -1128,70 +1109,114 @@ Please confirm my order and arrange delivery. Thank you!`;
 
           {/* 6 Products in One Row on Laptop View, 2 on Mobile */}
           <div className="products-grid-6col">
-            {filteredProducts.map((p) => (
-              <div key={p.id} className="editorial-card">
-                {/* Image Wrap without badge or wishlist icon */}
-                <div
-                  className="editorial-img-wrap"
-                  onClick={() => {
-                    setViewProduct(p);
-                    setSelectedSize(p.sizes && p.sizes.length > 0 ? p.sizes[0] : '');
-                  }}
-                  style={{ cursor: 'pointer' }}
-                >
-                  <img
-                    src={p.image}
-                    alt={p.title}
-                    className="editorial-img"
-                    loading="lazy"
-                  />
+            {filteredProducts.map((p, pIdx) => (
+              <React.Fragment key={p.id}>
+                <div className="editorial-card">
+                  {/* Image Wrap without badge or wishlist icon */}
+                  <div
+                    className="editorial-img-wrap"
+                    onClick={() => {
+                      setViewProduct(p);
+                      setSelectedSize(p.sizes && p.sizes.length > 0 ? p.sizes[0] : '');
+                    }}
+                    style={{ cursor: 'pointer' }}
+                  >
+                    <img
+                      src={p.image}
+                      alt={p.title}
+                      className="editorial-img"
+                      loading="lazy"
+                    />
+                  </div>
+
+                  {/* Info Container */}
+                  <div className="editorial-info">
+                    <div className="editorial-brand">
+                      {p.brand || 'SMP Luxury'}
+                    </div>
+
+                    <div className="editorial-title-row">
+                      <h3
+                        className="editorial-title"
+                        onClick={() => {
+                          setViewProduct(p);
+                          setSelectedSize(p.sizes && p.sizes.length > 0 ? p.sizes[0] : '');
+                        }}
+                        style={{ cursor: 'pointer' }}
+                        title={p.title}
+                      >
+                        {p.title}
+                      </h3>
+                    </div>
+
+                    {/* Clean price row without color display (color only shown in inner page) */}
+                    <div className="editorial-price-row">
+                      <span className="editorial-price">AED {p.price}</span>
+                    </div>
+
+                    {/* Actions Row: BUY NOW + Small Cart Icon */}
+                    <div className="editorial-actions-row">
+                      <button
+                        onClick={() => handleOpenBuyNow(p, p.sizes && p.sizes.length > 0 ? p.sizes[0] : '')}
+                        className="btn-buy-now-solid"
+                        title="Order via WhatsApp with Inspection on Delivery"
+                      >
+                        BUY NOW
+                      </button>
+                      <button
+                        onClick={() => addToCart(p, 1, p.sizes && p.sizes.length > 0 ? p.sizes[0] : '')}
+                        className="btn-card-cart"
+                        title="Add to Cart"
+                        aria-label={`Add ${p.title} to cart`}
+                      >
+                        <ShoppingBag size={14} />
+                      </button>
+                    </div>
+                  </div>
                 </div>
 
-                {/* Info Container */}
-                <div className="editorial-info">
-                  <div className="editorial-brand">
-                    {p.brand || 'SMP Luxury'}
+                {/* Brand Logos Train Marquee after 4 Products */}
+                {pIdx === 3 && (
+                  <div className="collection-brand-train-wrapper">
+                    <div className="brand-train-section" aria-label="Luxury Brands">
+                      <div className="brand-train-track brand-train-forward">
+                        {[...BRAND_LOGOS, ...BRAND_LOGOS, ...BRAND_LOGOS, ...BRAND_LOGOS].map((brand, bIdx) => (
+                          <div 
+                            key={`brand-mid-${bIdx}`} 
+                            className="brand-train-item"
+                            onClick={() => {
+                              setActiveBrand(brand.name);
+                              const el = document.getElementById('collections');
+                              if (el) el.scrollIntoView({ behavior: 'smooth' });
+                            }}
+                            title={`Filter by ${brand.name}`}
+                            style={{ cursor: 'pointer' }}
+                          >
+                            <img
+                              src={brand.src}
+                              alt={brand.name}
+                              className="brand-train-logo"
+                              loading="lazy"
+                            />
+                          </div>
+                        ))}
+                      </div>
+                    </div>
                   </div>
+                )}
 
-                  <div className="editorial-title-row">
-                    <h3
-                      className="editorial-title"
-                      onClick={() => {
-                        setViewProduct(p);
-                        setSelectedSize(p.sizes && p.sizes.length > 0 ? p.sizes[0] : '');
-                      }}
-                      style={{ cursor: 'pointer' }}
-                      title={p.title}
-                    >
-                      {p.title}
-                    </h3>
+                {/* 4-Step Order Process Infographic Banner after 10 Products */}
+                {pIdx === 9 && (
+                  <div className="collection-order-process-banner">
+                    <img
+                      src="/order-process-banner.png"
+                      alt="SMP Order Process - Search Products, Order Through WhatsApp, Inspect Before Payment, Happy Delivery"
+                      className="collection-order-process-img"
+                      loading="lazy"
+                    />
                   </div>
-
-                  {/* Clean price row without color display (color only shown in inner page) */}
-                  <div className="editorial-price-row">
-                    <span className="editorial-price">AED {p.price}</span>
-                  </div>
-
-                  {/* Actions Row: BUY NOW + Small Cart Icon */}
-                  <div className="editorial-actions-row">
-                    <button
-                      onClick={() => handleOpenBuyNow(p, p.sizes && p.sizes.length > 0 ? p.sizes[0] : '')}
-                      className="btn-buy-now-solid"
-                      title="Order via WhatsApp with Inspection on Delivery"
-                    >
-                      BUY NOW
-                    </button>
-                    <button
-                      onClick={() => addToCart(p, 1, p.sizes && p.sizes.length > 0 ? p.sizes[0] : '')}
-                      className="btn-card-cart"
-                      title="Add to Cart"
-                      aria-label={`Add ${p.title} to cart`}
-                    >
-                      <ShoppingBag size={14} />
-                    </button>
-                  </div>
-                </div>
-              </div>
+                )}
+              </React.Fragment>
             ))}
           </div>
 
@@ -1710,7 +1735,7 @@ Please confirm my order and arrange delivery. Thank you!`;
               <p className="footer-desc">
                 Curating timeless luxury across footwear, horology, and fine leather goods. Handcrafted with master precision and delivered with effortless direct WhatsApp service across the United Arab Emirates.
               </p>
-              <div style={{ marginTop: '20px', display: 'flex', alignItems: 'center', gap: '10px', color: 'var(--color-light-brown)', fontSize: '13.5px', fontWeight: '300' }}>
+              <div style={{ marginTop: '20px', display: 'flex', alignItems: 'center', gap: '10px', color: '#241105', fontSize: '13.5px', fontWeight: '500' }}>
                 <Phone size={15} />
                 <span>VIP Concierge: +971 52 597 3132</span>
               </div>
@@ -1738,18 +1763,36 @@ Please confirm my order and arrange delivery. Thank you!`;
 
             <div className="footer-col">
               <h3>Risk-Free Guarantee</h3>
-              <p className="footer-desc" style={{ marginBottom: '18px' }}>
+              <p className="footer-desc" style={{ marginBottom: '14px' }}>
                 Experience 100% peace of mind. Pay zero upfront; our courier presents your luxury piece at your doorstep to inspect and approve before completing payment.
               </p>
-              <div style={{ display: 'inline-flex', alignItems: 'center', gap: '8px', background: 'rgba(193, 138, 91, 0.12)', border: '1px solid rgba(193, 138, 91, 0.28)', padding: '8px 14px', borderRadius: '8px', color: 'var(--color-light-brown)', fontSize: '12px', fontWeight: '400' }}>
-                <ShieldCheck size={16} />
-                <span>100% Authenticity Guarantee</span>
+              <div style={{ display: 'flex', flexDirection: 'column', gap: '12px' }}>
+                <div style={{ display: 'inline-flex', alignItems: 'center', gap: '8px', background: 'rgba(255, 255, 255, 0.65)', border: '1px solid rgba(102, 48, 15, 0.25)', padding: '8px 14px', borderRadius: '8px', color: '#1A0B02', fontSize: '12px', fontWeight: '600', width: 'fit-content' }}>
+                  <ShieldCheck size={16} />
+                  <span>100% Authenticity Guarantee</span>
+                </div>
+                <div>
+                  <div style={{ fontSize: '11px', color: '#241105', fontWeight: '600', textTransform: 'uppercase', letterSpacing: '0.8px', marginBottom: '6px' }}>
+                    Pay in 4 Installments:
+                  </div>
+                  <div style={{ display: 'flex', alignItems: 'center', gap: '8px' }}>
+                    <img src="/tabby-badge.png" alt="Tabby" className="footer-badge-img" />
+                    <img src="/tamara-badge.png" alt="Tamara" className="footer-badge-img" />
+                  </div>
+                </div>
               </div>
             </div>
           </div>
 
           <div className="footer-bottom">
             <div>&copy; {new Date().getFullYear()} Super Master Products (SMP). All Rights Reserved.</div>
+            <div className="footer-payment-badges">
+              <span className="footer-payment-label">Payment &amp; Installments:</span>
+              <img src="/tabby-badge.png" alt="Tabby - Split in 4" className="footer-badge-img" />
+              <img src="/tamara-badge.png" alt="Tamara - Split in 4" className="footer-badge-img" />
+              <span className="footer-badge-pill">Cash on Delivery</span>
+              <span className="footer-badge-pill">Card on Delivery</span>
+            </div>
           </div>
         </div>
       </footer>
