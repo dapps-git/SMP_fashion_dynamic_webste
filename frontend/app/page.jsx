@@ -36,14 +36,58 @@ const rawApiUrl = process.env.NEXT_PUBLIC_API_URL || 'http://localhost:5005/api'
 const cleanApiUrl = rawApiUrl.replace(/\/+$/, '');
 const API_BASE = cleanApiUrl.endsWith('/api') ? cleanApiUrl : `${cleanApiUrl}/api`;
 
-const BRAND_LOGOS = [
-  { name: 'Richard Mille', src: '/IMG_9307.PNG' },
-  { name: 'Bvlgari', src: '/IMG_9308.PNG' },
-  { name: 'Omega', src: '/IMG_9309.PNG' },
-  { name: 'Chopard', src: '/IMG_9310.PNG' },
-  { name: 'Chaumet Paris', src: '/IMG_9311.PNG' },
-  { name: 'Graff', src: '/IMG_9312.PNG' },
+const INITIAL_FALLBACK_BRANDS = [
+  { id: 'brand-1', name: 'Richard Mille', logo: '/IMG_9307.PNG', slug: 'richard-mille' },
+  { id: 'brand-2', name: 'Bvlgari', logo: '/IMG_9308.PNG', slug: 'bvlgari' },
+  { id: 'brand-3', name: 'Omega', logo: '/IMG_9309.PNG', slug: 'omega' },
+  { id: 'brand-4', name: 'Chopard', logo: '/IMG_9310.PNG', slug: 'chopard' },
+  { id: 'brand-5', name: 'Chaumet Paris', logo: '/IMG_9311.PNG', slug: 'chaumet-paris' },
+  { id: 'brand-6', name: 'Graff', logo: '/IMG_9312.PNG', slug: 'graff' },
+  { id: 'brand-7', name: 'SMP Luxury', logo: '/smp-logo.png', slug: 'smp-luxury' },
 ];
+
+const BRAND_LOGOS = INITIAL_FALLBACK_BRANDS;
+
+// Luxury Double-Chime Audio Synthesis for Adding to Cart
+const playAddToCartSound = () => {
+  try {
+    const AudioCtx = window.AudioContext || window.webkitAudioContext;
+    if (!AudioCtx) return;
+    const ctx = new AudioCtx();
+    if (ctx.state === 'suspended') {
+      ctx.resume();
+    }
+    const now = ctx.currentTime;
+    
+    // Primary Tone (D5 -> A5)
+    const osc1 = ctx.createOscillator();
+    const gain1 = ctx.createGain();
+    osc1.type = 'sine';
+    osc1.frequency.setValueAtTime(587.33, now);
+    osc1.frequency.exponentialRampToValueAtTime(880, now + 0.12);
+    gain1.gain.setValueAtTime(0.22, now);
+    gain1.gain.exponentialRampToValueAtTime(0.001, now + 0.36);
+    osc1.connect(gain1);
+    gain1.connect(ctx.destination);
+    osc1.start(now);
+    osc1.stop(now + 0.38);
+
+    // High Sparkle Chime (D6 -> A6)
+    const osc2 = ctx.createOscillator();
+    const gain2 = ctx.createGain();
+    osc2.type = 'triangle';
+    osc2.frequency.setValueAtTime(1174.66, now + 0.08);
+    osc2.frequency.exponentialRampToValueAtTime(1760, now + 0.2);
+    gain2.gain.setValueAtTime(0.12, now + 0.08);
+    gain2.gain.exponentialRampToValueAtTime(0.001, now + 0.42);
+    osc2.connect(gain2);
+    gain2.connect(ctx.destination);
+    osc2.start(now + 0.08);
+    osc2.stop(now + 0.44);
+  } catch (err) {
+    // Audio context safely handled
+  }
+};
 
 // Fallback luxury data if backend is offline during first render
 const FALLBACK_PRODUCTS = [
@@ -221,6 +265,7 @@ export default function StorefrontPage() {
   const [activeCategory, setActiveCategory] = useState('all');
   const [activeGender, setActiveGender] = useState('all'); // 'all', 'men', 'women'
   const [activeBrand, setActiveBrand] = useState('all');
+  const [brandsList, setBrandsList] = useState(INITIAL_FALLBACK_BRANDS);
   const [searchQuery, setSearchQuery] = useState('');
   const [searchOpen, setSearchOpen] = useState(false);
   const [priceFilter, setPriceFilter] = useState('all');
@@ -228,6 +273,36 @@ export default function StorefrontPage() {
   const [showBrandFilter, setShowBrandFilter] = useState(false);
   const [loading, setLoading] = useState(false);
   const [mobileMenuOpen, setMobileMenuOpen] = useState(false);
+
+  // Fetch live products and brands from backend
+  useEffect(() => {
+    const fetchData = async () => {
+      try {
+        const prodRes = await fetch(`${API_BASE}/products`);
+        if (prodRes.ok) {
+          const prodData = await prodRes.json();
+          if (Array.isArray(prodData) && prodData.length > 0) {
+            setProducts(prodData);
+          }
+        }
+      } catch (err) {
+        console.warn('Live products fallback:', err);
+      }
+
+      try {
+        const brandRes = await fetch(`${API_BASE}/brands`);
+        if (brandRes.ok) {
+          const brandData = await brandRes.json();
+          if (Array.isArray(brandData) && brandData.length > 0) {
+            setBrandsList(brandData);
+          }
+        }
+      } catch (err) {
+        console.warn('Live brands fallback:', err);
+      }
+    };
+    fetchData();
+  }, []);
 
   // Quick View Modal
   const [viewProduct, setViewProduct] = useState(null);
@@ -270,6 +345,7 @@ export default function StorefrontPage() {
   };
 
   const addToCart = (product, qty = 1, sizeChoice) => {
+    playAddToCartSound();
     const chosenSize = sizeChoice !== undefined ? sizeChoice : (product.sizes && product.sizes.length > 0 ? (selectedSize || product.sizes[0]) : '');
     const itemKey = chosenSize ? `${product.id}-${chosenSize}` : product.id;
     let updated;
@@ -967,9 +1043,26 @@ Please confirm my order and arrange delivery. Thank you!`;
                   aria-label="Filter by Brand"
                 >
                   <Tag size={15} className="editorial-box-icon" />
-                  <span className="editorial-brand-name-text">
-                    {activeBrand === 'all' ? 'All brands' : activeBrand}
-                  </span>
+                  {(() => {
+                    const activeBrandObj = brandsList.find(b => b.name.toLowerCase() === activeBrand.toLowerCase());
+                    const activeLogo = activeBrandObj?.logo || activeBrandObj?.src;
+                    if (activeBrand !== 'all' && activeLogo) {
+                      return (
+                        <div className="editorial-selected-brand-wrap" title={activeBrand}>
+                          <img
+                            src={activeLogo}
+                            alt={activeBrand}
+                            className="editorial-box-brand-logo"
+                          />
+                        </div>
+                      );
+                    }
+                    return (
+                      <span className="editorial-brand-name-text">
+                        {activeBrand === 'all' ? 'All brands' : activeBrand}
+                      </span>
+                    );
+                  })()}
                   <ChevronDown
                     size={14}
                     className="editorial-box-chevron"
@@ -981,31 +1074,37 @@ Please confirm my order and arrange delivery. Thank you!`;
                 </button>
 
                 {showBrandFilter && (
-                  <div className="brand-filter-dropdown">
+                  <div className="brand-filter-dropdown brand-logos-only-dropdown">
                     <button
                       type="button"
                       onClick={() => { setActiveBrand('all'); setShowBrandFilter(false); }}
-                      className={`brand-opt-btn ${activeBrand === 'all' ? 'active' : ''}`}
+                      className={`brand-all-opt-btn ${activeBrand === 'all' ? 'active' : ''}`}
                     >
                       All brands
                     </button>
-                    {BRAND_LOGOS.map((b) => (
-                      <button
-                        type="button"
-                        key={b.name}
-                        onClick={() => { setActiveBrand(b.name); setShowBrandFilter(false); }}
-                        className={`brand-opt-btn ${activeBrand === b.name ? 'active' : ''}`}
-                      >
-                        {b.name}
-                      </button>
-                    ))}
-                    <button
-                      type="button"
-                      onClick={() => { setActiveBrand('SMP Luxury'); setShowBrandFilter(false); }}
-                      className={`brand-opt-btn ${activeBrand === 'SMP Luxury' ? 'active' : ''}`}
-                    >
-                      SMP Luxury
-                    </button>
+                    <div className="brand-logos-filter-grid">
+                      {brandsList.map((b) => {
+                        const logoSrc = b.logo || b.src;
+                        if (!logoSrc) return null;
+                        const isSelected = activeBrand.toLowerCase() === b.name.toLowerCase();
+                        return (
+                          <button
+                            type="button"
+                            key={b.id || b._id || b.name}
+                            onClick={() => { setActiveBrand(b.name); setShowBrandFilter(false); }}
+                            className={`brand-logo-card-btn ${isSelected ? 'active' : ''}`}
+                            title={`Filter by ${b.name}`}
+                            aria-label={`Filter by ${b.name}`}
+                          >
+                            <img
+                              src={logoSrc}
+                              alt={b.name}
+                              className="brand-opt-small-logo"
+                            />
+                          </button>
+                        );
+                      })}
+                    </div>
                   </div>
                 )}
               </div>
@@ -1175,31 +1274,35 @@ Please confirm my order and arrange delivery. Thank you!`;
                   </div>
                 </div>
 
-                {/* Brand Logos Train Marquee after 4 Products */}
+                {/* Brand Logos Train Marquee after 4 Products (Dynamic) */}
                 {pIdx === 3 && (
                   <div className="collection-brand-train-wrapper">
                     <div className="brand-train-section" aria-label="Luxury Brands">
                       <div className="brand-train-track brand-train-forward">
-                        {[...BRAND_LOGOS, ...BRAND_LOGOS, ...BRAND_LOGOS, ...BRAND_LOGOS].map((brand, bIdx) => (
-                          <div 
-                            key={`brand-mid-${bIdx}`} 
-                            className="brand-train-item"
-                            onClick={() => {
-                              setActiveBrand(brand.name);
-                              const el = document.getElementById('collections');
-                              if (el) el.scrollIntoView({ behavior: 'smooth' });
-                            }}
-                            title={`Filter by ${brand.name}`}
-                            style={{ cursor: 'pointer' }}
-                          >
-                            <img
-                              src={brand.src}
-                              alt={brand.name}
-                              className="brand-train-logo"
-                              loading="lazy"
-                            />
-                          </div>
-                        ))}
+                        {(() => {
+                          const validBrands = brandsList.filter(b => b.logo || b.src);
+                          const displayBrands = validBrands.length > 0 ? validBrands : INITIAL_FALLBACK_BRANDS;
+                          return [...displayBrands, ...displayBrands, ...displayBrands, ...displayBrands].map((brand, bIdx) => (
+                            <div 
+                              key={`brand-train-${bIdx}`} 
+                              className="brand-train-item"
+                              onClick={() => {
+                                setActiveBrand(brand.name);
+                                const el = document.getElementById('collections');
+                                if (el) el.scrollIntoView({ behavior: 'smooth' });
+                              }}
+                              title={`Filter by ${brand.name}`}
+                              style={{ cursor: 'pointer' }}
+                            >
+                              <img
+                                src={brand.logo || brand.src}
+                                alt={brand.name}
+                                className="brand-train-logo"
+                                loading="lazy"
+                              />
+                            </div>
+                          ));
+                        })()}
                       </div>
                     </div>
                   </div>
@@ -1697,26 +1800,30 @@ Please confirm my order and arrange delivery. Thank you!`;
           ───────────────────────────────────────────────────────────── */}
       <section className="brand-train-section brand-train-footer-wrap" aria-label="Luxury Brands">
         <div className="brand-train-track brand-train-reverse">
-          {[...BRAND_LOGOS, ...BRAND_LOGOS, ...BRAND_LOGOS, ...BRAND_LOGOS].map((brand, idx) => (
-            <div 
-              key={`brand-bot-${idx}`} 
-              className="brand-train-item"
-              onClick={() => {
-                setActiveBrand(brand.name);
-                const el = document.getElementById('collections');
-                if (el) el.scrollIntoView({ behavior: 'smooth' });
-              }}
-              title={`Filter by ${brand.name}`}
-              style={{ cursor: 'pointer' }}
-            >
-              <img
-                src={brand.src}
-                alt={brand.name}
-                className="brand-train-logo"
-                loading="lazy"
-              />
-            </div>
-          ))}
+          {(() => {
+            const validBrands = brandsList.filter(b => b.logo || b.src);
+            const displayBrands = validBrands.length > 0 ? validBrands : INITIAL_FALLBACK_BRANDS;
+            return [...displayBrands, ...displayBrands, ...displayBrands, ...displayBrands].map((brand, idx) => (
+              <div 
+                key={`brand-bot-${idx}`} 
+                className="brand-train-item"
+                onClick={() => {
+                  setActiveBrand(brand.name);
+                  const el = document.getElementById('collections');
+                  if (el) el.scrollIntoView({ behavior: 'smooth' });
+                }}
+                title={`Filter by ${brand.name}`}
+                style={{ cursor: 'pointer' }}
+              >
+                <img
+                  src={brand.logo || brand.src}
+                  alt={brand.name}
+                  className="brand-train-logo"
+                  loading="lazy"
+                />
+              </div>
+            ));
+          })()}
         </div>
       </section>
 
