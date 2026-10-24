@@ -92,6 +92,8 @@ export default function ProductInnerPage() {
 
   const [product, setProduct] = useState(null);
   const [loading, setLoading] = useState(true);
+  const [selectedVariant, setSelectedVariant] = useState(null);
+  const [activeImageIndex, setActiveImageIndex] = useState(0);
   const [selectedSize, setSelectedSize] = useState('');
   const [orderModalOpen, setOrderModalOpen] = useState(false);
   const [quantity, setQuantity] = useState(1);
@@ -109,6 +111,20 @@ export default function ProductInnerPage() {
     fetchProduct();
   }, [id]);
 
+  // Preload variant images for zero-lag instant switching
+  useEffect(() => {
+    if (product?.variants && product.variants.length > 0) {
+      product.variants.forEach((v) => {
+        if (v.images && v.images.length > 0) {
+          v.images.forEach((imgUrl) => {
+            const preloadImg = new Image();
+            preloadImg.src = imgUrl;
+          });
+        }
+      });
+    }
+  }, [product]);
+
   const fetchProduct = async () => {
     try {
       setLoading(true);
@@ -116,20 +132,41 @@ export default function ProductInnerPage() {
       if (res.ok) {
         const data = await res.json();
         setProduct(data);
-        if (data.sizes && data.sizes.length > 0) {
+        if (data.variants && data.variants.length > 0) {
+          setSelectedVariant(data.variants[0]);
+          if (data.variants[0].sizes && data.variants[0].sizes.length > 0) {
+            setSelectedSize(data.variants[0].sizes[0]);
+          } else if (data.sizes && data.sizes.length > 0) {
+            setSelectedSize(data.sizes[0]);
+          }
+        } else if (data.sizes && data.sizes.length > 0) {
           setSelectedSize(data.sizes[0]);
         }
       } else {
         const fallback = FALLBACK_PRODUCTS.find((p) => p.id === id) || FALLBACK_PRODUCTS[0];
         setProduct(fallback);
-        if (fallback.sizes && fallback.sizes.length > 0) {
+        if (fallback.variants && fallback.variants.length > 0) {
+          setSelectedVariant(fallback.variants[0]);
+          if (fallback.variants[0].sizes && fallback.variants[0].sizes.length > 0) {
+            setSelectedSize(fallback.variants[0].sizes[0]);
+          } else if (fallback.sizes && fallback.sizes.length > 0) {
+            setSelectedSize(fallback.sizes[0]);
+          }
+        } else if (fallback.sizes && fallback.sizes.length > 0) {
           setSelectedSize(fallback.sizes[0]);
         }
       }
     } catch (err) {
       const fallback = FALLBACK_PRODUCTS.find((p) => p.id === id) || FALLBACK_PRODUCTS[0];
       setProduct(fallback);
-      if (fallback.sizes && fallback.sizes.length > 0) {
+      if (fallback.variants && fallback.variants.length > 0) {
+        setSelectedVariant(fallback.variants[0]);
+        if (fallback.variants[0].sizes && fallback.variants[0].sizes.length > 0) {
+          setSelectedSize(fallback.variants[0].sizes[0]);
+        } else if (fallback.sizes && fallback.sizes.length > 0) {
+          setSelectedSize(fallback.sizes[0]);
+        }
+      } else if (fallback.sizes && fallback.sizes.length > 0) {
         setSelectedSize(fallback.sizes[0]);
       }
     } finally {
@@ -137,22 +174,57 @@ export default function ProductInnerPage() {
     }
   };
 
+  const handleSelectVariant = (v) => {
+    setSelectedVariant(v);
+    setActiveImageIndex(0);
+    if (v.sizes && v.sizes.length > 0) {
+      setSelectedSize(v.sizes[0]);
+    }
+  };
+
+  const currentVariant = selectedVariant || (product?.variants && product.variants.length > 0 ? product.variants[0] : null);
+  const variantImages = (currentVariant?.images && currentVariant.images.length > 0)
+    ? currentVariant.images
+    : (product?.image ? [product.image] : []);
+  const activeImage = variantImages[activeImageIndex] || variantImages[0] || product?.image;
+  const activeColor = currentVariant?.colorName || product?.color || '';
+  const activeStock = currentVariant?.stock !== undefined ? currentVariant.stock : (product?.stock ?? 10);
+  const activeSizes = (currentVariant?.sizes && currentVariant.sizes.length > 0)
+    ? currentVariant.sizes
+    : (product?.sizes || []);
+
   const handleAddToCart = () => {
     if (!product) return;
     playAddToCartSound();
     try {
       const saved = localStorage.getItem('smp_cart');
       const cart = saved ? JSON.parse(saved) : [];
-      const itemKey = selectedSize ? `${product.id}-${selectedSize}` : product.id;
+      const chosenColor = activeColor;
+      const chosenImage = activeImage;
+      const variantKeyPart = currentVariant ? currentVariant.id : (chosenColor ? chosenColor.replace(/\s+/g, '-') : 'default');
+      const sizeKeyPart = selectedSize ? selectedSize.replace(/\s+/g, '-') : 'nosize';
+      const itemKey = `${product.id}-${variantKeyPart}-${sizeKeyPart}`;
+
       const idx = cart.findIndex((item) => (item.cartKey || item.id) === itemKey);
       let updated;
       if (idx > -1) {
         updated = cart.map((item, i) => (i === idx ? { ...item, quantity: item.quantity + 1 } : item));
       } else {
-        updated = [...cart, { ...product, cartKey: itemKey, size: selectedSize, quantity: 1 }];
+        updated = [
+          ...cart,
+          {
+            ...product,
+            cartKey: itemKey,
+            variantId: currentVariant?.id || null,
+            color: chosenColor,
+            image: chosenImage,
+            size: selectedSize,
+            quantity: 1
+          }
+        ];
       }
       localStorage.setItem('smp_cart', JSON.stringify(updated));
-      setToastMessage(`Added "${product.title}"${selectedSize ? ` (Size: ${selectedSize})` : ''} to Cart`);
+      setToastMessage(`Added "${product.title}"${chosenColor ? ` [${chosenColor}]` : ''}${selectedSize ? ` (Size: ${selectedSize})` : ''} to Cart`);
       setTimeout(() => setToastMessage(null), 2500);
     } catch (e) {
       console.error(e);
@@ -171,8 +243,8 @@ export default function ProductInnerPage() {
         title: product.title,
         price: product.price,
         quantity: quantity,
-        image: product.image,
-        color: product.color || '',
+        image: activeImage,
+        color: activeColor,
         size: selectedSize || ''
       }
     ];
@@ -199,12 +271,12 @@ export default function ProductInnerPage() {
       `🛍️ *NEW ORDER - SMP Super Master Products*
 ━━━━━━━━━━━━━━━━━━━━━
 *Product:* ${product.title}
-*Category:* ${product.categoryName || product.category}${product.color ? `\n*Color:* ${product.color}` : ''}${selectedSize ? `\n*Size:* ${selectedSize}` : ''}
+*Category:* ${product.categoryName || product.category}${activeColor ? `\n*Color:* ${activeColor}` : ''}${selectedSize ? `\n*Size:* ${selectedSize}` : ''}
 *Quantity:* ${quantity}
 *Price:* AED ${product.price}
 *Total Amount:* AED ${totalAmount}
 
-📸 *Product Image:* ${product.image}
+📸 *Product Image:* ${activeImage}
 
 📍 *Customer Shipping Details:*
 *Name:* ${customerName}
@@ -267,13 +339,32 @@ Please confirm my order and arrange delivery. Thank you!`;
       <div className="wide-container" style={{ padding: '20px 20px 80px' }}>
         <div style={{ display: 'grid', gridTemplateColumns: 'repeat(auto-fit, minmax(320px, 1fr))', gap: '40px', alignItems: 'start' }}>
           
-          {/* Left: Product Image */}
-          <div style={{ position: 'relative', width: '100%', aspectRatio: '1 / 1.15', background: '#FAF7EF', borderRadius: '12px', overflow: 'hidden', border: '1px solid #EFEAE0' }}>
-            <img
-              src={product.image}
-              alt={product.title}
-              style={{ width: '100%', height: '100%', objectFit: 'cover' }}
-            />
+          {/* Left: Product Image & Variant Gallery */}
+          <div>
+            <div style={{ position: 'relative', width: '100%', aspectRatio: '1 / 1.15', background: '#FAF7EF', borderRadius: '12px', overflow: 'hidden', border: '1px solid #EFEAE0' }}>
+              <img
+                src={activeImage}
+                alt={`${product.title} - ${activeColor || 'Luxury Item'}`}
+                className="variant-display-img"
+              />
+            </div>
+
+            {/* Thumbnail Strip for Variant Images */}
+            {variantImages.length > 1 && (
+              <div className="variant-gallery-thumbnails" style={{ marginTop: '12px' }}>
+                {variantImages.map((imgUrl, idx) => (
+                  <button
+                    key={idx}
+                    type="button"
+                    onClick={() => setActiveImageIndex(idx)}
+                    className={`variant-gallery-thumb ${activeImageIndex === idx ? 'active' : ''}`}
+                    title={`View angle ${idx + 1} (${activeColor})`}
+                  >
+                    <img src={imgUrl} alt={`${product.title} photo ${idx + 1}`} />
+                  </button>
+                ))}
+              </div>
+            )}
           </div>
 
           {/* Right: Product Details */}
@@ -291,13 +382,46 @@ Please confirm my order and arrange delivery. Thank you!`;
               <span style={{ fontSize: '26px', fontWeight: '800', color: 'var(--color-dark-brown)' }}>
                 AED {product.price}
               </span>
-              <span style={{ fontSize: '12px', color: '#15803D', fontWeight: '700', background: '#DCFCE7', padding: '3px 10px', borderRadius: '4px' }}>
-                In Stock - Free UAE Delivery
+              <span style={{ fontSize: '12px', color: activeStock > 0 ? '#15803D' : '#DC2626', fontWeight: '700', background: activeStock > 0 ? '#DCFCE7' : '#FEE2E2', padding: '3px 10px', borderRadius: '4px' }}>
+                {activeStock > 0 ? `In Stock (${activeStock} available)` : 'Out of Stock'}
               </span>
             </div>
 
-            {/* Product Color Spec */}
-            {product.color && (
+            {/* Color Swatches Selector */}
+            {product.variants && product.variants.length > 0 ? (
+              <div style={{ margin: '6px 0 18px 0', background: '#FAF7EF', padding: '14px 16px', borderRadius: '8px', border: '1px solid #E8E2D5' }}>
+                <div style={{ display: 'flex', alignItems: 'center', justifyContent: 'space-between', marginBottom: '10px' }}>
+                  <span style={{ fontSize: '12px', textTransform: 'uppercase', letterSpacing: '1px', color: '#66300F', fontWeight: '700' }}>
+                    Available Colors ({product.variants.length}):
+                  </span>
+                  {activeColor && (
+                    <span style={{ fontSize: '12.5px', color: '#66300F', fontWeight: '700' }}>
+                      Selected: <strong>{activeColor}</strong>
+                    </span>
+                  )}
+                </div>
+                <div className="detail-variant-swatches-wrap">
+                  {product.variants.map((v) => {
+                    const isSelected = (currentVariant?.id === v.id);
+                    return (
+                      <button
+                        key={v.id}
+                        type="button"
+                        onClick={() => handleSelectVariant(v)}
+                        className={`detail-swatch-btn ${isSelected ? 'active' : ''}`}
+                        title={`${v.colorName} (${v.stock || 0} in stock)`}
+                      >
+                        <span
+                          className="detail-swatch-circle"
+                          style={{ backgroundColor: v.colorCode || '#000000' }}
+                        />
+                        <span>{v.colorName}</span>
+                      </button>
+                    );
+                  })}
+                </div>
+              </div>
+            ) : product.color ? (
               <div style={{ display: 'flex', alignItems: 'center', gap: '10px', margin: '6px 0 16px 0' }}>
                 <span style={{ fontSize: '12px', textTransform: 'uppercase', letterSpacing: '1px', color: 'var(--color-text-muted)', fontWeight: '600' }}>
                   Color:
@@ -306,10 +430,10 @@ Please confirm my order and arrange delivery. Thank you!`;
                   {product.color}
                 </span>
               </div>
-            )}
+            ) : null}
 
             {/* Optional Sizes Selector (e.g. Footwear) */}
-            {product.sizes && product.sizes.length > 0 && (
+            {activeSizes && activeSizes.length > 0 && (
               <div style={{ margin: '6px 0 20px 0', background: '#FAF7EF', padding: '14px 16px', borderRadius: '8px', border: '1px solid #E8E2D5' }}>
                 <div style={{ display: 'flex', alignItems: 'center', justifyContent: 'space-between', marginBottom: '10px' }}>
                   <span style={{ fontSize: '12px', textTransform: 'uppercase', letterSpacing: '1px', color: '#66300F', fontWeight: '700' }}>
@@ -322,7 +446,7 @@ Please confirm my order and arrange delivery. Thank you!`;
                   )}
                 </div>
                 <div style={{ display: 'flex', gap: '10px', flexWrap: 'wrap' }}>
-                  {product.sizes.map((sz) => (
+                  {activeSizes.map((sz) => (
                     <button
                       key={sz}
                       type="button"

@@ -105,7 +105,53 @@ const FALLBACK_PRODUCTS = [
     details: ['100% Genuine Italian Calfskin', '24K Gold electroplated lock', 'Interior slip & zip compartments', 'Protective bottom metal studs'],
     stock: 12,
     color: 'Burgundy',
-    badge: 'Bestseller'
+    badge: 'Bestseller',
+    variants: [
+      {
+        id: 'var-prod1-burgundy',
+        colorName: 'Burgundy Red',
+        colorCode: '#800020',
+        images: [
+          'https://images.unsplash.com/photo-1584917865442-de89df76afd3?auto=format&fit=crop&w=800&q=80',
+          'https://images.unsplash.com/photo-1566150905458-1bf1fc113f0d?auto=format&fit=crop&w=800&q=80'
+        ],
+        stock: 12,
+        sizes: ['Standard']
+      },
+      {
+        id: 'var-prod1-black',
+        colorName: 'Obsidian Black',
+        colorCode: '#1F1F1F',
+        images: [
+          'https://images.unsplash.com/photo-1548036328-c9fa89d128fa?auto=format&fit=crop&w=800&q=80',
+          'https://images.unsplash.com/photo-1590874103328-eac38a683ce7?auto=format&fit=crop&w=800&q=80'
+        ],
+        stock: 18,
+        sizes: ['Standard']
+      },
+      {
+        id: 'var-prod1-white',
+        colorName: 'Ivory White',
+        colorCode: '#F5F5F0',
+        images: [
+          'https://images.unsplash.com/photo-1590874103328-eac38a683ce7?auto=format&fit=crop&w=800&q=80',
+          'https://images.unsplash.com/photo-1584917865442-de89df76afd3?auto=format&fit=crop&w=800&q=80'
+        ],
+        stock: 14,
+        sizes: ['Standard']
+      },
+      {
+        id: 'var-prod1-brown',
+        colorName: 'Cognac Brown',
+        colorCode: '#8B4513',
+        images: [
+          'https://images.unsplash.com/photo-1591561954557-26941169b49e?auto=format&fit=crop&w=800&q=80',
+          'https://images.unsplash.com/photo-1584917865442-de89df76afd3?auto=format&fit=crop&w=800&q=80'
+        ],
+        stock: 8,
+        sizes: ['Standard']
+      }
+    ]
   },
   {
     id: 'prod-2',
@@ -260,6 +306,128 @@ const FALLBACK_PRODUCTS = [
   }
 ];
 
+// ─── Storefront Product Card Component with Instant Color Switching ───
+function StorefrontProductCard({ product, onQuickView, onBuyNow, onAddToCart }) {
+  const [selectedVariantId, setSelectedVariantId] = useState(
+    product.variants && product.variants.length > 0 ? product.variants[0].id : null
+  );
+
+  // Sync when product variants update
+  useEffect(() => {
+    if (product.variants && product.variants.length > 0) {
+      if (!product.variants.some((v) => v.id === selectedVariantId)) {
+        setSelectedVariantId(product.variants[0].id);
+      }
+    }
+  }, [product.variants, selectedVariantId]);
+
+  // Preload variant images so color switches are completely instantaneous with zero delay
+  useEffect(() => {
+    if (product.variants && product.variants.length > 0) {
+      product.variants.forEach((v) => {
+        if (v.images && v.images.length > 0) {
+          const img = new Image();
+          img.src = v.images[0];
+        }
+      });
+    }
+  }, [product.variants]);
+
+  const activeVariant = product.variants && product.variants.length > 0
+    ? (product.variants.find((v) => v.id === selectedVariantId) || product.variants[0])
+    : null;
+
+  const displayImage = activeVariant?.images?.[0] || product.image;
+  const displayColor = activeVariant?.colorName || product.color || '';
+  const availableSizes = activeVariant?.sizes && activeVariant.sizes.length > 0
+    ? activeVariant.sizes
+    : (product.sizes || []);
+  const defaultSize = availableSizes.length > 0 ? availableSizes[0] : '';
+
+  return (
+    <div className="editorial-card">
+      {/* Image Wrap */}
+      <div
+        className="editorial-img-wrap"
+        onClick={() => onQuickView(product, activeVariant)}
+        style={{ cursor: 'pointer' }}
+      >
+        <img
+          src={displayImage}
+          alt={`${product.title}${displayColor ? ` - ${displayColor}` : ''}`}
+          className="editorial-img variant-display-img"
+          loading="lazy"
+        />
+      </div>
+
+      {/* Info Container */}
+      <div className="editorial-info">
+        <div className="editorial-brand">
+          {product.brand || 'SMP Luxury'}
+        </div>
+
+        <div className="editorial-title-row">
+          <h3
+            className="editorial-title"
+            onClick={() => onQuickView(product, activeVariant)}
+            style={{ cursor: 'pointer' }}
+            title={product.title}
+          >
+            {product.title}
+          </h3>
+        </div>
+
+        {/* Dynamic Clickable Color Swatches */}
+        {product.variants && product.variants.length > 0 && (
+          <div className="card-variant-swatches" onClick={(e) => e.stopPropagation()}>
+            {product.variants.map((v) => {
+              const isSelected = activeVariant?.id === v.id;
+              return (
+                <button
+                  key={v.id}
+                  type="button"
+                  onClick={(e) => {
+                    e.stopPropagation();
+                    setSelectedVariantId(v.id);
+                  }}
+                  className={`card-swatch-dot ${isSelected ? 'active' : ''}`}
+                  style={{ backgroundColor: v.colorCode || '#000000' }}
+                  title={`${v.colorName}${v.stock ? ` (${v.stock} in stock)` : ''}`}
+                  aria-label={`Select color ${v.colorName}`}
+                />
+              );
+            })}
+          </div>
+        )}
+
+        {/* Clean price row */}
+        <div className="editorial-price-row">
+          <span className="editorial-price">AED {product.price}</span>
+        </div>
+
+        {/* Actions Row: BUY NOW + Small Cart Icon */}
+        <div className="editorial-actions-row">
+          <button
+            onClick={() => onBuyNow(product, defaultSize, activeVariant)}
+            className="btn-buy-now-solid"
+            title="Order via WhatsApp with Inspection on Delivery"
+          >
+            BUY NOW
+          </button>
+          <button
+            onClick={() => onAddToCart(product, 1, defaultSize, activeVariant)}
+            className="btn-card-cart"
+            title="Add to Cart"
+            aria-label={`Add ${product.title} to cart`}
+          >
+            <ShoppingBag size={14} />
+          </button>
+        </div>
+      </div>
+    </div>
+  );
+}
+
 export default function StorefrontPage() {
   const [products, setProducts] = useState(FALLBACK_PRODUCTS);
   const [activeCategory, setActiveCategory] = useState('all');
@@ -306,8 +474,19 @@ export default function StorefrontPage() {
 
   // Quick View Modal
   const [viewProduct, setViewProduct] = useState(null);
+  const [viewVariant, setViewVariant] = useState(null);
+  const [viewImageIndex, setViewImageIndex] = useState(0);
   const [selectedSize, setSelectedSize] = useState('');
   const [orderSize, setOrderSize] = useState('');
+
+  const handleOpenQuickView = (product, preselectedVariant) => {
+    setViewProduct(product);
+    const resolvedVariant = preselectedVariant || (product.variants && product.variants.length > 0 ? product.variants[0] : null);
+    setViewVariant(resolvedVariant);
+    setViewImageIndex(0);
+    const sizes = resolvedVariant?.sizes && resolvedVariant.sizes.length > 0 ? resolvedVariant.sizes : (product.sizes || []);
+    setSelectedSize(sizes.length > 0 ? sizes[0] : '');
+  };
 
   // Buy Now / Address Modal
   const [orderModalProduct, setOrderModalProduct] = useState(null);
@@ -344,10 +523,20 @@ export default function StorefrontPage() {
     } catch (e) {}
   };
 
-  const addToCart = (product, qty = 1, sizeChoice) => {
+  const addToCart = (product, qty = 1, sizeChoice, variantChoice) => {
     playAddToCartSound();
-    const chosenSize = sizeChoice !== undefined ? sizeChoice : (product.sizes && product.sizes.length > 0 ? (selectedSize || product.sizes[0]) : '');
-    const itemKey = chosenSize ? `${product.id}-${chosenSize}` : product.id;
+    const chosenVariant = variantChoice || (product.variants && product.variants.length > 0 ? product.variants[0] : null);
+    const chosenColor = chosenVariant?.colorName || product.color || '';
+    const chosenImage = chosenVariant?.images?.[0] || product.image;
+    const chosenSize = sizeChoice !== undefined ? sizeChoice : (
+      chosenVariant?.sizes && chosenVariant.sizes.length > 0 ? chosenVariant.sizes[0] :
+      (product.sizes && product.sizes.length > 0 ? (selectedSize || product.sizes[0]) : '')
+    );
+
+    const variantKeyPart = chosenVariant ? chosenVariant.id : (chosenColor ? chosenColor.replace(/\s+/g, '-') : 'default');
+    const sizeKeyPart = chosenSize ? chosenSize.replace(/\s+/g, '-') : 'nosize';
+    const itemKey = `${product.id}-${variantKeyPart}-${sizeKeyPart}`;
+
     let updated;
     const existingIndex = cart.findIndex((item) => (item.cartKey || item.id) === itemKey);
     if (existingIndex > -1) {
@@ -355,10 +544,21 @@ export default function StorefrontPage() {
         idx === existingIndex ? { ...item, quantity: item.quantity + qty } : item
       );
     } else {
-      updated = [...cart, { ...product, cartKey: itemKey, size: chosenSize, quantity: qty }];
+      updated = [
+        ...cart,
+        {
+          ...product,
+          cartKey: itemKey,
+          variantId: chosenVariant?.id || null,
+          color: chosenColor,
+          image: chosenImage,
+          size: chosenSize,
+          quantity: qty
+        }
+      ];
     }
     updateCart(updated);
-    setCartToast(`Added "${product.title}"${chosenSize ? ` (Size: ${chosenSize})` : ''} to Cart`);
+    setCartToast(`Added "${product.title}"${chosenColor ? ` [${chosenColor}]` : ''}${chosenSize ? ` (Size: ${chosenSize})` : ''} to Cart`);
     setTimeout(() => setCartToast(null), 2500);
   };
 
@@ -423,10 +623,22 @@ Hello SMP, I would like to order these items from my shopping bag.`;
   };
 
   // Open Buy Now Modal for single product
-  const handleOpenBuyNow = (product, sizeChoice) => {
+  const handleOpenBuyNow = (product, sizeChoice, variantChoice) => {
     setIsCartOrder(false);
-    setOrderModalProduct(product);
-    const resolvedSize = sizeChoice !== undefined ? sizeChoice : (product.sizes && product.sizes.length > 0 ? (selectedSize || product.sizes[0]) : '');
+    const chosenVariant = variantChoice || (product.variants && product.variants.length > 0 ? product.variants[0] : null);
+    const resolvedColor = chosenVariant ? chosenVariant.colorName : (product.color || '');
+    const resolvedImage = chosenVariant?.images?.[0] || product.image;
+    const resolvedSize = sizeChoice !== undefined ? sizeChoice : (
+      chosenVariant?.sizes && chosenVariant.sizes.length > 0 ? chosenVariant.sizes[0] :
+      (product.sizes && product.sizes.length > 0 ? (selectedSize || product.sizes[0]) : '')
+    );
+
+    setOrderModalProduct({
+      ...product,
+      color: resolvedColor,
+      image: resolvedImage,
+      variantId: chosenVariant?.id || null
+    });
     setOrderSize(resolvedSize);
     setQuantity(1);
     setCustomerName('');
@@ -461,6 +673,7 @@ Hello SMP, I would like to order these items from my shopping bag.`;
     const orderItems = isCartOrder
       ? cart.map(item => ({
           productId: item.id,
+          variantId: item.variantId || null,
           title: item.title,
           price: item.price,
           quantity: item.quantity,
@@ -471,6 +684,7 @@ Hello SMP, I would like to order these items from my shopping bag.`;
       : [
           {
             productId: orderModalProduct.id,
+            variantId: orderModalProduct.variantId || null,
             title: orderModalProduct.title,
             price: orderModalProduct.price,
             quantity: quantity,
@@ -1210,69 +1424,12 @@ Please confirm my order and arrange delivery. Thank you!`;
           <div className="products-grid-6col">
             {filteredProducts.map((p, pIdx) => (
               <React.Fragment key={p.id}>
-                <div className="editorial-card">
-                  {/* Image Wrap without badge or wishlist icon */}
-                  <div
-                    className="editorial-img-wrap"
-                    onClick={() => {
-                      setViewProduct(p);
-                      setSelectedSize(p.sizes && p.sizes.length > 0 ? p.sizes[0] : '');
-                    }}
-                    style={{ cursor: 'pointer' }}
-                  >
-                    <img
-                      src={p.image}
-                      alt={p.title}
-                      className="editorial-img"
-                      loading="lazy"
-                    />
-                  </div>
-
-                  {/* Info Container */}
-                  <div className="editorial-info">
-                    <div className="editorial-brand">
-                      {p.brand || 'SMP Luxury'}
-                    </div>
-
-                    <div className="editorial-title-row">
-                      <h3
-                        className="editorial-title"
-                        onClick={() => {
-                          setViewProduct(p);
-                          setSelectedSize(p.sizes && p.sizes.length > 0 ? p.sizes[0] : '');
-                        }}
-                        style={{ cursor: 'pointer' }}
-                        title={p.title}
-                      >
-                        {p.title}
-                      </h3>
-                    </div>
-
-                    {/* Clean price row without color display (color only shown in inner page) */}
-                    <div className="editorial-price-row">
-                      <span className="editorial-price">AED {p.price}</span>
-                    </div>
-
-                    {/* Actions Row: BUY NOW + Small Cart Icon */}
-                    <div className="editorial-actions-row">
-                      <button
-                        onClick={() => handleOpenBuyNow(p, p.sizes && p.sizes.length > 0 ? p.sizes[0] : '')}
-                        className="btn-buy-now-solid"
-                        title="Order via WhatsApp with Inspection on Delivery"
-                      >
-                        BUY NOW
-                      </button>
-                      <button
-                        onClick={() => addToCart(p, 1, p.sizes && p.sizes.length > 0 ? p.sizes[0] : '')}
-                        className="btn-card-cart"
-                        title="Add to Cart"
-                        aria-label={`Add ${p.title} to cart`}
-                      >
-                        <ShoppingBag size={14} />
-                      </button>
-                    </div>
-                  </div>
-                </div>
+                <StorefrontProductCard
+                  product={p}
+                  onQuickView={handleOpenQuickView}
+                  onBuyNow={handleOpenBuyNow}
+                  onAddToCart={addToCart}
+                />
 
                 {/* Brand Logos Train Marquee after 4 Products (Dynamic) */}
                 {pIdx === 3 && (
@@ -1327,140 +1484,209 @@ Please confirm my order and arrange delivery. Thank you!`;
       </section>
 
       {/* Quick View Full Details Modal */}
-      {viewProduct && (
-        <div className="modal-overlay" onClick={() => setViewProduct(null)}>
-          <div className="modal-dialog" onClick={(e) => e.stopPropagation()} style={{ maxWidth: '640px' }}>
-            <div className="modal-head">
-              <div>
-                <span style={{ fontSize: '11px', color: 'var(--color-brown)', fontWeight: '700', textTransform: 'uppercase' }}>
-                  {viewProduct.brand || 'SMP LUXURY'}
-                </span>
-                <h3 className="modal-title">{viewProduct.title}</h3>
-              </div>
-              <button onClick={() => setViewProduct(null)} className="modal-close-btn">
-                <X size={20} />
-              </button>
-            </div>
+      {viewProduct && (() => {
+        const activeVar = viewVariant || (viewProduct.variants && viewProduct.variants.length > 0 ? viewProduct.variants[0] : null);
+        const varImages = (activeVar?.images && activeVar.images.length > 0)
+          ? activeVar.images
+          : (viewProduct.image ? [viewProduct.image] : []);
+        const mainImg = varImages[viewImageIndex] || varImages[0] || viewProduct.image;
+        const activeColor = activeVar?.colorName || viewProduct.color || '';
+        const activeSizes = (activeVar?.sizes && activeVar.sizes.length > 0) ? activeVar.sizes : (viewProduct.sizes || []);
+        const activeStock = activeVar?.stock !== undefined ? activeVar.stock : (viewProduct.stock ?? 10);
 
-            <div className="modal-content">
-              <div style={{ position: 'relative', width: '100%', height: '300px', borderRadius: '8px', overflow: 'hidden', marginBottom: '16px', background: '#FAF7EF' }}>
-                <img
-                  src={viewProduct.image}
-                  alt={viewProduct.title}
-                  style={{ width: '100%', height: '100%', objectFit: 'cover' }}
-                />
-              </div>
-
-              {/* Clean Price Only - No Discount or Compare Price */}
-              <div style={{ display: 'flex', alignItems: 'baseline', gap: '12px', marginBottom: '12px' }}>
-                <span style={{ fontSize: '22px', fontWeight: '800', color: 'var(--color-dark-brown)' }}>
-                  AED {viewProduct.price}
-                </span>
-                <span style={{ marginLeft: 'auto', fontSize: '11px', color: '#15803D', fontWeight: '700', background: '#DCFCE7', padding: '3px 8px', borderRadius: '4px' }}>
-                  In Stock - Ready to Dispatch
-                </span>
-              </div>
-
-              {/* Product Color Spec */}
-              {viewProduct.color && (
-                <div style={{ display: 'flex', alignItems: 'center', gap: '8px', marginBottom: '14px' }}>
-                  <span style={{ fontSize: '11px', textTransform: 'uppercase', letterSpacing: '1px', color: 'var(--color-text-muted)', fontWeight: '600' }}>
-                    Color:
+        return (
+          <div className="modal-overlay" onClick={() => setViewProduct(null)}>
+            <div className="modal-dialog" onClick={(e) => e.stopPropagation()} style={{ maxWidth: '640px' }}>
+              <div className="modal-head">
+                <div>
+                  <span style={{ fontSize: '11px', color: 'var(--color-brown)', fontWeight: '700', textTransform: 'uppercase' }}>
+                    {viewProduct.brand || 'SMP LUXURY'}
                   </span>
-                  <span style={{ fontSize: '12.5px', fontWeight: '600', color: 'var(--color-dark-brown)', background: '#FAF7EF', border: '1px solid #E8E2D5', padding: '3px 10px', borderRadius: '4px' }}>
-                    {viewProduct.color}
-                  </span>
+                  <h3 className="modal-title">{viewProduct.title}</h3>
                 </div>
-              )}
+                <button onClick={() => setViewProduct(null)} className="modal-close-btn">
+                  <X size={20} />
+                </button>
+              </div>
 
-              {/* Optional Sizes Selector (e.g. Footwears) */}
-              {viewProduct.sizes && viewProduct.sizes.length > 0 && (
-                <div style={{ marginBottom: '16px', background: '#FAF7EF', padding: '12px 14px', borderRadius: '8px', border: '1px solid #E8E2D5' }}>
-                  <div style={{ display: 'flex', alignItems: 'center', justifyContent: 'space-between', marginBottom: '8px' }}>
-                    <span style={{ fontSize: '11px', textTransform: 'uppercase', letterSpacing: '1px', color: '#66300F', fontWeight: '700' }}>
-                      Available Sizes <span style={{ textTransform: 'none', fontWeight: 'normal', color: 'var(--color-text-muted)' }}>(Optional)</span>:
-                    </span>
-                    {selectedSize && (
-                      <span style={{ fontSize: '11.5px', color: '#66300F', fontWeight: '700' }}>
-                        Selected: {selectedSize}
-                      </span>
-                    )}
-                  </div>
-                  <div style={{ display: 'flex', gap: '8px', flexWrap: 'wrap' }}>
-                    {viewProduct.sizes.map((sz) => (
+              <div className="modal-content">
+                {/* Main Featured Image */}
+                <div style={{ position: 'relative', width: '100%', height: '300px', borderRadius: '8px', overflow: 'hidden', marginBottom: varImages.length > 1 ? '10px' : '16px', background: '#FAF7EF' }}>
+                  <img
+                    src={mainImg}
+                    alt={`${viewProduct.title} - ${activeColor}`}
+                    className="variant-display-img"
+                  />
+                </div>
+
+                {/* Thumbnail Strip for Variant Images */}
+                {varImages.length > 1 && (
+                  <div className="variant-gallery-thumbnails" style={{ marginBottom: '16px' }}>
+                    {varImages.map((imgUrl, idx) => (
                       <button
-                        key={sz}
+                        key={idx}
                         type="button"
-                        onClick={() => setSelectedSize(selectedSize === sz ? '' : sz)}
-                        style={{
-                          minWidth: '40px',
-                          height: '34px',
-                          padding: '0 12px',
-                          borderRadius: '6px',
-                          border: selectedSize === sz ? '1.5px solid #66300F' : '1px solid #D8D0C3',
-                          background: selectedSize === sz ? '#66300F' : '#FFFFFF',
-                          color: selectedSize === sz ? '#FFFFFF' : '#332E29',
-                          fontWeight: selectedSize === sz ? '700' : '500',
-                          fontSize: '12px',
-                          cursor: 'pointer',
-                          transition: 'all 0.15s ease'
-                        }}
+                        onClick={() => setViewImageIndex(idx)}
+                        className={`variant-gallery-thumb ${viewImageIndex === idx ? 'active' : ''}`}
+                        title={`View angle ${idx + 1}`}
                       >
-                        {sz}
+                        <img src={imgUrl} alt={`${viewProduct.title} angle ${idx + 1}`} />
                       </button>
                     ))}
                   </div>
+                )}
+
+                {/* Clean Price & Stock */}
+                <div style={{ display: 'flex', alignItems: 'baseline', gap: '12px', marginBottom: '12px' }}>
+                  <span style={{ fontSize: '22px', fontWeight: '800', color: 'var(--color-dark-brown)' }}>
+                    AED {viewProduct.price}
+                  </span>
+                  <span style={{ marginLeft: 'auto', fontSize: '11px', color: activeStock > 0 ? '#15803D' : '#DC2626', fontWeight: '700', background: activeStock > 0 ? '#DCFCE7' : '#FEE2E2', padding: '3px 8px', borderRadius: '4px' }}>
+                    {activeStock > 0 ? `In Stock (${activeStock} available)` : 'Out of Stock'}
+                  </span>
                 </div>
-              )}
 
-              <p style={{ fontSize: '13.5px', color: 'var(--color-text-muted)', lineHeight: '1.6', marginBottom: '16px' }}>
-                {viewProduct.description}
-              </p>
+                {/* Color Swatches Selector in Quick View */}
+                {viewProduct.variants && viewProduct.variants.length > 0 ? (
+                  <div style={{ marginBottom: '14px', background: '#FAF7EF', padding: '12px 14px', borderRadius: '8px', border: '1px solid #E8E2D5' }}>
+                    <div style={{ display: 'flex', alignItems: 'center', justifyContent: 'space-between', marginBottom: '8px' }}>
+                      <span style={{ fontSize: '11px', textTransform: 'uppercase', letterSpacing: '1px', color: '#66300F', fontWeight: '700' }}>
+                        Available Colors ({viewProduct.variants.length}):
+                      </span>
+                      {activeColor && (
+                        <span style={{ fontSize: '11.5px', color: '#66300F', fontWeight: '700' }}>
+                          Selected: {activeColor}
+                        </span>
+                      )}
+                    </div>
+                    <div className="detail-variant-swatches-wrap">
+                      {viewProduct.variants.map((v) => {
+                        const isSelected = activeVar?.id === v.id;
+                        return (
+                          <button
+                            key={v.id}
+                            type="button"
+                            onClick={() => {
+                              setViewVariant(v);
+                              setViewImageIndex(0);
+                              if (v.sizes && v.sizes.length > 0) {
+                                setSelectedSize(v.sizes[0]);
+                              }
+                            }}
+                            className={`detail-swatch-btn ${isSelected ? 'active' : ''}`}
+                            title={`${v.colorName} (${v.stock || 0} in stock)`}
+                          >
+                            <span
+                              className="detail-swatch-circle"
+                              style={{ backgroundColor: v.colorCode || '#000000' }}
+                            />
+                            <span>{v.colorName}</span>
+                          </button>
+                        );
+                      })}
+                    </div>
+                  </div>
+                ) : viewProduct.color ? (
+                  <div style={{ display: 'flex', alignItems: 'center', gap: '8px', marginBottom: '14px' }}>
+                    <span style={{ fontSize: '11px', textTransform: 'uppercase', letterSpacing: '1px', color: 'var(--color-text-muted)', fontWeight: '600' }}>
+                      Color:
+                    </span>
+                    <span style={{ fontSize: '12.5px', fontWeight: '600', color: 'var(--color-dark-brown)', background: '#FAF7EF', border: '1px solid #E8E2D5', padding: '3px 10px', borderRadius: '4px' }}>
+                      {viewProduct.color}
+                    </span>
+                  </div>
+                ) : null}
 
-              {viewProduct.details && viewProduct.details.length > 0 && (
-                <div style={{ background: '#FAF7EF', padding: '14px', borderRadius: '8px', border: '1px solid var(--color-border)', marginBottom: '18px' }}>
-                  <h4 style={{ fontSize: '12px', fontWeight: '700', color: 'var(--color-dark-brown)', marginBottom: '8px' }}>
-                    Craftsmanship &amp; Highlights:
-                  </h4>
-                  <ul style={{ paddingLeft: '18px', fontSize: '12.5px', color: '#4B230A', display: 'flex', flexDirection: 'column', gap: '5px' }}>
-                    {viewProduct.details.map((d, idx) => (
-                      <li key={idx}>{d}</li>
-                    ))}
-                  </ul>
+                {/* Optional Sizes Selector */}
+                {activeSizes && activeSizes.length > 0 && (
+                  <div style={{ marginBottom: '16px', background: '#FAF7EF', padding: '12px 14px', borderRadius: '8px', border: '1px solid #E8E2D5' }}>
+                    <div style={{ display: 'flex', alignItems: 'center', justifyContent: 'space-between', marginBottom: '8px' }}>
+                      <span style={{ fontSize: '11px', textTransform: 'uppercase', letterSpacing: '1px', color: '#66300F', fontWeight: '700' }}>
+                        Available Sizes <span style={{ textTransform: 'none', fontWeight: 'normal', color: 'var(--color-text-muted)' }}>(Optional)</span>:
+                      </span>
+                      {selectedSize && (
+                        <span style={{ fontSize: '11.5px', color: '#66300F', fontWeight: '700' }}>
+                          Selected: {selectedSize}
+                        </span>
+                      )}
+                    </div>
+                    <div style={{ display: 'flex', gap: '8px', flexWrap: 'wrap' }}>
+                      {activeSizes.map((sz) => (
+                        <button
+                          key={sz}
+                          type="button"
+                          onClick={() => setSelectedSize(selectedSize === sz ? '' : sz)}
+                          style={{
+                            minWidth: '40px',
+                            height: '34px',
+                            padding: '0 12px',
+                            borderRadius: '6px',
+                            border: selectedSize === sz ? '1.5px solid #66300F' : '1px solid #D8D0C3',
+                            background: selectedSize === sz ? '#66300F' : '#FFFFFF',
+                            color: selectedSize === sz ? '#FFFFFF' : '#332E29',
+                            fontWeight: selectedSize === sz ? '700' : '500',
+                            fontSize: '12px',
+                            cursor: 'pointer',
+                            transition: 'all 0.15s ease'
+                          }}
+                        >
+                          {sz}
+                        </button>
+                      ))}
+                    </div>
+                  </div>
+                )}
+
+                <p style={{ fontSize: '13.5px', color: 'var(--color-text-muted)', lineHeight: '1.6', marginBottom: '16px' }}>
+                  {viewProduct.description}
+                </p>
+
+                {viewProduct.details && viewProduct.details.length > 0 && (
+                  <div style={{ background: '#FAF7EF', padding: '14px', borderRadius: '8px', border: '1px solid var(--color-border)', marginBottom: '18px' }}>
+                    <h4 style={{ fontSize: '12px', fontWeight: '700', color: 'var(--color-dark-brown)', marginBottom: '8px' }}>
+                      Craftsmanship &amp; Highlights:
+                    </h4>
+                    <ul style={{ paddingLeft: '18px', fontSize: '12.5px', color: '#4B230A', display: 'flex', flexDirection: 'column', gap: '5px' }}>
+                      {viewProduct.details.map((d, idx) => (
+                        <li key={idx}>{d}</li>
+                      ))}
+                    </ul>
+                  </div>
+                )}
+
+                {/* Action Buttons: Add to Cart + Buy Now */}
+                <div style={{ display: 'flex', gap: '10px' }}>
+                  <button
+                    onClick={() => {
+                      addToCart(viewProduct, 1, selectedSize, activeVar);
+                      setViewProduct(null);
+                    }}
+                    className="btn-modal-cart"
+                    title="Add to Cart"
+                  >
+                    <ShoppingBag size={17} />
+                    <span>Add to Cart</span>
+                  </button>
+
+                  <button
+                    onClick={() => {
+                      const p = viewProduct;
+                      const sz = selectedSize;
+                      const v = activeVar;
+                      setViewProduct(null);
+                      handleOpenBuyNow(p, sz, v);
+                    }}
+                    className="btn-buy-now-solid"
+                    style={{ flex: 1, margin: 0, padding: '12px 16px', fontSize: '13px' }}
+                  >
+                    BUY NOW
+                  </button>
                 </div>
-              )}
-
-              {/* Action Buttons: Add to Cart + Buy Now */}
-              <div style={{ display: 'flex', gap: '10px' }}>
-                <button
-                  onClick={() => {
-                    addToCart(viewProduct, 1, selectedSize);
-                    setViewProduct(null);
-                  }}
-                  className="btn-modal-cart"
-                  title="Add to Cart"
-                >
-                  <ShoppingBag size={17} />
-                  <span>Add to Cart</span>
-                </button>
-
-                <button
-                  onClick={() => {
-                    const p = viewProduct;
-                    const sz = selectedSize;
-                    setViewProduct(null);
-                    handleOpenBuyNow(p, sz);
-                  }}
-                  className="btn-buy-now-solid"
-                  style={{ flex: 1, margin: 0, padding: '12px 16px', fontSize: '13px' }}
-                >
-                  BUY NOW
-                </button>
               </div>
             </div>
           </div>
-        </div>
-      )}
+        );
+      })()}
 
       {/* Buy Now & Delivery Address Modal */}
       {orderModalProduct && (
@@ -1720,45 +1946,62 @@ Please confirm my order and arrange delivery. Thank you!`;
                 </div>
               ) : (
                 <div className="cart-items-list">
-                  {cart.map((item) => (
-                    <div key={item.id} className="cart-item-row">
-                      <img
-                        src={item.image}
-                        alt={item.title}
-                        className="cart-item-img"
-                      />
-                      <div className="cart-item-info">
-                        <div className="cart-item-brand">{item.brand || 'SMP'}</div>
-                        <div className="cart-item-title">{item.title}</div>
-                        <div className="cart-item-price">AED {item.price}</div>
-                        <div className="cart-item-qty-row">
-                          <button
-                            onClick={() => updateQuantity(item.id, -1)}
-                            className="cart-qty-btn"
-                            aria-label="Decrease quantity"
-                          >
-                            <Minus size={11} />
-                          </button>
-                          <span className="cart-qty-val">{item.quantity}</span>
-                          <button
-                            onClick={() => updateQuantity(item.id, 1)}
-                            className="cart-qty-btn"
-                            aria-label="Increase quantity"
-                          >
-                            <Plus size={11} />
-                          </button>
+                  {cart.map((item) => {
+                    const itemKey = item.cartKey || item.id;
+                    return (
+                      <div key={itemKey} className="cart-item-row">
+                        <img
+                          src={item.image}
+                          alt={item.title}
+                          className="cart-item-img"
+                        />
+                        <div className="cart-item-info">
+                          <div className="cart-item-brand">{item.brand || 'SMP'}</div>
+                          <div className="cart-item-title">{item.title}</div>
+                          {(item.color || item.size) && (
+                            <div style={{ display: 'flex', gap: '6px', flexWrap: 'wrap', marginTop: '3px', marginBottom: '4px' }}>
+                              {item.color && (
+                                <span style={{ fontSize: '11px', color: '#66300F', background: '#F8F4EE', border: '1px solid #E6D7C3', padding: '1px 6px', borderRadius: '4px', fontWeight: '600' }}>
+                                  Color: {item.color}
+                                </span>
+                              )}
+                              {item.size && (
+                                <span style={{ fontSize: '11px', color: '#786F66', background: '#F5F5F0', border: '1px solid #E5E5E0', padding: '1px 6px', borderRadius: '4px', fontWeight: '500' }}>
+                                  Size: {item.size}
+                                </span>
+                              )}
+                            </div>
+                          )}
+                          <div className="cart-item-price">AED {item.price}</div>
+                          <div className="cart-item-qty-row">
+                            <button
+                              onClick={() => updateQuantity(itemKey, -1)}
+                              className="cart-qty-btn"
+                              aria-label="Decrease quantity"
+                            >
+                              <Minus size={11} />
+                            </button>
+                            <span className="cart-qty-val">{item.quantity}</span>
+                            <button
+                              onClick={() => updateQuantity(itemKey, 1)}
+                              className="cart-qty-btn"
+                              aria-label="Increase quantity"
+                            >
+                              <Plus size={11} />
+                            </button>
+                          </div>
                         </div>
+                        <button
+                          onClick={() => removeFromCart(itemKey)}
+                          className="cart-item-remove-btn"
+                          title="Remove item"
+                          aria-label="Remove item"
+                        >
+                          <Trash2 size={15} />
+                        </button>
                       </div>
-                      <button
-                        onClick={() => removeFromCart(item.id)}
-                        className="cart-item-remove-btn"
-                        title="Remove item"
-                        aria-label="Remove item"
-                      >
-                        <Trash2 size={15} />
-                      </button>
-                    </div>
-                  ))}
+                    );
+                  })}
                 </div>
               )}
             </div>

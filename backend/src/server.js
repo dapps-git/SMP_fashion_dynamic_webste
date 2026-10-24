@@ -69,35 +69,52 @@ cloudinary.config({
   api_secret: process.env.CLOUDINARY_API_SECRET
 });
 
-// Cloudinary Multer Storage
-const cloudinaryStorage = new CloudinaryStorage({
-  cloudinary: cloudinary,
-  params: {
-    folder: 'smp-fashion',
-    allowed_formats: ['jpg', 'jpeg', 'png', 'webp', 'gif'],
-    transformation: [{ width: 1200, height: 1200, crop: 'limit', quality: 'auto:good' }]
-  }
-});
-
-// Fallback local storage if Cloudinary fails
+// Local Uploads Directory (Guaranteed local fallback)
 const localUploadsDir = path.join(__dirname, '..', 'uploads');
 if (!fs.existsSync(localUploadsDir)) fs.mkdirSync(localUploadsDir, { recursive: true });
 
 const localStorage = multer.diskStorage({
   destination: (req, file, cb) => cb(null, localUploadsDir),
   filename: (req, file, cb) => {
-    const ext = path.extname(file.originalname);
+    const ext = path.extname(file.originalname) || '.jpg';
     cb(null, `${Date.now()}-${Math.round(Math.random() * 1e9)}${ext}`);
   }
 });
 
-// Use cloudinary storage, fall back to local
+// Robust Multer instance saving to local disk with high limit
 const upload = multer({
-  storage: cloudinaryStorage,
-  limits: { fileSize: 15 * 1024 * 1024 }
+  storage: localStorage,
+  limits: { fileSize: 25 * 1024 * 1024 }
 });
 
 app.use('/uploads', express.static(localUploadsDir));
+
+// Helper: processes uploaded file with Cloudinary optimization or local URL fallback
+async function processUploadedFile(file, req) {
+  if (!file) return null;
+  const host = req.get('host') || `localhost:${PORT}`;
+  const protocol = req.protocol || 'http';
+  const localUrl = `${protocol}://${host}/uploads/${file.filename}`;
+  let finalUrl = localUrl;
+  let publicId = file.filename;
+
+  if (process.env.CLOUDINARY_CLOUD_NAME && process.env.CLOUDINARY_API_KEY && process.env.CLOUDINARY_API_SECRET) {
+    try {
+      const uploadRes = await cloudinary.uploader.upload(file.path, {
+        folder: 'smp-fashion',
+        transformation: [{ width: 1200, height: 1200, crop: 'limit', quality: 'auto:good' }]
+      });
+      if (uploadRes && (uploadRes.secure_url || uploadRes.url)) {
+        finalUrl = uploadRes.secure_url || uploadRes.url;
+        publicId = uploadRes.public_id || file.filename;
+      }
+    } catch (cErr) {
+      console.warn('⚠️ Cloudinary upload note, using high-speed local upload URL:', cErr.message);
+    }
+  }
+
+  return { url: finalUrl, publicId };
+}
 
 // ─── MongoDB Connection & Admin Sync ──────────────────────────
 async function syncAdminUser() {
@@ -370,13 +387,30 @@ app.delete('/api/brands/:id', authenticateToken, async (req, res) => {
   }
 });
 
-// ─── Image Upload (Protected) ─────────────────────────────────
-app.post('/api/upload', authenticateToken, upload.single('image'), async (req, res) => {
+// ─── Image Upload (Protected, Supports any field name: 'image', 'file', etc.) ──
+app.post('/api/upload', authenticateToken, upload.any(), async (req, res) => {
   try {
-    if (!req.file) return res.status(400).json({ error: 'No image provided' });
-    const url = req.file.path || req.file.secure_url || `http://localhost:${PORT}/uploads/${req.file.filename}`;
-    res.json({ success: true, url, public_id: req.file.filename || req.file.public_id });
-  } catch (e) { res.status(500).json({ error: e.message }); }
+    const file = (req.files && req.files.length > 0) ? req.files[0] : req.file;
+    if (!file) return res.status(400).json({ error: 'No image provided' });
+    const result = await processUploadedFile(file, req);
+    res.json({ success: true, url: result.url, public_id: result.publicId, publicId: result.publicId });
+  } catch (e) {
+    console.error('Image upload error:', e);
+    res.status(500).json({ error: e.message || 'Image upload failed' });
+  }
+});
+
+app.post('/api/upload-multiple', authenticateToken, upload.any(), async (req, res) => {
+  try {
+    const files = req.files || (req.file ? [req.file] : []);
+    if (!files || files.length === 0) return res.status(400).json({ error: 'No files uploaded' });
+    const results = await Promise.all(files.map(f => processUploadedFile(f, req)));
+    const urls = results.map(r => r.url);
+    res.json({ success: true, urls, files: results });
+  } catch (err) {
+    console.error('Multiple upload error:', err);
+    res.status(500).json({ error: err.message || 'Multiple upload failed' });
+  }
 });
 
 // ─── Products ─────────────────────────────────────────────────
@@ -424,16 +458,20 @@ app.get('/api/products/:id', async (req, res) => {
 });
 
 // Protected product mutations
-app.post('/api/products', authenticateToken, upload.single('imageFile'), async (req, res) => {
+app.post('/api/products', authenticateToken, upload.any(), async (req, res) => {
   try {
-    const { title, category, brand, price, comparePrice, stock, description, badge, details, imageUrl, seoTitle, seoDescription, seoKeywords, slug, gender, color, sizes } = req.body;
+    const { title, category, brand, price, comparePrice, stock, description, badge, details, imageUrl, seoTitle, seoDescription, seoKeywords, slug, gender, color, sizes, variants } = req.body;
     if (!title || !price) return res.status(400).json({ error: 'Title and price are required' });
 
     let finalImage = imageUrl || '';
     let imagePublicId = '';
-    if (req.file) {
-      finalImage = req.file.path || req.file.secure_url || `http://localhost:${PORT}/uploads/${req.file.filename}`;
-      imagePublicId = req.file.filename || req.file.public_id || '';
+    const uploadedFile = (req.files && req.files.length > 0) ? req.files[0] : req.file;
+    if (uploadedFile) {
+      const processed = await processUploadedFile(uploadedFile, req);
+      if (processed) {
+        finalImage = processed.url;
+        imagePublicId = processed.publicId;
+      }
     }
 
     const pNum = parseFloat(price);
@@ -454,6 +492,33 @@ app.post('/api/products', authenticateToken, upload.single('imageFile'), async (
       parsedSizes = sizes.map(s => String(s).trim()).filter(Boolean);
     }
 
+    let parsedVariants = [];
+    if (typeof variants === 'string') {
+      try {
+        parsedVariants = JSON.parse(variants);
+      } catch (err) {
+        parsedVariants = [];
+      }
+    } else if (Array.isArray(variants)) {
+      parsedVariants = variants;
+    }
+    if (Array.isArray(parsedVariants)) {
+      parsedVariants = parsedVariants.map((v, i) => ({
+        id: v.id || `var-${Date.now()}-${i}`,
+        colorName: v.colorName || '',
+        colorCode: v.colorCode || '#000000',
+        images: Array.isArray(v.images) ? v.images.filter(Boolean) : (v.image ? [v.image] : []),
+        stock: v.stock !== undefined && v.stock !== '' ? parseInt(v.stock, 10) : 10,
+        sizes: Array.isArray(v.sizes) ? v.sizes : (typeof v.sizes === 'string' ? v.sizes.split(',').map(s => s.trim()).filter(Boolean) : [])
+      }));
+    } else {
+      parsedVariants = [];
+    }
+
+    if (!finalImage && parsedVariants.length > 0 && parsedVariants[0].images?.length > 0) {
+      finalImage = parsedVariants[0].images[0];
+    }
+
     const generatedSlug = slug || title.toLowerCase().replace(/[^a-z0-9]+/g, '-').replace(/(^-|-$)/g, '');
     const generatedSeoTitle = seoTitle || `${title} | Luxury SMP Fashion UAE`;
     const generatedSeoDesc = seoDescription || (description ? description.slice(0, 160) : `Shop ${title} at SMP Super Master Products.`);
@@ -463,8 +528,9 @@ app.post('/api/products', authenticateToken, upload.single('imageFile'), async (
       category: category?.toLowerCase() || 'accessories',
       categoryName: category ? category.charAt(0).toUpperCase() + category.slice(1) : 'General',
       gender: gender ? gender.toLowerCase() : '',
-      color: color ? color.trim() : '',
+      color: color ? color.trim() : (parsedVariants[0]?.colorName || ''),
       sizes: parsedSizes,
+      variants: parsedVariants,
       brand: brand || 'SMP Luxury',
       price: pNum, 
       comparePrice: cNum, 
@@ -502,15 +568,19 @@ app.post('/api/products', authenticateToken, upload.single('imageFile'), async (
   }
 });
 
-app.put('/api/products/:id', authenticateToken, upload.single('imageFile'), async (req, res) => {
+app.put('/api/products/:id', authenticateToken, upload.any(), async (req, res) => {
   try {
-    const { title, category, brand, price, comparePrice, stock, description, badge, details, imageUrl, seoTitle, seoDescription, seoKeywords, slug, gender, color, sizes } = req.body;
+    const { title, category, brand, price, comparePrice, stock, description, badge, details, imageUrl, seoTitle, seoDescription, seoKeywords, slug, gender, color, sizes, variants } = req.body;
 
     let finalImage = imageUrl;
     let imagePublicId = '';
-    if (req.file) {
-      finalImage = req.file.path || req.file.secure_url || `http://localhost:${PORT}/uploads/${req.file.filename}`;
-      imagePublicId = req.file.filename || req.file.public_id || '';
+    const uploadedFile = (req.files && req.files.length > 0) ? req.files[0] : req.file;
+    if (uploadedFile) {
+      const processed = await processUploadedFile(uploadedFile, req);
+      if (processed) {
+        finalImage = processed.url;
+        imagePublicId = processed.publicId;
+      }
     }
 
     const pNum = price !== undefined ? parseFloat(price) : undefined;
@@ -550,6 +620,32 @@ app.put('/api/products/:id', authenticateToken, upload.single('imageFile'), asyn
     if (seoDescription !== undefined) updateFields.seoDescription = seoDescription;
     if (seoKeywords !== undefined) updateFields.seoKeywords = seoKeywords;
     if (slug !== undefined) updateFields.slug = slug;
+
+    if (variants !== undefined) {
+      let parsedVariants = [];
+      if (typeof variants === 'string') {
+        try {
+          parsedVariants = JSON.parse(variants);
+        } catch (err) {
+          parsedVariants = [];
+        }
+      } else if (Array.isArray(variants)) {
+        parsedVariants = variants;
+      }
+      if (Array.isArray(parsedVariants)) {
+        parsedVariants = parsedVariants.map((v, i) => ({
+          id: v.id || `var-${Date.now()}-${i}`,
+          colorName: v.colorName || '',
+          colorCode: v.colorCode || '#000000',
+          images: Array.isArray(v.images) ? v.images.filter(Boolean) : (v.image ? [v.image] : []),
+          stock: v.stock !== undefined && v.stock !== '' ? parseInt(v.stock, 10) : 10,
+          sizes: Array.isArray(v.sizes) ? v.sizes : (typeof v.sizes === 'string' ? v.sizes.split(',').map(s => s.trim()).filter(Boolean) : [])
+        }));
+      } else {
+        parsedVariants = [];
+      }
+      updateFields.variants = parsedVariants;
+    }
 
     if (mongoose.connection.readyState === 1) {
       const updated = await Product.findByIdAndUpdate(req.params.id, updateFields, { new: true });
@@ -687,6 +783,15 @@ app.get('/api/stats', authenticateToken, async (req, res) => {
   } catch (e) { 
     res.json(fileDb.getStats()); 
   }
+});
+
+// ─── Global Error Handler ──────────────────────────────────────
+app.use((err, req, res, next) => {
+  console.error('⚠️ Server error caught:', err);
+  if (err instanceof multer.MulterError) {
+    return res.status(400).json({ error: `Upload error: ${err.message}` });
+  }
+  res.status(500).json({ error: err.message || 'Internal server error' });
 });
 
 // ─── Start Server ─────────────────────────────────────────────

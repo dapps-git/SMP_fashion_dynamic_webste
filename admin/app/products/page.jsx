@@ -15,7 +15,8 @@ import {
   Check, 
   Package,
   Sparkles,
-  ExternalLink
+  ExternalLink,
+  Palette
 } from 'lucide-react';
 
 export default function ProductsPage() {
@@ -34,6 +35,8 @@ export default function ProductsPage() {
   const [submitting, setSubmitting] = useState(false);
   const [imagePreview, setImagePreview] = useState('');
   const fileInputRef = useRef(null);
+  const [variantUrlInputs, setVariantUrlInputs] = useState({});
+  const [variantUploading, setVariantUploading] = useState({});
 
   // Form fields
   const [formData, setFormData] = useState({
@@ -49,6 +52,7 @@ export default function ProductsPage() {
     details: '',
     imageUrl: '',
     imageFile: null,
+    variants: [], // Dynamic Product Color Variants
     seoTitle: '',
     seoDescription: '',
     seoKeywords: '',
@@ -126,17 +130,31 @@ export default function ProductsPage() {
       details: '100% Genuine Materials\nMaster Craftsmanship\nFree Express UAE Delivery',
       imageUrl: '',
       imageFile: null,
+      variants: [],
       seoTitle: '',
       seoDescription: '',
       seoKeywords: '',
       slug: ''
     });
     setImagePreview('');
+    setVariantUrlInputs({});
+    setVariantUploading({});
     setModalOpen(true);
   };
 
   const openEditModal = (prod) => {
     setEditingProduct(prod);
+    const existingVariants = Array.isArray(prod.variants) && prod.variants.length > 0
+      ? prod.variants.map((v, idx) => ({
+          id: v.id || `var-${Date.now()}-${idx}`,
+          colorName: v.colorName || '',
+          colorCode: v.colorCode || '#000000',
+          images: Array.isArray(v.images) ? [...v.images] : (v.image ? [v.image] : []),
+          stock: v.stock !== undefined ? v.stock.toString() : '10',
+          sizes: Array.isArray(v.sizes) ? v.sizes.join(', ') : (v.sizes || '')
+        }))
+      : [];
+
     setFormData({
       title: prod.title,
       category: prod.category,
@@ -150,13 +168,114 @@ export default function ProductsPage() {
       details: Array.isArray(prod.details) ? prod.details.join('\n') : '',
       imageUrl: prod.image || '',
       imageFile: null,
+      variants: existingVariants,
       seoTitle: prod.seoTitle || `${prod.title} | Luxury SMP Fashion UAE`,
       seoDescription: prod.seoDescription || prod.description || '',
       seoKeywords: prod.seoKeywords || '',
       slug: prod.slug || prod.title.toLowerCase().replace(/[^a-z0-9]+/g, '-').replace(/(^-|-$)/g, '')
     });
     setImagePreview(prod.image || '');
+    setVariantUrlInputs({});
+    setVariantUploading({});
     setModalOpen(true);
+  };
+
+  // Color Variants Helpers
+  const addVariant = () => {
+    setFormData(prev => ({
+      ...prev,
+      variants: [
+        ...(prev.variants || []),
+        {
+          id: `var-${Date.now()}-${(prev.variants || []).length}`,
+          colorName: '',
+          colorCode: '#111111',
+          images: [],
+          stock: '10',
+          sizes: prev.sizes || ''
+        }
+      ]
+    }));
+  };
+
+  const removeVariant = (index) => {
+    setFormData(prev => ({
+      ...prev,
+      variants: prev.variants.filter((_, i) => i !== index)
+    }));
+  };
+
+  const updateVariant = (index, field, value) => {
+    setFormData(prev => ({
+      ...prev,
+      variants: prev.variants.map((v, i) => i === index ? { ...v, [field]: value } : v)
+    }));
+  };
+
+  const handleVariantFileUpload = async (index, fileList) => {
+    if (!fileList || fileList.length === 0) return;
+    setVariantUploading(prev => ({ ...prev, [index]: true }));
+
+    try {
+      const token = getAuthToken();
+      const files = Array.from(fileList);
+      const newUrls = [];
+
+      for (const file of files) {
+        const uploadData = new FormData();
+        uploadData.append('file', file);
+        uploadData.append('image', file);
+        const res = await authFetch(`${API_BASE}/upload`, {
+          method: 'POST',
+          body: uploadData
+        });
+        if (res.ok) {
+          const data = await res.json();
+          if (data.url) newUrls.push(data.url);
+        } else {
+          const errData = await res.json().catch(() => ({}));
+          console.warn('Upload warning:', res.status, errData);
+        }
+      }
+
+      if (newUrls.length > 0) {
+        setFormData(prev => ({
+          ...prev,
+          variants: prev.variants.map((v, i) => i === index ? {
+            ...v,
+            images: [...(v.images || []), ...newUrls]
+          } : v)
+        }));
+      }
+    } catch (err) {
+      console.error('Variant upload error:', err);
+      alert('Failed to upload variant image. Please try again.');
+    } finally {
+      setVariantUploading(prev => ({ ...prev, [index]: false }));
+    }
+  };
+
+  const handleVariantAddUrl = (index) => {
+    const url = variantUrlInputs[index]?.trim();
+    if (!url) return;
+    setFormData(prev => ({
+      ...prev,
+      variants: prev.variants.map((v, i) => i === index ? {
+        ...v,
+        images: [...(v.images || []), url]
+      } : v)
+    }));
+    setVariantUrlInputs(prev => ({ ...prev, [index]: '' }));
+  };
+
+  const handleVariantRemoveImage = (varIdx, imgIdx) => {
+    setFormData(prev => ({
+      ...prev,
+      variants: prev.variants.map((v, i) => i === varIdx ? {
+        ...v,
+        images: (v.images || []).filter((_, idx) => idx !== imgIdx)
+      } : v)
+    }));
   };
 
   const autoGenerateSeo = () => {
@@ -192,11 +311,20 @@ export default function ProductsPage() {
     setSubmitting(true);
 
     try {
+      const sanitizedVariants = (formData.variants || []).map((v, i) => ({
+        id: v.id || `var-${Date.now()}-${i}`,
+        colorName: v.colorName?.trim() || `Color ${i + 1}`,
+        colorCode: v.colorCode || '#000000',
+        images: (v.images || []).filter(Boolean),
+        stock: v.stock !== undefined && v.stock !== '' ? parseInt(v.stock, 10) : 10,
+        sizes: typeof v.sizes === 'string' ? v.sizes.split(',').map(s => s.trim()).filter(Boolean) : (v.sizes || [])
+      }));
+
       const formPayload = new FormData();
       formPayload.append('title', formData.title);
       formPayload.append('category', formData.category);
       formPayload.append('gender', formData.gender || '');
-      formPayload.append('color', formData.color || '');
+      formPayload.append('color', formData.color || (sanitizedVariants[0]?.colorName || ''));
       formPayload.append('sizes', formData.sizes || '');
       formPayload.append('brand', formData.brand);
       formPayload.append('price', formData.price);
@@ -207,11 +335,14 @@ export default function ProductsPage() {
       formPayload.append('seoDescription', formData.seoDescription);
       formPayload.append('seoKeywords', formData.seoKeywords);
       formPayload.append('slug', formData.slug);
+      formPayload.append('variants', JSON.stringify(sanitizedVariants));
       
       if (formData.imageFile) {
         formPayload.append('imageFile', formData.imageFile);
       } else if (formData.imageUrl) {
         formPayload.append('imageUrl', formData.imageUrl);
+      } else if (sanitizedVariants.length > 0 && sanitizedVariants[0].images?.length > 0) {
+        formPayload.append('imageUrl', sanitizedVariants[0].images[0]);
       }
 
       const url = editingProduct 
@@ -410,11 +541,33 @@ export default function ProductsPage() {
                             <span style={{ fontSize: '11px', color: 'var(--color-text-muted)' }}>
                               ID: {p.id}
                             </span>
-                            {p.color && (
+                            {p.variants && p.variants.length > 0 ? (
+                              <span style={{ display: 'inline-flex', alignItems: 'center', gap: '5px', background: '#F8F4EC', border: '1px solid #E8DEC8', padding: '2px 8px', borderRadius: '4px' }}>
+                                <span style={{ fontSize: '10.5px', color: '#66300F', fontWeight: '700' }}>
+                                  {p.variants.length} Colors:
+                                </span>
+                                <span style={{ display: 'inline-flex', gap: '3px', alignItems: 'center' }}>
+                                  {p.variants.map((v, vIdx) => (
+                                    <span 
+                                      key={v.id || vIdx} 
+                                      title={`${v.colorName || 'Variant'} (${v.stock || 0} in stock)`}
+                                      style={{
+                                        width: '11px',
+                                        height: '11px',
+                                        borderRadius: '50%',
+                                        backgroundColor: v.colorCode || '#000000',
+                                        border: '1px solid rgba(0,0,0,0.25)',
+                                        display: 'inline-block'
+                                      }}
+                                    />
+                                  ))}
+                                </span>
+                              </span>
+                            ) : p.color ? (
                               <span style={{ fontSize: '10.5px', color: '#66300F', background: '#F8F4EC', border: '1px solid #E8DEC8', padding: '1px 6px', borderRadius: '4px', fontWeight: '600' }}>
                                 Color: {p.color}
                               </span>
-                            )}
+                            ) : null}
                             {p.sizes && p.sizes.length > 0 && (
                               <span style={{ fontSize: '10.5px', color: '#1E40AF', background: '#EFF6FF', border: '1px solid #BFDBFE', padding: '1px 6px', borderRadius: '4px', fontWeight: '600' }}>
                                 Sizes: {Array.isArray(p.sizes) ? p.sizes.join(', ') : p.sizes}
@@ -678,6 +831,357 @@ export default function ProductsPage() {
                         <div style={{ fontWeight: '600' }}>Image Selected</div>
                         <div style={{ color: 'var(--color-text-muted)' }}>Will be displayed in high-resolution across store &amp; WhatsApp preview</div>
                       </div>
+                    </div>
+                  )}
+                </div>
+
+                {/* ─── DYNAMIC PRODUCT COLOR VARIANTS BUILDER ─── */}
+                <div style={{ marginTop: '16px', marginBottom: '22px', padding: '18px', background: '#FAF7EF', borderRadius: '12px', border: '1.5px solid #E8E2D2' }}>
+                  <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center', flexWrap: 'wrap', gap: '12px', marginBottom: '14px' }}>
+                    <div>
+                      <div style={{ fontSize: '15px', fontWeight: '700', color: '#66300F', display: 'flex', alignItems: 'center', gap: '8px' }}>
+                        <Palette size={18} color="#A45A28" />
+                        <span>Product Color Variants ({formData.variants?.length || 0})</span>
+                      </div>
+                      <div style={{ fontSize: '12px', color: 'var(--color-text-muted)', marginTop: '2px' }}>
+                        Add multiple color choices (e.g. White, Black, Red, Brown). Customers can switch colors instantly with dedicated images, sizes &amp; stock.
+                      </div>
+                    </div>
+                    <button
+                      type="button"
+                      onClick={addVariant}
+                      className="btn btn-secondary"
+                      style={{
+                        background: '#66300F',
+                        color: '#FFFFFF',
+                        borderColor: '#66300F',
+                        fontSize: '12.5px',
+                        fontWeight: '600',
+                        padding: '7px 14px',
+                        display: 'inline-flex',
+                        alignItems: 'center',
+                        gap: '6px'
+                      }}
+                    >
+                      <Plus size={15} />
+                      <span>Add Color Variant</span>
+                    </button>
+                  </div>
+
+                  {/* Empty State */}
+                  {(!formData.variants || formData.variants.length === 0) ? (
+                    <div style={{ padding: '24px 16px', textAlign: 'center', background: '#FFFFFF', borderRadius: '8px', border: '1px dashed #D8CEBD', color: 'var(--color-text-muted)', fontSize: '13px' }}>
+                      <p style={{ margin: '0 0 8px 0', fontWeight: '600', color: '#66300F' }}>
+                        No color variants added yet.
+                      </p>
+                      <p style={{ margin: 0, fontSize: '12px' }}>
+                        This product will use the single default color &amp; primary image above. Click <strong>&quot;+ Add Color Variant&quot;</strong> to configure colors (e.g. White, Black, Red, Brown).
+                      </p>
+                    </div>
+                  ) : (
+                    <div style={{ display: 'flex', flexDirection: 'column', gap: '16px' }}>
+                      {formData.variants.map((v, idx) => (
+                        <div
+                          key={v.id || idx}
+                          style={{
+                            background: '#FFFFFF',
+                            borderRadius: '10px',
+                            border: '1px solid #E2D9C8',
+                            padding: '16px',
+                            boxShadow: '0 2px 8px rgba(0,0,0,0.03)'
+                          }}
+                        >
+                          {/* Variant Card Header */}
+                          <div style={{ display: 'flex', alignItems: 'center', justifyContent: 'space-between', marginBottom: '14px', paddingBottom: '10px', borderBottom: '1px solid #F0EAE1' }}>
+                            <div style={{ display: 'flex', alignItems: 'center', gap: '10px' }}>
+                              <span
+                                style={{
+                                  width: '18px',
+                                  height: '18px',
+                                  borderRadius: '50%',
+                                  backgroundColor: v.colorCode || '#000000',
+                                  border: '1.5px solid rgba(0,0,0,0.2)',
+                                  display: 'inline-block',
+                                  boxShadow: '0 1px 3px rgba(0,0,0,0.1)'
+                                }}
+                              />
+                              <span style={{ fontWeight: '700', fontSize: '14px', color: '#1F1B18' }}>
+                                {v.colorName ? v.colorName : `Color Variant #${idx + 1}`}
+                              </span>
+                              <span style={{ fontSize: '11px', background: '#F8F4EC', color: '#66300F', padding: '2px 8px', borderRadius: '4px', fontWeight: '600' }}>
+                                {v.images?.length || 0} Image{v.images?.length === 1 ? '' : 's'}
+                              </span>
+                            </div>
+                            <button
+                              type="button"
+                              onClick={() => removeVariant(idx)}
+                              style={{
+                                background: 'transparent',
+                                border: 'none',
+                                color: '#DC2626',
+                                cursor: 'pointer',
+                                display: 'inline-flex',
+                                alignItems: 'center',
+                                gap: '4px',
+                                fontSize: '12px',
+                                fontWeight: '600',
+                                padding: '4px 8px'
+                              }}
+                              title="Remove this color variant"
+                            >
+                              <Trash2 size={14} />
+                              <span>Remove</span>
+                            </button>
+                          </div>
+
+                          {/* Row 1: Color Name, Color Picker, Hex Code, Presets */}
+                          <div style={{ display: 'grid', gridTemplateColumns: '1.2fr 1.2fr', gap: '14px', marginBottom: '12px' }}>
+                            <div className="form-group" style={{ marginBottom: 0 }}>
+                              <label className="form-label" style={{ fontSize: '12px', marginBottom: '4px' }}>
+                                Color Name *
+                              </label>
+                              <input
+                                type="text"
+                                className="form-input"
+                                value={v.colorName}
+                                onChange={(e) => updateVariant(idx, 'colorName', e.target.value)}
+                                placeholder="e.g. Obsidian Black, Ruby Red, Ivory White"
+                                required
+                              />
+                            </div>
+
+                            <div className="form-group" style={{ marginBottom: 0 }}>
+                              <label className="form-label" style={{ fontSize: '12px', marginBottom: '4px' }}>
+                                Color Picker &amp; Hex Code *
+                              </label>
+                              <div style={{ display: 'flex', alignItems: 'center', gap: '8px' }}>
+                                <input
+                                  type="color"
+                                  value={v.colorCode || '#000000'}
+                                  onChange={(e) => updateVariant(idx, 'colorCode', e.target.value)}
+                                  style={{
+                                    width: '42px',
+                                    height: '38px',
+                                    borderRadius: '6px',
+                                    border: '1.5px solid #C18A5B',
+                                    cursor: 'pointer',
+                                    padding: '2px',
+                                    background: '#FFFFFF'
+                                  }}
+                                  title="Choose color from palette"
+                                />
+                                <input
+                                  type="text"
+                                  className="form-input"
+                                  value={v.colorCode}
+                                  onChange={(e) => updateVariant(idx, 'colorCode', e.target.value)}
+                                  placeholder="#800020"
+                                  style={{ flex: 1, fontFamily: 'monospace' }}
+                                />
+                              </div>
+                            </div>
+                          </div>
+
+                          {/* Fast Color Presets */}
+                          <div style={{ marginBottom: '14px', display: 'flex', alignItems: 'center', gap: '6px', flexWrap: 'wrap' }}>
+                            <span style={{ fontSize: '11px', color: 'var(--color-text-muted)', fontWeight: '600' }}>
+                              Quick Presets:
+                            </span>
+                            {[
+                              { name: 'White', hex: '#FFFFFF' },
+                              { name: 'Black', hex: '#111111' },
+                              { name: 'Red / Burgundy', hex: '#800020' },
+                              { name: 'Brown / Cognac', hex: '#8B4513' },
+                              { name: 'Emerald Green', hex: '#064E3B' },
+                              { name: 'Navy Blue', hex: '#1E3A8A' },
+                              { name: 'Beige / Nude', hex: '#E2D5C3' },
+                              { name: 'Gold / Champagne', hex: '#D4AF37' }
+                            ].map((preset) => (
+                              <button
+                                key={preset.name}
+                                type="button"
+                                onClick={() => {
+                                  updateVariant(idx, 'colorCode', preset.hex);
+                                  if (!v.colorName) updateVariant(idx, 'colorName', preset.name);
+                                }}
+                                style={{
+                                  display: 'inline-flex',
+                                  alignItems: 'center',
+                                  gap: '4px',
+                                  padding: '3px 8px',
+                                  borderRadius: '4px',
+                                  border: '1px solid #D8CEBD',
+                                  background: '#FAF7EF',
+                                  fontSize: '11px',
+                                  color: '#4A3B32',
+                                  cursor: 'pointer'
+                                }}
+                              >
+                                <span
+                                  style={{
+                                    width: '9px',
+                                    height: '9px',
+                                    borderRadius: '50%',
+                                    backgroundColor: preset.hex,
+                                    border: '1px solid rgba(0,0,0,0.2)',
+                                    display: 'inline-block'
+                                  }}
+                                />
+                                <span>{preset.name}</span>
+                              </button>
+                            ))}
+                          </div>
+
+                          {/* Row 2: Stock and Sizes */}
+                          <div style={{ display: 'grid', gridTemplateColumns: '1fr 2fr', gap: '14px', marginBottom: '14px' }}>
+                            <div className="form-group" style={{ marginBottom: 0 }}>
+                              <label className="form-label" style={{ fontSize: '12px', marginBottom: '4px' }}>
+                                Variant Stock Quantity
+                              </label>
+                              <input
+                                type="number"
+                                className="form-input"
+                                value={v.stock}
+                                onChange={(e) => updateVariant(idx, 'stock', e.target.value)}
+                                placeholder="10"
+                              />
+                            </div>
+
+                            <div className="form-group" style={{ marginBottom: 0 }}>
+                              <label className="form-label" style={{ fontSize: '12px', marginBottom: '4px' }}>
+                                Variant Available Sizes <span style={{ color: 'var(--color-text-muted)', fontSize: '11px' }}>(Optional - comma separated)</span>
+                              </label>
+                              <input
+                                type="text"
+                                className="form-input"
+                                value={v.sizes}
+                                onChange={(e) => updateVariant(idx, 'sizes', e.target.value)}
+                                placeholder="e.g. 7, 8, 9, 10 or Standard"
+                              />
+                            </div>
+                          </div>
+
+                          {/* Row 3: Variant Images (One or Multiple) */}
+                          <div style={{ background: '#FAF7EF', padding: '12px', borderRadius: '8px', border: '1px solid #E8E2D2' }}>
+                            <label className="form-label" style={{ fontSize: '12px', fontWeight: '700', color: '#66300F', marginBottom: '6px' }}>
+                              📸 Images for this {v.colorName || 'Color'} Variant (One or multiple images)
+                            </label>
+
+                            {/* Upload & URL Buttons */}
+                            <div style={{ display: 'flex', gap: '8px', flexWrap: 'wrap', alignItems: 'center', marginBottom: '10px' }}>
+                              <input
+                                type="file"
+                                multiple
+                                accept="image/*"
+                                id={`var-file-upload-${idx}`}
+                                style={{ display: 'none' }}
+                                onChange={(e) => handleVariantFileUpload(idx, e.target.files)}
+                              />
+                              <button
+                                type="button"
+                                onClick={() => document.getElementById(`var-file-upload-${idx}`)?.click()}
+                                className="btn btn-secondary"
+                                disabled={variantUploading[idx]}
+                                style={{ fontSize: '12px', padding: '6px 12px' }}
+                              >
+                                <Upload size={14} />
+                                <span>{variantUploading[idx] ? 'Uploading...' : 'Upload Photos'}</span>
+                              </button>
+
+                              <div style={{ display: 'flex', flex: 1, minWidth: '220px', gap: '6px' }}>
+                                <input
+                                  type="url"
+                                  placeholder="or paste image URL..."
+                                  value={variantUrlInputs[idx] || ''}
+                                  onChange={(e) => setVariantUrlInputs({ ...variantUrlInputs, [idx]: e.target.value })}
+                                  className="form-input"
+                                  style={{ fontSize: '12px', padding: '6px 10px' }}
+                                />
+                                <button
+                                  type="button"
+                                  onClick={() => handleVariantAddUrl(idx)}
+                                  className="btn btn-secondary"
+                                  style={{ fontSize: '12px', padding: '6px 12px' }}
+                                >
+                                  Add URL
+                                </button>
+                              </div>
+                            </div>
+
+                            {/* Images Preview Grid */}
+                            {v.images && v.images.length > 0 ? (
+                              <div style={{ display: 'flex', gap: '10px', flexWrap: 'wrap', marginTop: '8px' }}>
+                                {v.images.map((imgUrl, imgIdx) => (
+                                  <div
+                                    key={imgIdx}
+                                    style={{
+                                      position: 'relative',
+                                      width: '70px',
+                                      height: '70px',
+                                      borderRadius: '6px',
+                                      overflow: 'hidden',
+                                      border: '1.5px solid #C18A5B',
+                                      backgroundColor: '#FFFFFF',
+                                      boxShadow: '0 2px 5px rgba(0,0,0,0.08)'
+                                    }}
+                                  >
+                                    <img
+                                      src={imgUrl}
+                                      alt={`Variant ${v.colorName} photo ${imgIdx + 1}`}
+                                      style={{ width: '100%', height: '100%', objectFit: 'cover' }}
+                                    />
+                                    <button
+                                      type="button"
+                                      onClick={() => handleVariantRemoveImage(idx, imgIdx)}
+                                      style={{
+                                        position: 'absolute',
+                                        top: '2px',
+                                        right: '2px',
+                                        background: 'rgba(0,0,0,0.65)',
+                                        color: '#FFFFFF',
+                                        border: 'none',
+                                        borderRadius: '50%',
+                                        width: '18px',
+                                        height: '18px',
+                                        display: 'flex',
+                                        alignItems: 'center',
+                                        justifyContent: 'center',
+                                        cursor: 'pointer',
+                                        padding: 0
+                                      }}
+                                      title="Remove photo"
+                                    >
+                                      <X size={12} />
+                                    </button>
+                                    {imgIdx === 0 && (
+                                      <span
+                                        style={{
+                                          position: 'absolute',
+                                          bottom: 0,
+                                          left: 0,
+                                          right: 0,
+                                          background: 'rgba(102, 48, 15, 0.85)',
+                                          color: '#FFFFFF',
+                                          fontSize: '9px',
+                                          fontWeight: '700',
+                                          textAlign: 'center',
+                                          padding: '1px 0'
+                                        }}
+                                      >
+                                        Cover
+                                      </span>
+                                    )}
+                                  </div>
+                                ))}
+                              </div>
+                            ) : (
+                              <div style={{ fontSize: '11.5px', color: 'var(--color-text-muted)', fontStyle: 'italic', marginTop: '4px' }}>
+                                No photos uploaded for this color variant yet. Upload one or more photos above.
+                              </div>
+                            )}
+                          </div>
+                        </div>
+                      ))}
                     </div>
                   )}
                 </div>

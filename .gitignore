@@ -38,3 +38,9 @@ Thumbs.db
 .idea/
 *.swp
 *.swo
+
+# Uploads
+uploads/
+*/uploads/*
+!*/uploads/.gitkeep
+
