@@ -1,6 +1,6 @@
 'use client';
 
-import { useState, useEffect } from 'react';
+import { useState, useEffect, useMemo } from 'react';
 import { useParams, useRouter } from 'next/navigation';
 import Link from 'next/link';
 import {
@@ -54,27 +54,6 @@ const playAddToCartSound = () => {
     osc2.stop(now + 0.44);
   } catch (err) {}
 };
-
-export default function ProductInnerPage() {
-  const params = useParams();
-  const router = useRouter();
-  const id = params?.id;
-
-  const [product, setProduct] = useState(null);
-  const [loading, setLoading] = useState(true);
-  const [selectedVariant, setSelectedVariant] = useState(null);
-  const [activeImageIndex, setActiveImageIndex] = useState(0);
-  const [selectedSize, setSelectedSize] = useState('');
-  const [orderModalOpen, setOrderModalOpen] = useState(false);
-  const [quantity, setQuantity] = useState(1);
-  const [customerName, setCustomerName] = useState('');
-  const [customerPhone, setCustomerPhone] = useState('');
-  const [deliveryAddress, setDeliveryAddress] = useState('');
-  const [emirate, setEmirate] = useState('Dubai');
-  const [notes, setNotes] = useState('');
-  const [submittingOrder, setSubmittingOrder] = useState(false);
-  const [orderSuccess, setOrderSuccess] = useState(false);
-  const [toastMessage, setToastMessage] = useState(null);
 
 // Color resolver fallback helper
 function resolveColorHex(name = '', code = '') {
@@ -131,6 +110,27 @@ function getProductColorOptions(product) {
 
   return options;
 }
+
+export default function ProductInnerPage() {
+  const params = useParams();
+  const router = useRouter();
+  const id = params?.id;
+
+  const [product, setProduct] = useState(null);
+  const [loading, setLoading] = useState(true);
+  const [selectedVariant, setSelectedVariant] = useState(null);
+  const [activeImageIndex, setActiveImageIndex] = useState(0);
+  const [selectedSize, setSelectedSize] = useState('');
+  const [orderModalOpen, setOrderModalOpen] = useState(false);
+  const [quantity, setQuantity] = useState(1);
+  const [customerName, setCustomerName] = useState('');
+  const [customerPhone, setCustomerPhone] = useState('');
+  const [deliveryAddress, setDeliveryAddress] = useState('');
+  const [emirate, setEmirate] = useState('Dubai');
+  const [notes, setNotes] = useState('');
+  const [submittingOrder, setSubmittingOrder] = useState(false);
+  const [orderSuccess, setOrderSuccess] = useState(false);
+  const [toastMessage, setToastMessage] = useState(null);
 
   const colorOptions = useMemo(() => getProductColorOptions(product), [product]);
 
