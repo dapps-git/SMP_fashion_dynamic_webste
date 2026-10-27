@@ -2,6 +2,7 @@
 
 import { useState, useEffect, useRef } from 'react';
 import AdminLayout from '../../components/AdminLayout';
+import AdminModal from '../../components/AdminModal';
 import { authFetch, getAuthHeaders, getAuthToken, API_BASE } from '../../lib/api';
 import { 
   Plus, 
@@ -653,23 +654,14 @@ export default function ProductsPage() {
         </div>
       </div>
 
-      {/* Add / Edit Product Modal */}
-      {modalOpen && (
-        <div className="modal-overlay">
-          <div className="modal-card">
-            <div className="modal-header">
-              <h3 style={{ fontSize: '17px', fontWeight: '700', color: '#66300F' }}>
-                {editingProduct ? 'Edit Fashion Product' : 'Add New Fashion Product'}
-              </h3>
-              <button 
-                onClick={() => setModalOpen(false)}
-                style={{ background: 'none', border: 'none', cursor: 'pointer', color: 'var(--color-text-muted)' }}
-              >
-                <X size={20} />
-              </button>
-            </div>
-
-            <form onSubmit={handleSubmit}>
+      {/* Add / Edit Product Modal (Rendered via Portal: Immune to Parent Clipping) */}
+      <AdminModal
+        isOpen={modalOpen}
+        onClose={() => setModalOpen(false)}
+        title={editingProduct ? 'Edit Fashion Product' : 'Add New Fashion Product'}
+        maxWidth="840px"
+      >
+        <form onSubmit={handleSubmit}>
               <div className="modal-body">
                 {/* Title & Brand */}
                 <div style={{ display: 'grid', gridTemplateColumns: '2fr 1fr', gap: '14px' }}>
@@ -1331,9 +1323,7 @@ export default function ProductsPage() {
                 </button>
               </div>
             </form>
-          </div>
-        </div>
-      )}
+      </AdminModal>
     </AdminLayout>
   );
 }

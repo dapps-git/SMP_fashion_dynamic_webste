@@ -2,6 +2,7 @@
 
 import { useState, useEffect } from 'react';
 import AdminLayout from '../../components/AdminLayout';
+import AdminModal from '../../components/AdminModal';
 import { getAuthHeaders, API_BASE } from '../../lib/api';
 import { Plus, Trash2, Sparkles, X, Image as ImageIcon, Upload } from 'lucide-react';
 
@@ -256,101 +257,92 @@ export default function BrandsPage() {
         })}
       </div>
 
-      {/* Add Brand Modal */}
-      {modalOpen && (
-        <div className="modal-overlay">
-          <div className="modal-card">
-            <div className="modal-header">
-              <h3 style={{ fontSize: '17px', fontWeight: '700', color: '#66300F' }}>Add Luxury Brand</h3>
-              <button 
-                onClick={() => setModalOpen(false)}
-                style={{ background: 'none', border: 'none', cursor: 'pointer', color: 'var(--color-text-muted)' }}
-              >
-                <X size={20} />
-              </button>
+      {/* Add Brand Modal (Rendered via Portal: Immune to Parent Clipping) */}
+      <AdminModal
+        isOpen={modalOpen}
+        onClose={() => setModalOpen(false)}
+        title="Add Luxury Brand"
+        maxWidth="640px"
+      >
+        <form onSubmit={handleCreate}>
+          <div className="modal-body">
+            <div className="form-group">
+              <label className="form-label">Brand Name *</label>
+              <input 
+                type="text" 
+                className="form-input" 
+                value={formData.name}
+                onChange={(e) => setFormData({ ...formData, name: e.target.value })}
+                placeholder="e.g. Richard Mille, Rolex, Audemars Piguet, Cartier"
+                required
+              />
             </div>
 
-            <form onSubmit={handleCreate}>
-              <div className="modal-body">
-                <div className="form-group">
-                  <label className="form-label">Brand Name *</label>
+            <div className="form-group">
+              <label className="form-label">Brand Logo Image</label>
+              <div style={{ display: 'flex', gap: '10px', alignItems: 'center' }}>
+                <input 
+                  type="text" 
+                  className="form-input" 
+                  value={formData.logo}
+                  onChange={(e) => setFormData({ ...formData, logo: e.target.value })}
+                  placeholder="/IMG_9307.PNG or https://..."
+                  style={{ flex: 1 }}
+                />
+                <label className="btn btn-secondary" style={{ cursor: 'pointer', margin: 0 }}>
+                  <Upload size={14} />
+                  <span>{uploading ? 'Uploading...' : 'Upload'}</span>
                   <input 
-                    type="text" 
-                    className="form-input" 
-                    value={formData.name}
-                    onChange={(e) => setFormData({ ...formData, name: e.target.value })}
-                    placeholder="e.g. Richard Mille, Rolex, Audemars Piguet, Cartier"
-                    required
+                    type="file" 
+                    accept="image/*" 
+                    onChange={handleImageUpload} 
+                    style={{ display: 'none' }} 
+                    disabled={uploading}
+                  />
+                </label>
+              </div>
+              {formData.logo && (
+                <div style={{ marginTop: '10px', padding: '10px', background: '#FAF7EF', borderRadius: '6px', textAlign: 'center' }}>
+                  <img 
+                    src={formData.logo} 
+                    alt="Logo preview" 
+                    style={{ maxHeight: '40px', maxWidth: '120px', objectFit: 'contain', mixBlendMode: 'multiply' }} 
                   />
                 </div>
+              )}
+            </div>
 
-                <div className="form-group">
-                  <label className="form-label">Brand Logo Image</label>
-                  <div style={{ display: 'flex', gap: '10px', alignItems: 'center' }}>
-                    <input 
-                      type="text" 
-                      className="form-input" 
-                      value={formData.logo}
-                      onChange={(e) => setFormData({ ...formData, logo: e.target.value })}
-                      placeholder="/IMG_9307.PNG or https://..."
-                      style={{ flex: 1 }}
-                    />
-                    <label className="btn btn-secondary" style={{ cursor: 'pointer', margin: 0 }}>
-                      <Upload size={14} />
-                      <span>{uploading ? 'Uploading...' : 'Upload'}</span>
-                      <input 
-                        type="file" 
-                        accept="image/*" 
-                        onChange={handleImageUpload} 
-                        style={{ display: 'none' }} 
-                        disabled={uploading}
-                      />
-                    </label>
-                  </div>
-                  {formData.logo && (
-                    <div style={{ marginTop: '10px', padding: '10px', background: '#FAF7EF', borderRadius: '6px', textAlign: 'center' }}>
-                      <img 
-                        src={formData.logo} 
-                        alt="Logo preview" 
-                        style={{ maxHeight: '40px', maxWidth: '120px', objectFit: 'contain', mixBlendMode: 'multiply' }} 
-                      />
-                    </div>
-                  )}
-                </div>
-
-                <div className="form-group" style={{ marginBottom: 0 }}>
-                  <label className="form-label">Description</label>
-                  <textarea 
-                    rows={3}
-                    className="form-textarea"
-                    value={formData.description}
-                    onChange={(e) => setFormData({ ...formData, description: e.target.value })}
-                    placeholder="Short description of the brand atelier, origin, or specialty..."
-                  />
-                </div>
-              </div>
-
-              <div className="modal-footer">
-                <button 
-                  type="button" 
-                  onClick={() => setModalOpen(false)} 
-                  className="btn btn-secondary"
-                  disabled={submitting}
-                >
-                  Cancel
-                </button>
-                <button 
-                  type="submit" 
-                  className="btn btn-primary"
-                  disabled={submitting}
-                >
-                  {submitting ? 'Creating...' : 'Create Brand'}
-                </button>
-              </div>
-            </form>
+            <div className="form-group" style={{ marginBottom: 0 }}>
+              <label className="form-label">Description</label>
+              <textarea 
+                rows={3}
+                className="form-textarea"
+                value={formData.description}
+                onChange={(e) => setFormData({ ...formData, description: e.target.value })}
+                placeholder="Short description of the brand atelier, origin, or specialty..."
+              />
+            </div>
           </div>
-        </div>
-      )}
+
+          <div className="modal-footer">
+            <button 
+              type="button" 
+              onClick={() => setModalOpen(false)} 
+              className="btn btn-secondary"
+              disabled={submitting}
+            >
+              Cancel
+            </button>
+            <button 
+              type="submit" 
+              className="btn btn-primary"
+              disabled={submitting}
+            >
+              {submitting ? 'Creating...' : 'Create Brand'}
+            </button>
+          </div>
+        </form>
+      </AdminModal>
     </AdminLayout>
   );
 }

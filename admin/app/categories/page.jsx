@@ -2,6 +2,7 @@
 
 import { useState, useEffect } from 'react';
 import AdminLayout from '../../components/AdminLayout';
+import AdminModal from '../../components/AdminModal';
 import { getAuthHeaders, API_BASE } from '../../lib/api';
 import { Plus, Trash2, Layers, X, Sparkles, Image as ImageIcon } from 'lucide-react';
 
@@ -152,78 +153,69 @@ export default function CategoriesPage() {
         ))}
       </div>
 
-      {/* Add Category Modal */}
-      {modalOpen && (
-        <div className="modal-overlay">
-          <div className="modal-card">
-            <div className="modal-header">
-              <h3 style={{ fontSize: '17px', fontWeight: '700', color: '#66300F' }}>Add New Fashion Category</h3>
-              <button 
-                onClick={() => setModalOpen(false)}
-                style={{ background: 'none', border: 'none', cursor: 'pointer', color: 'var(--color-text-muted)' }}
-              >
-                <X size={20} />
-              </button>
+      {/* Add Category Modal (Rendered via Portal: Immune to Parent Clipping) */}
+      <AdminModal
+        isOpen={modalOpen}
+        onClose={() => setModalOpen(false)}
+        title="Add New Fashion Category"
+        maxWidth="620px"
+      >
+        <form onSubmit={handleCreate}>
+          <div className="modal-body">
+            <div className="form-group">
+              <label className="form-label">Category Name *</label>
+              <input 
+                type="text" 
+                className="form-input" 
+                value={formData.name}
+                onChange={(e) => setFormData({ ...formData, name: e.target.value })}
+                placeholder="e.g. Footwear, Watches, Bags, Jewelry"
+                required
+              />
             </div>
 
-            <form onSubmit={handleCreate}>
-              <div className="modal-body">
-                <div className="form-group">
-                  <label className="form-label">Category Name *</label>
-                  <input 
-                    type="text" 
-                    className="form-input" 
-                    value={formData.name}
-                    onChange={(e) => setFormData({ ...formData, name: e.target.value })}
-                    placeholder="e.g. Footwear, Watches, Bags, Jewelry"
-                    required
-                  />
-                </div>
+            <div className="form-group">
+              <label className="form-label">Banner Image URL</label>
+              <input 
+                type="url" 
+                className="form-input" 
+                value={formData.image}
+                onChange={(e) => setFormData({ ...formData, image: e.target.value })}
+                placeholder="https://images.unsplash.com/photo-..."
+              />
+            </div>
 
-                <div className="form-group">
-                  <label className="form-label">Banner Image URL</label>
-                  <input 
-                    type="url" 
-                    className="form-input" 
-                    value={formData.image}
-                    onChange={(e) => setFormData({ ...formData, image: e.target.value })}
-                    placeholder="https://images.unsplash.com/photo-..."
-                  />
-                </div>
-
-                <div className="form-group" style={{ marginBottom: 0 }}>
-                  <label className="form-label">Description</label>
-                  <textarea 
-                    rows={3}
-                    className="form-textarea"
-                    value={formData.description}
-                    onChange={(e) => setFormData({ ...formData, description: e.target.value })}
-                    placeholder="Short description of items in this luxury collection..."
-                  />
-                </div>
-              </div>
-
-              <div className="modal-footer">
-                <button 
-                  type="button" 
-                  onClick={() => setModalOpen(false)} 
-                  className="btn btn-secondary"
-                  disabled={submitting}
-                >
-                  Cancel
-                </button>
-                <button 
-                  type="submit" 
-                  className="btn btn-primary"
-                  disabled={submitting}
-                >
-                  {submitting ? 'Creating...' : 'Create Category'}
-                </button>
-              </div>
-            </form>
+            <div className="form-group" style={{ marginBottom: 0 }}>
+              <label className="form-label">Description</label>
+              <textarea 
+                rows={3}
+                className="form-textarea"
+                value={formData.description}
+                onChange={(e) => setFormData({ ...formData, description: e.target.value })}
+                placeholder="Short description of items in this luxury collection..."
+              />
+            </div>
           </div>
-        </div>
-      )}
+
+          <div className="modal-footer">
+            <button 
+              type="button" 
+              onClick={() => setModalOpen(false)} 
+              className="btn btn-secondary"
+              disabled={submitting}
+            >
+              Cancel
+            </button>
+            <button 
+              type="submit" 
+              className="btn btn-primary"
+              disabled={submitting}
+            >
+              {submitting ? 'Creating...' : 'Create Category'}
+            </button>
+          </div>
+        </form>
+      </AdminModal>
     </AdminLayout>
   );
 }

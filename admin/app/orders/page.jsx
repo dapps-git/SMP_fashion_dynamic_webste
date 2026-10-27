@@ -2,6 +2,7 @@
 
 import { useState, useEffect } from 'react';
 import AdminLayout from '../../components/AdminLayout';
+import AdminModal from '../../components/AdminModal';
 import { getAuthHeaders, API_BASE } from '../../lib/api';
 import { 
   ShoppingCart, 
@@ -311,27 +312,15 @@ export default function OrdersPage() {
         </div>
       </div>
 
-      {/* Order Detail Modal */}
-      {selectedOrder && (
-        <div className="modal-overlay">
-          <div className="modal-card" style={{ maxWidth: '600px' }}>
-            <div className="modal-header">
-              <div>
-                <h3 style={{ fontSize: '18px', fontWeight: '700', color: '#66300F' }}>
-                  Order Details: {selectedOrder.id}
-                </h3>
-                <p style={{ fontSize: '12px', color: 'var(--color-text-muted)' }}>
-                  Placed on {new Date(selectedOrder.createdAt).toLocaleString()}
-                </p>
-              </div>
-              <button 
-                onClick={() => setSelectedOrder(null)}
-                style={{ background: 'none', border: 'none', cursor: 'pointer', color: 'var(--color-text-muted)' }}
-              >
-                <X size={20} />
-              </button>
-            </div>
-
+      {/* Order Detail Modal (Rendered via Portal: Immune to Parent Clipping) */}
+      <AdminModal
+        isOpen={!!selectedOrder}
+        onClose={() => setSelectedOrder(null)}
+        title={selectedOrder ? `Order Details: ${selectedOrder.id}` : ''}
+        maxWidth="680px"
+      >
+        {selectedOrder && (
+          <>
             <div className="modal-body">
               {/* Customer Box */}
               <div style={{ background: '#FAF7EF', border: '1px solid #E8E2D2', borderRadius: '12px', padding: '16px', marginBottom: '20px' }}>
@@ -434,9 +423,9 @@ export default function OrdersPage() {
                 Close
               </button>
             </div>
-          </div>
-        </div>
-      )}
+          </>
+        )}
+      </AdminModal>
     </AdminLayout>
   );
 }

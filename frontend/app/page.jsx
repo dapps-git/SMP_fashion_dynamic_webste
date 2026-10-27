@@ -28,7 +28,8 @@ import {
   Minus,
   Home as HomeIcon,
   Tag,
-  ChevronDown
+  ChevronDown,
+  Package
 } from 'lucide-react';
 
 const WHATSAPP_NUMBER = '971525973132'; // +971 52 597 3132
@@ -429,7 +430,7 @@ function StorefrontProductCard({ product, onQuickView, onBuyNow, onAddToCart }) 
 }
 
 export default function StorefrontPage() {
-  const [products, setProducts] = useState(FALLBACK_PRODUCTS);
+  const [products, setProducts] = useState([]);
   const [activeCategory, setActiveCategory] = useState('all');
   const [activeGender, setActiveGender] = useState('all'); // 'all', 'men', 'women'
   const [activeBrand, setActiveBrand] = useState('all');
@@ -439,37 +440,42 @@ export default function StorefrontPage() {
   const [priceFilter, setPriceFilter] = useState('all');
   const [showPriceFilter, setShowPriceFilter] = useState(false);
   const [showBrandFilter, setShowBrandFilter] = useState(false);
-  const [loading, setLoading] = useState(false);
+  const [loading, setLoading] = useState(true);
   const [mobileMenuOpen, setMobileMenuOpen] = useState(false);
 
   // Fetch live products and brands from backend
   useEffect(() => {
+    let isMounted = true;
     const fetchData = async () => {
+      setLoading(true);
       try {
         const prodRes = await fetch(`${API_BASE}/products`);
         if (prodRes.ok) {
           const prodData = await prodRes.json();
-          if (Array.isArray(prodData) && prodData.length > 0) {
+          if (isMounted && Array.isArray(prodData) && prodData.length > 0) {
             setProducts(prodData);
           }
         }
       } catch (err) {
-        console.warn('Live products fallback:', err);
+        console.warn('Live products fetch notice:', err);
+      } finally {
+        if (isMounted) setLoading(false);
       }
 
       try {
         const brandRes = await fetch(`${API_BASE}/brands`);
         if (brandRes.ok) {
           const brandData = await brandRes.json();
-          if (Array.isArray(brandData) && brandData.length > 0) {
+          if (isMounted && Array.isArray(brandData) && brandData.length > 0) {
             setBrandsList(brandData);
           }
         }
       } catch (err) {
-        console.warn('Live brands fallback:', err);
+        console.warn('Live brands fetch notice:', err);
       }
     };
     fetchData();
+    return () => { isMounted = false; };
   }, []);
 
   // Quick View Modal
@@ -598,28 +604,6 @@ ${itemList}
 
 Hello SMP, I would like to order these items from my shopping bag.`;
     window.open(`https://wa.me/${WHATSAPP_NUMBER}?text=${encodeURIComponent(msg)}`, '_blank');
-  };
-
-  // Fetch products from backend
-  useEffect(() => {
-    fetchProducts();
-  }, []);
-
-  const fetchProducts = async () => {
-    try {
-      setLoading(true);
-      const res = await fetch(`${API_BASE}/products`);
-      if (res.ok) {
-        const data = await res.json();
-        if (Array.isArray(data) && data.length > 0) {
-          setProducts(data);
-        }
-      }
-    } catch (err) {
-      console.log('Backend offline or fetching error, using curated data:', err);
-    } finally {
-      setLoading(false);
-    }
   };
 
   // Open Buy Now Modal for single product
@@ -1420,65 +1404,108 @@ Please confirm my order and arrange delivery. Thank you!`;
             </div>
           )}
 
-          {/* 6 Products in One Row on Laptop View, 2 on Mobile */}
-          <div className="products-grid-6col">
-            {filteredProducts.map((p, pIdx) => (
-              <React.Fragment key={p.id}>
-                <StorefrontProductCard
-                  product={p}
-                  onQuickView={handleOpenQuickView}
-                  onBuyNow={handleOpenBuyNow}
-                  onAddToCart={addToCart}
-                />
-
-                {/* Brand Logos Train Marquee after 4 Products (Dynamic) */}
-                {pIdx === 3 && (
-                  <div className="collection-brand-train-wrapper">
-                    <div className="brand-train-section" aria-label="Luxury Brands">
-                      <div className="brand-train-track brand-train-forward">
-                        {(() => {
-                          const validBrands = brandsList.filter(b => b.logo || b.src);
-                          const displayBrands = validBrands.length > 0 ? validBrands : INITIAL_FALLBACK_BRANDS;
-                          return [...displayBrands, ...displayBrands, ...displayBrands, ...displayBrands].map((brand, bIdx) => (
-                            <div 
-                              key={`brand-train-${bIdx}`} 
-                              className="brand-train-item"
-                              onClick={() => {
-                                setActiveBrand(brand.name);
-                                const el = document.getElementById('collections');
-                                if (el) el.scrollIntoView({ behavior: 'smooth' });
-                              }}
-                              title={`Filter by ${brand.name}`}
-                              style={{ cursor: 'pointer' }}
-                            >
-                              <img
-                                src={brand.logo || brand.src}
-                                alt={brand.name}
-                                className="brand-train-logo"
-                                loading="lazy"
-                              />
-                            </div>
-                          ));
-                        })()}
-                      </div>
+          {/* 6 Products in One Row on Laptop View, 2 on Mobile with Shimmer Skeleton Loading */}
+          {loading ? (
+            <div className="products-grid-6col" aria-label="Loading products">
+              {Array.from({ length: 12 }).map((_, sIdx) => (
+                <div key={`prod-skeleton-${sIdx}`} className="editorial-card skeleton-card">
+                  <div className="editorial-img-wrap skeleton-box skeleton-img" />
+                  <div className="editorial-info">
+                    <div className="skeleton-box skeleton-brand" />
+                    <div className="skeleton-box skeleton-title" />
+                    <div className="skeleton-box skeleton-price" />
+                    <div className="skeleton-actions-row">
+                      <div className="skeleton-box skeleton-btn" />
+                      <div className="skeleton-box skeleton-btn-small" />
                     </div>
                   </div>
-                )}
+                </div>
+              ))}
+            </div>
+          ) : filteredProducts.length > 0 ? (
+            <div className="products-grid-6col">
+              {filteredProducts.map((p, pIdx) => (
+                <React.Fragment key={p.id}>
+                  <StorefrontProductCard
+                    product={p}
+                    onQuickView={handleOpenQuickView}
+                    onBuyNow={handleOpenBuyNow}
+                    onAddToCart={addToCart}
+                  />
 
-                {/* 4-Step Order Process Infographic Banner after 10 Products */}
-                {pIdx === 9 && (
-                  <div className="collection-order-process-banner">
-                    <img
-                      src="/order-process-banner.png"
-                      alt="SMP Order Process - Search Products, Order Through WhatsApp, Inspect Before Payment, Happy Delivery"
-                      className="collection-order-process-img"
-                      loading="lazy"
-                    />
-                  </div>
-                )}
-              </React.Fragment>
-            ))}
-          </div>
+                  {/* Brand Logos Train Marquee after 4 Products (Dynamic) */}
+                  {pIdx === 3 && (
+                    <div className="collection-brand-train-wrapper">
+                      <div className="brand-train-section" aria-label="Luxury Brands">
+                        <div className="brand-train-track brand-train-forward">
+                          {(() => {
+                            const validBrands = brandsList.filter(b => b.logo || b.src);
+                            const displayBrands = validBrands.length > 0 ? validBrands : INITIAL_FALLBACK_BRANDS;
+                            return [...displayBrands, ...displayBrands, ...displayBrands, ...displayBrands].map((brand, bIdx) => (
+                              <div 
+                                key={`brand-train-${bIdx}`} 
+                                className="brand-train-item"
+                                onClick={() => {
+                                  setActiveBrand(brand.name);
+                                  const el = document.getElementById('collections');
+                                  if (el) el.scrollIntoView({ behavior: 'smooth' });
+                                }}
+                                title={`Filter by ${brand.name}`}
+                                style={{ cursor: 'pointer' }}
+                              >
+                                <img
+                                  src={brand.logo || brand.src}
+                                  alt={brand.name}
+                                  className="brand-train-logo"
+                                  loading="lazy"
+                                />
+                              </div>
+                            ));
+                          })()}
+                        </div>
+                      </div>
+                    </div>
+                  )}
+
+                  {/* 4-Step Order Process Infographic Banner after 10 Products */}
+                  {pIdx === 9 && (
+                    <div className="collection-order-process-banner">
+                      <img
+                        src="/order-process-banner.png"
+                        alt="SMP Order Process - Search Products, Order Through WhatsApp, Inspect Before Payment, Happy Delivery"
+                        className="collection-order-process-img"
+                        loading="lazy"
+                      />
+                    </div>
+                  )}
+                </React.Fragment>
+              ))}
+            </div>
+          ) : (
+            <div style={{ textAlign: 'center', padding: '60px 20px', color: '#786F66' }}>
+              <Package size={44} color="#D1C7B7" style={{ margin: '0 auto 16px' }} />
+              <h3 style={{ fontSize: '18px', fontWeight: '700', color: '#1C1917', marginBottom: '8px' }}>
+                No Products Found
+              </h3>
+              <p style={{ fontSize: '13px', marginBottom: '22px' }}>
+                No luxury pieces match your current filters. Try selecting another brand or clearing filters.
+              </p>
+              <button
+                type="button"
+                onClick={() => {
+                  setActiveCategory('all');
+                  setActiveBrand('all');
+                  setActiveGender('all');
+                  setPriceFilter('all');
+                  setSearchQuery('');
+                }}
+                className="btn-buy-now-solid"
+                style={{ display: 'inline-block', maxWidth: '220px', margin: '0 auto', padding: '10px 20px', fontSize: '13px' }}
+              >
+                Reset All Filters
+              </button>
+            </div>
+          )}
 
         </div>
       </section>

@@ -3132,4 +3132,75 @@ input, select, textarea {
   transition: opacity 0.2s ease-in-out;
 }
 
+/* ─── Luxury Shimmer Skeleton Loading ───────────────────────── */
+@keyframes luxurySkeletonShimmer {
+  0% {
+    background-position: -200% 0;
+  }
+  100% {
+    background-position: 200% 0;
+  }
+}
+
+.skeleton-box {
+  background: linear-gradient(
+    90deg,
+    #F4EFE6 0%,
+    #E8E0D2 50%,
+    #F4EFE6 100%
+  );
+  background-size: 200% 100%;
+  animation: luxurySkeletonShimmer 1.5s infinite ease-in-out;
+  border-radius: 4px;
+}
+
+.skeleton-card {
+  pointer-events: none;
+  user-select: none;
+}
+
+.skeleton-img {
+  width: 100%;
+  aspect-ratio: 1 / 1;
+  border-radius: 0;
+}
+
+.skeleton-brand {
+  width: 40%;
+  height: 11px;
+  margin-top: 2px;
+  margin-bottom: 6px;
+}
+
+.skeleton-title {
+  width: 80%;
+  height: 14px;
+  margin-bottom: 8px;
+}
+
+.skeleton-price {
+  width: 35%;
+  height: 15px;
+  margin-bottom: 12px;
+}
+
+.skeleton-actions-row {
+  display: flex;
+  gap: 6px;
+  align-items: center;
+}
+
+.skeleton-btn {
+  flex: 1;
+  height: 34px;
+  border-radius: 4px;
+}
+
+.skeleton-btn-small {
+  width: 34px;
+  height: 34px;
+  border-radius: 4px;
+}
+
+
 
