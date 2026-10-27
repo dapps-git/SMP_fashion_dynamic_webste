@@ -645,6 +645,9 @@ app.put('/api/products/:id', authenticateToken, upload.any(), async (req, res) =
         parsedVariants = [];
       }
       updateFields.variants = parsedVariants;
+      if (!updateFields.image && parsedVariants.length > 0 && parsedVariants[0].images?.length > 0) {
+        updateFields.image = parsedVariants[0].images[0];
+      }
     }
 
     if (mongoose.connection.readyState === 1) {
