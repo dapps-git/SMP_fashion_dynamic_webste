@@ -2564,11 +2564,11 @@ input, select, textarea {
 }
 
 .brand-train-forward {
-  animation: brandTrainForward 26s linear infinite;
+  animation: brandTrainForward 55s linear infinite;
 }
 
 .brand-train-reverse {
-  animation: brandTrainReverse 26s linear infinite;
+  animation: brandTrainReverse 55s linear infinite;
 }
 
 .brand-train-section:hover .brand-train-track {
@@ -2624,6 +2624,12 @@ input, select, textarea {
 }
 
 @media (max-width: 768px) {
+  .brand-train-forward {
+    animation-duration: 48s !important;
+  }
+  .brand-train-reverse {
+    animation-duration: 48s !important;
+  }
   .brand-train-section {
     padding: 16px 0;
   }
