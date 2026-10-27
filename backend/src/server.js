@@ -513,7 +513,7 @@ app.get('/api/products/:id', async (req, res) => {
 // Protected product mutations
 app.post('/api/products', authenticateToken, handleUpload, async (req, res) => {
   try {
-    const { title, category, brand, price, comparePrice, stock, description, badge, details, imageUrl, seoTitle, seoDescription, seoKeywords, slug, gender, color, sizes, variants } = req.body;
+    const { title, category, brand, price, comparePrice, stock, description, badge, details, imageUrl, seoTitle, seoDescription, seoKeywords, slug, gender, color, colorCode, sizes, variants } = req.body;
     if (!title || !price) return res.status(400).json({ error: 'Title and price are required' });
 
     let finalImage = imageUrl || '';
@@ -582,6 +582,7 @@ app.post('/api/products', authenticateToken, handleUpload, async (req, res) => {
       categoryName: category ? category.charAt(0).toUpperCase() + category.slice(1) : 'General',
       gender: gender ? gender.toLowerCase() : '',
       color: color ? color.trim() : (parsedVariants[0]?.colorName || ''),
+      colorCode: colorCode ? colorCode.trim() : (parsedVariants[0]?.colorCode || '#111111'),
       sizes: parsedSizes,
       variants: parsedVariants,
       brand: brand || 'SMP Luxury',
@@ -623,7 +624,7 @@ app.post('/api/products', authenticateToken, handleUpload, async (req, res) => {
 
 app.put('/api/products/:id', authenticateToken, handleUpload, async (req, res) => {
   try {
-    const { title, category, brand, price, comparePrice, stock, description, badge, details, imageUrl, seoTitle, seoDescription, seoKeywords, slug, gender, color, sizes, variants } = req.body;
+    const { title, category, brand, price, comparePrice, stock, description, badge, details, imageUrl, seoTitle, seoDescription, seoKeywords, slug, gender, color, colorCode, sizes, variants } = req.body;
 
     let finalImage = imageUrl;
     let imagePublicId = '';
@@ -656,6 +657,7 @@ app.put('/api/products/:id', authenticateToken, handleUpload, async (req, res) =
     if (category !== undefined) updateFields.category = category;
     if (gender !== undefined) updateFields.gender = gender ? gender.toLowerCase() : '';
     if (color !== undefined) updateFields.color = color ? color.trim() : '';
+    if (colorCode !== undefined) updateFields.colorCode = colorCode ? colorCode.trim() : '#111111';
     if (parsedSizes !== undefined) updateFields.sizes = parsedSizes;
     if (brand !== undefined) updateFields.brand = brand;
     if (pNum !== undefined) updateFields.price = pNum;

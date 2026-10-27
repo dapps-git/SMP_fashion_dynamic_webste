@@ -76,24 +76,80 @@ export default function ProductInnerPage() {
   const [orderSuccess, setOrderSuccess] = useState(false);
   const [toastMessage, setToastMessage] = useState(null);
 
+// Color resolver fallback helper
+function resolveColorHex(name = '', code = '') {
+  if (code && typeof code === 'string' && code.trim().startsWith('#')) return code.trim();
+  const lower = (name || '').toLowerCase();
+  if (lower.includes('white') || lower.includes('cream')) return '#FFFFFF';
+  if (lower.includes('black') || lower.includes('noir') || lower.includes('dark')) return '#111111';
+  if (lower.includes('red') || lower.includes('burgundy') || lower.includes('maroon') || lower.includes('wine')) return '#800020';
+  if (lower.includes('brown') || lower.includes('cognac') || lower.includes('tan') || lower.includes('chocolate')) return '#8B4513';
+  if (lower.includes('green') || lower.includes('emerald') || lower.includes('olive')) return '#064E3B';
+  if (lower.includes('blue') || lower.includes('navy') || lower.includes('azure')) return '#1E3A8A';
+  if (lower.includes('beige') || lower.includes('nude') || lower.includes('sand')) return '#E2D5C3';
+  if (lower.includes('gold') || lower.includes('champagne') || lower.includes('yellow')) return '#D4AF37';
+  if (lower.includes('silver') || lower.includes('grey') || lower.includes('gray')) return '#9CA3AF';
+  if (lower.includes('pink') || lower.includes('rose')) return '#F472B6';
+  return '#1A1817';
+}
+
+function getProductColorOptions(product) {
+  if (!product) return [];
+  const variants = Array.isArray(product.variants) ? product.variants : [];
+  
+  const isImageInVariants = product.image && variants.some((v) => 
+    v.images && v.images.length > 0 && (v.images[0] === product.image || v.images.includes(product.image))
+  );
+
+  const options = [];
+
+  if (product.image || product.color) {
+    if (!isImageInVariants || variants.length === 0) {
+      options.push({
+        id: 'primary',
+        isPrimary: true,
+        colorName: product.color || 'Primary',
+        colorCode: resolveColorHex(product.color, product.colorCode),
+        images: product.image ? [product.image] : [],
+        stock: product.stock !== undefined ? product.stock : 10,
+        sizes: product.sizes || []
+      });
+    }
+  }
+
+  variants.forEach((v, idx) => {
+    options.push({
+      id: v.id || `var-${idx}`,
+      isPrimary: false,
+      colorName: v.colorName || `Color ${idx + 1}`,
+      colorCode: resolveColorHex(v.colorName, v.colorCode),
+      images: Array.isArray(v.images) ? v.images.filter(Boolean) : (v.image ? [v.image] : []),
+      stock: v.stock !== undefined && v.stock !== '' ? Number(v.stock) : (product.stock ?? 10),
+      sizes: Array.isArray(v.sizes) ? v.sizes : (product.sizes || [])
+    });
+  });
+
+  return options;
+}
+
+  const colorOptions = useMemo(() => getProductColorOptions(product), [product]);
+
   useEffect(() => {
     if (!id) return;
     fetchProduct();
   }, [id]);
 
-  // Preload variant images for zero-lag instant switching
+  // Preload all color option images for zero-lag instant switching
   useEffect(() => {
-    if (product?.variants && product.variants.length > 0) {
-      product.variants.forEach((v) => {
-        if (v.images && v.images.length > 0) {
-          v.images.forEach((imgUrl) => {
-            const preloadImg = new Image();
-            preloadImg.src = imgUrl;
-          });
-        }
-      });
-    }
-  }, [product]);
+    colorOptions.forEach((opt) => {
+      if (opt.images && opt.images.length > 0) {
+        opt.images.forEach((imgUrl) => {
+          const preloadImg = new Image();
+          preloadImg.src = imgUrl;
+        });
+      }
+    });
+  }, [colorOptions]);
 
   const fetchProduct = async () => {
     try {
@@ -102,10 +158,11 @@ export default function ProductInnerPage() {
       if (res.ok) {
         const data = await res.json();
         setProduct(data);
-        if (data.variants && data.variants.length > 0) {
-          setSelectedVariant(data.variants[0]);
-          if (data.variants[0].sizes && data.variants[0].sizes.length > 0) {
-            setSelectedSize(data.variants[0].sizes[0]);
+        const colorOpts = getProductColorOptions(data);
+        if (colorOpts.length > 0) {
+          setSelectedVariant(colorOpts[0]);
+          if (colorOpts[0].sizes && colorOpts[0].sizes.length > 0) {
+            setSelectedSize(colorOpts[0].sizes[0]);
           } else if (data.sizes && data.sizes.length > 0) {
             setSelectedSize(data.sizes[0]);
           }
@@ -131,7 +188,7 @@ export default function ProductInnerPage() {
     }
   };
 
-  const currentVariant = selectedVariant || (product?.variants && product.variants.length > 0 ? product.variants[0] : null);
+  const currentVariant = selectedVariant || (colorOptions.length > 0 ? colorOptions[0] : null);
   const variantImages = (currentVariant?.images && currentVariant.images.length > 0)
     ? currentVariant.images
     : (product?.image ? [product.image] : []);
@@ -336,12 +393,12 @@ Please confirm my order and arrange delivery. Thank you!`;
               </span>
             </div>
 
-            {/* Color Swatches Selector */}
-            {product.variants && product.variants.length > 0 ? (
+            {/* Color Swatches Selector (Shows First Image Color + Variants) */}
+            {colorOptions.length > 1 ? (
               <div style={{ margin: '6px 0 18px 0', background: '#FAF7EF', padding: '14px 16px', borderRadius: '8px', border: '1px solid #E8E2D5' }}>
                 <div style={{ display: 'flex', alignItems: 'center', justifyContent: 'space-between', marginBottom: '10px' }}>
                   <span style={{ fontSize: '12px', textTransform: 'uppercase', letterSpacing: '1px', color: '#66300F', fontWeight: '700' }}>
-                    Available Colors ({product.variants.length}):
+                    Available Colors ({colorOptions.length}):
                   </span>
                   {activeColor && (
                     <span style={{ fontSize: '12.5px', color: '#66300F', fontWeight: '700' }}>
@@ -350,21 +407,21 @@ Please confirm my order and arrange delivery. Thank you!`;
                   )}
                 </div>
                 <div className="detail-variant-swatches-wrap">
-                  {product.variants.map((v) => {
-                    const isSelected = (currentVariant?.id === v.id);
+                  {colorOptions.map((opt) => {
+                    const isSelected = (currentVariant?.id === opt.id);
                     return (
                       <button
-                        key={v.id}
+                        key={opt.id}
                         type="button"
-                        onClick={() => handleSelectVariant(v)}
+                        onClick={() => handleSelectVariant(opt)}
                         className={`detail-swatch-btn ${isSelected ? 'active' : ''}`}
-                        title={`${v.colorName} (${v.stock || 0} in stock)`}
+                        title={`${opt.colorName} (${opt.stock || 0} in stock)`}
                       >
                         <span
                           className="detail-swatch-circle"
-                          style={{ backgroundColor: v.colorCode || '#000000' }}
+                          style={{ backgroundColor: opt.colorCode || '#000000' }}
                         />
-                        <span>{v.colorName}</span>
+                        <span>{opt.colorName}</span>
                       </button>
                     );
                   })}

@@ -45,6 +45,7 @@ export default function ProductsPage() {
     category: 'bags',
     gender: '', // 'men', 'women', 'unisex'
     color: '',
+    colorCode: '#111111',
     sizes: '',
     brand: 'SMP Luxury',
     price: '',
@@ -123,6 +124,7 @@ export default function ProductsPage() {
       category: categories[0]?.slug || 'bags',
       gender: '',
       color: '',
+      colorCode: '#111111',
       sizes: '',
       brand: 'SMP Luxury',
       price: '',
@@ -161,6 +163,7 @@ export default function ProductsPage() {
       category: prod.category,
       gender: prod.gender || '',
       color: prod.color || '',
+      colorCode: prod.colorCode || '#111111',
       sizes: Array.isArray(prod.sizes) ? prod.sizes.join(', ') : (prod.sizes || ''),
       brand: prod.brand || 'SMP Luxury',
       price: prod.price.toString(),
@@ -343,7 +346,8 @@ export default function ProductsPage() {
       formPayload.append('title', formData.title);
       formPayload.append('category', formData.category);
       formPayload.append('gender', formData.gender || '');
-      formPayload.append('color', formData.color || (sanitizedVariants[0]?.colorName || ''));
+      formPayload.append('color', formData.color || '');
+      formPayload.append('colorCode', formData.colorCode || '#111111');
       formPayload.append('sizes', formData.sizes || '');
       formPayload.append('brand', formData.brand);
       formPayload.append('price', formData.price);
@@ -563,9 +567,20 @@ export default function ProductsPage() {
                             {p.variants && p.variants.length > 0 ? (
                               <span style={{ display: 'inline-flex', alignItems: 'center', gap: '5px', background: '#F8F4EC', border: '1px solid #E8DEC8', padding: '2px 8px', borderRadius: '4px' }}>
                                 <span style={{ fontSize: '10.5px', color: '#66300F', fontWeight: '700' }}>
-                                  {p.variants.length} Colors:
+                                  {1 + p.variants.length} Colors:
                                 </span>
                                 <span style={{ display: 'inline-flex', gap: '3px', alignItems: 'center' }}>
+                                  <span 
+                                    title={`First Image Color: ${p.color || 'Primary'} (${p.stock || 0} in stock)`}
+                                    style={{
+                                      width: '11px',
+                                      height: '11px',
+                                      borderRadius: '50%',
+                                      backgroundColor: p.colorCode || '#111111',
+                                      border: '1.5px solid #A45A28',
+                                      display: 'inline-block'
+                                    }}
+                                  />
                                   {p.variants.map((v, vIdx) => (
                                     <span 
                                       key={v.id || vIdx} 
@@ -768,36 +783,36 @@ export default function ProductsPage() {
                   </div>
                 </div>
 
-                {/* Color & Sizes (Optional) */}
-                <div style={{ display: 'grid', gridTemplateColumns: '1fr 1fr', gap: '14px' }}>
-                  <div className="form-group">
-                    <label className="form-label">Color / Shade</label>
-                    <input 
-                      type="text" 
-                      className="form-input" 
-                      value={formData.color} 
-                      onChange={(e) => setFormData({ ...formData, color: e.target.value })}
-                      placeholder="e.g. Emerald Green, Rose Gold, Burgundy, Black"
-                    />
-                  </div>
-                  <div className="form-group">
-                    <label className="form-label">
-                      Available Sizes <span style={{ color: 'var(--color-text-muted)', fontSize: '11px', fontWeight: 'normal' }}>(Optional - e.g. Footwear)</span>
-                    </label>
-                    <input 
-                      type="text" 
-                      className="form-input" 
-                      value={formData.sizes} 
-                      onChange={(e) => setFormData({ ...formData, sizes: e.target.value })}
-                      placeholder="e.g. 7, 8, 9, 10 or EU 40, 41, 42"
-                    />
-                  </div>
+                {/* Available Sizes (Optional) */}
+                <div className="form-group">
+                  <label className="form-label">
+                    Available Sizes <span style={{ color: 'var(--color-text-muted)', fontSize: '11px', fontWeight: 'normal' }}>(Optional - e.g. 7, 8, 9, 10 or EU 40, 41, 42)</span>
+                  </label>
+                  <input 
+                    type="text" 
+                    className="form-input" 
+                    value={formData.sizes} 
+                    onChange={(e) => setFormData({ ...formData, sizes: e.target.value })}
+                    placeholder="e.g. 7, 8, 9, 10 or EU 40, 41, 42"
+                  />
                 </div>
 
-                {/* Image Section */}
-                <div className="form-group">
-                  <label className="form-label">Product Image (Upload File or Enter Image URL)</label>
-                  
+                {/* Primary / First Image & Color Option Card */}
+                <div style={{ marginTop: '16px', marginBottom: '20px', padding: '18px', background: '#FCFAF6', borderRadius: '12px', border: '1.5px solid #E5DEC9' }}>
+                  <div style={{ display: 'flex', alignItems: 'center', justifyContent: 'space-between', marginBottom: '8px' }}>
+                    <div style={{ fontSize: '14px', fontWeight: '700', color: '#66300F', display: 'flex', alignItems: 'center', gap: '8px' }}>
+                      <Upload size={17} color="#A45A28" />
+                      <span>Primary / First Product Image &amp; Color Choice</span>
+                    </div>
+                    <span style={{ fontSize: '11px', background: '#F8F4EC', color: '#66300F', padding: '3px 9px', borderRadius: '12px', fontWeight: '600', border: '1px solid #E8DEC8' }}>
+                      First Display Image
+                    </span>
+                  </div>
+                  <div style={{ fontSize: '12px', color: 'var(--color-text-muted)', marginBottom: '14px', lineHeight: '1.5' }}>
+                    Upload your first showcase image and assign its color below. Customers can switch between this first image and any additional variants.
+                  </div>
+
+                  {/* Image Uploader & Direct Link */}
                   <div style={{ display: 'flex', gap: '12px', alignItems: 'center', marginBottom: '10px' }}>
                     <button 
                       type="button" 
@@ -826,23 +841,136 @@ export default function ProductsPage() {
                       setFormData({ ...formData, imageUrl: e.target.value });
                       setImagePreview(e.target.value);
                     }}
-                    placeholder="https://images.unsplash.com/photo-..." 
+                    placeholder="https://res.cloudinary.com/... or https://images.unsplash.com/..." 
                   />
 
                   {/* Image Preview Box */}
                   {imagePreview && (
-                    <div style={{ marginTop: '12px', display: 'flex', alignItems: 'center', gap: '12px', padding: '10px', background: '#FAF7EF', borderRadius: '8px', border: '1px solid #E8E2D2' }}>
+                    <div style={{ marginTop: '12px', display: 'flex', alignItems: 'center', gap: '14px', padding: '12px', background: '#FFFFFF', borderRadius: '8px', border: '1px solid #E8E2D2' }}>
                       <img 
                         src={imagePreview} 
                         alt="Preview" 
-                        style={{ width: '60px', height: '60px', objectFit: 'cover', borderRadius: '6px', border: '1px solid #C18A5B' }} 
+                        style={{ width: '64px', height: '64px', objectFit: 'cover', borderRadius: '6px', border: '1px solid #C18A5B' }} 
                       />
-                      <div style={{ fontSize: '12px', color: '#66300F' }}>
-                        <div style={{ fontWeight: '600' }}>Image Selected</div>
-                        <div style={{ color: 'var(--color-text-muted)' }}>Will be displayed in high-resolution across store &amp; WhatsApp preview</div>
+                      <div style={{ flex: 1, fontSize: '12px', color: '#66300F' }}>
+                        <div style={{ fontWeight: '700', fontSize: '13px', display: 'flex', alignItems: 'center', gap: '8px' }}>
+                          <span>First Image Selected</span>
+                          {formData.color && (
+                            <span style={{ display: 'inline-flex', alignItems: 'center', gap: '5px', background: '#FAF7EF', border: '1px solid #E2D9C8', padding: '2px 8px', borderRadius: '12px', fontSize: '11px', color: '#66300F' }}>
+                              <span style={{ width: '10px', height: '10px', borderRadius: '50%', backgroundColor: formData.colorCode || '#111111', display: 'inline-block', border: '1px solid rgba(0,0,0,0.2)' }} />
+                              <span>{formData.color}</span>
+                            </span>
+                          )}
+                        </div>
+                        <div style={{ color: 'var(--color-text-muted)', marginTop: '2px' }}>
+                          High-resolution first image across catalog, WhatsApp preview &amp; cart
+                        </div>
                       </div>
                     </div>
                   )}
+
+                  {/* First Image Color Configuration */}
+                  <div style={{ marginTop: '14px', paddingTop: '14px', borderTop: '1px dashed #E5DEC9' }}>
+                    <div style={{ display: 'grid', gridTemplateColumns: '1.2fr 1.2fr', gap: '14px', marginBottom: '10px' }}>
+                      <div className="form-group" style={{ marginBottom: 0 }}>
+                        <label className="form-label" style={{ fontSize: '12px', marginBottom: '4px' }}>
+                          First Image Color Name
+                        </label>
+                        <input 
+                          type="text" 
+                          className="form-input" 
+                          value={formData.color} 
+                          onChange={(e) => setFormData({ ...formData, color: e.target.value })}
+                          placeholder="e.g. Emerald Green, Classic Black, Cognac Brown, Multi"
+                        />
+                      </div>
+
+                      <div className="form-group" style={{ marginBottom: 0 }}>
+                        <label className="form-label" style={{ fontSize: '12px', marginBottom: '4px' }}>
+                          First Image Color Picker &amp; Hex Code
+                        </label>
+                        <div style={{ display: 'flex', alignItems: 'center', gap: '8px' }}>
+                          <input
+                            type="color"
+                            value={formData.colorCode || '#111111'}
+                            onChange={(e) => setFormData({ ...formData, colorCode: e.target.value })}
+                            style={{
+                              width: '42px',
+                              height: '38px',
+                              borderRadius: '6px',
+                              border: '1.5px solid #C18A5B',
+                              cursor: 'pointer',
+                              padding: '2px',
+                              background: '#FFFFFF'
+                            }}
+                            title="Pick color for first image"
+                          />
+                          <input
+                            type="text"
+                            className="form-input"
+                            value={formData.colorCode || '#111111'}
+                            onChange={(e) => setFormData({ ...formData, colorCode: e.target.value })}
+                            placeholder="#111111"
+                            style={{ flex: 1, fontFamily: 'monospace' }}
+                          />
+                        </div>
+                      </div>
+                    </div>
+
+                    {/* Quick Color Presets for First Image */}
+                    <div style={{ display: 'flex', alignItems: 'center', gap: '6px', flexWrap: 'wrap', marginTop: '8px' }}>
+                      <span style={{ fontSize: '11px', color: 'var(--color-text-muted)', fontWeight: '600' }}>
+                        Quick Presets:
+                      </span>
+                      {[
+                        { name: 'White', hex: '#FFFFFF' },
+                        { name: 'Black', hex: '#111111' },
+                        { name: 'Red / Burgundy', hex: '#800020' },
+                        { name: 'Brown / Cognac', hex: '#8B4513' },
+                        { name: 'Emerald Green', hex: '#064E3B' },
+                        { name: 'Navy Blue', hex: '#1E3A8A' },
+                        { name: 'Beige / Nude', hex: '#E2D5C3' },
+                        { name: 'Gold / Champagne', hex: '#D4AF37' }
+                      ].map((preset) => (
+                        <button
+                          key={preset.name}
+                          type="button"
+                          onClick={() => {
+                            setFormData({
+                              ...formData,
+                              colorCode: preset.hex,
+                              color: formData.color || preset.name
+                            });
+                          }}
+                          style={{
+                            display: 'inline-flex',
+                            alignItems: 'center',
+                            gap: '4px',
+                            padding: '3px 8px',
+                            background: '#FFFFFF',
+                            border: (formData.colorCode || '').toLowerCase() === preset.hex.toLowerCase() ? '1.5px solid #66300F' : '1px solid #D8CEBD',
+                            borderRadius: '4px',
+                            fontSize: '11px',
+                            cursor: 'pointer',
+                            fontWeight: (formData.colorCode || '').toLowerCase() === preset.hex.toLowerCase() ? '700' : 'normal',
+                            color: '#1F1B18'
+                          }}
+                        >
+                          <span
+                            style={{
+                              width: '10px',
+                              height: '10px',
+                              borderRadius: '50%',
+                              backgroundColor: preset.hex,
+                              border: '1px solid rgba(0,0,0,0.2)',
+                              display: 'inline-block'
+                            }}
+                          />
+                          <span>{preset.name}</span>
+                        </button>
+                      ))}
+                    </div>
+                  </div>
                 </div>
 
                 {/* ─── DYNAMIC PRODUCT COLOR VARIANTS BUILDER ─── */}

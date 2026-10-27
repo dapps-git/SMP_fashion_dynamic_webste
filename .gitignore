@@ -44,3 +44,7 @@ uploads/
 */uploads/*
 !*/uploads/.gitkeep
 
+# Local database runtime files
+backend/data/db.json
+backend/data/*.json
+

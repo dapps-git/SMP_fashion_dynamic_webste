@@ -91,41 +91,99 @@ const playAddToCartSound = () => {
 };
 
 
-// ─── Storefront Product Card Component with Instant Color Switching ───
-function StorefrontProductCard({ product, onQuickView, onBuyNow, onAddToCart }) {
-  const [selectedVariantId, setSelectedVariantId] = useState(
-    product.variants && product.variants.length > 0 ? product.variants[0].id : null
+// Color resolver fallback helper
+function resolveColorHex(name = '', code = '') {
+  if (code && typeof code === 'string' && code.trim().startsWith('#')) return code.trim();
+  const lower = (name || '').toLowerCase();
+  if (lower.includes('white') || lower.includes('cream')) return '#FFFFFF';
+  if (lower.includes('black') || lower.includes('noir') || lower.includes('dark')) return '#111111';
+  if (lower.includes('red') || lower.includes('burgundy') || lower.includes('maroon') || lower.includes('wine')) return '#800020';
+  if (lower.includes('brown') || lower.includes('cognac') || lower.includes('tan') || lower.includes('chocolate')) return '#8B4513';
+  if (lower.includes('green') || lower.includes('emerald') || lower.includes('olive')) return '#064E3B';
+  if (lower.includes('blue') || lower.includes('navy') || lower.includes('azure')) return '#1E3A8A';
+  if (lower.includes('beige') || lower.includes('nude') || lower.includes('sand')) return '#E2D5C3';
+  if (lower.includes('gold') || lower.includes('champagne') || lower.includes('yellow')) return '#D4AF37';
+  if (lower.includes('silver') || lower.includes('grey') || lower.includes('gray')) return '#9CA3AF';
+  if (lower.includes('pink') || lower.includes('rose')) return '#F472B6';
+  return '#1A1817';
+}
+
+// Build unified list of color options: First / Primary Image + Additional Color Variants
+function getProductColorOptions(product) {
+  if (!product) return [];
+  const variants = Array.isArray(product.variants) ? product.variants : [];
+  
+  // Check if primary image is already explicitly one of the variant images
+  const isImageInVariants = product.image && variants.some((v) => 
+    v.images && v.images.length > 0 && (v.images[0] === product.image || v.images.includes(product.image))
   );
 
-  // Sync when product variants update
-  useEffect(() => {
-    if (product.variants && product.variants.length > 0) {
-      if (!product.variants.some((v) => v.id === selectedVariantId)) {
-        setSelectedVariantId(product.variants[0].id);
-      }
-    }
-  }, [product.variants, selectedVariantId]);
+  const options = [];
 
-  // Preload variant images so color switches are completely instantaneous with zero delay
-  useEffect(() => {
-    if (product.variants && product.variants.length > 0) {
-      product.variants.forEach((v) => {
-        if (v.images && v.images.length > 0) {
-          const img = new Image();
-          img.src = v.images[0];
-        }
+  // 1. Primary / First Image Option (Always available so first image has dedicated color & switching)
+  if (product.image || product.color) {
+    if (!isImageInVariants || variants.length === 0) {
+      options.push({
+        id: 'primary',
+        isPrimary: true,
+        colorName: product.color || 'Primary',
+        colorCode: resolveColorHex(product.color, product.colorCode),
+        images: product.image ? [product.image] : [],
+        stock: product.stock !== undefined ? product.stock : 10,
+        sizes: product.sizes || []
       });
     }
-  }, [product.variants]);
+  }
 
-  const activeVariant = product.variants && product.variants.length > 0
-    ? (product.variants.find((v) => v.id === selectedVariantId) || product.variants[0])
-    : null;
+  // 2. Additional Color Variants
+  variants.forEach((v, idx) => {
+    options.push({
+      id: v.id || `var-${idx}`,
+      isPrimary: false,
+      colorName: v.colorName || `Color ${idx + 1}`,
+      colorCode: resolveColorHex(v.colorName, v.colorCode),
+      images: Array.isArray(v.images) ? v.images.filter(Boolean) : (v.image ? [v.image] : []),
+      stock: v.stock !== undefined && v.stock !== '' ? Number(v.stock) : (product.stock ?? 10),
+      sizes: Array.isArray(v.sizes) ? v.sizes : (product.sizes || [])
+    });
+  });
 
-  const displayImage = activeVariant?.images?.[0] || product.image;
-  const displayColor = activeVariant?.colorName || product.color || '';
-  const availableSizes = activeVariant?.sizes && activeVariant.sizes.length > 0
-    ? activeVariant.sizes
+  return options;
+}
+
+// ─── Storefront Product Card Component with Instant Color Switching ───
+function StorefrontProductCard({ product, onQuickView, onBuyNow, onAddToCart }) {
+  const colorOptions = useMemo(() => getProductColorOptions(product), [product]);
+
+  const [selectedOptionId, setSelectedOptionId] = useState(
+    colorOptions.length > 0 ? colorOptions[0].id : 'primary'
+  );
+
+  // Sync when product colorOptions update
+  useEffect(() => {
+    if (colorOptions.length > 0) {
+      if (!colorOptions.some((opt) => opt.id === selectedOptionId)) {
+        setSelectedOptionId(colorOptions[0].id);
+      }
+    }
+  }, [colorOptions, selectedOptionId]);
+
+  // Preload all option images so color switches are completely instantaneous with zero delay
+  useEffect(() => {
+    colorOptions.forEach((opt) => {
+      if (opt.images && opt.images.length > 0) {
+        const img = new Image();
+        img.src = opt.images[0];
+      }
+    });
+  }, [colorOptions]);
+
+  const activeOption = colorOptions.find((opt) => opt.id === selectedOptionId) || colorOptions[0] || null;
+
+  const displayImage = activeOption?.images?.[0] || product.image;
+  const displayColor = activeOption?.colorName || product.color || '';
+  const availableSizes = activeOption?.sizes && activeOption.sizes.length > 0
+    ? activeOption.sizes
     : (product.sizes || []);
   const defaultSize = availableSizes.length > 0 ? availableSizes[0] : '';
 
@@ -134,7 +192,7 @@ function StorefrontProductCard({ product, onQuickView, onBuyNow, onAddToCart }) 
       {/* Image Wrap */}
       <div
         className="editorial-img-wrap"
-        onClick={() => onQuickView(product, activeVariant)}
+        onClick={() => onQuickView(product, activeOption)}
         style={{ cursor: 'pointer' }}
       >
         <img
@@ -154,7 +212,7 @@ function StorefrontProductCard({ product, onQuickView, onBuyNow, onAddToCart }) 
         <div className="editorial-title-row">
           <h3
             className="editorial-title"
-            onClick={() => onQuickView(product, activeVariant)}
+            onClick={() => onQuickView(product, activeOption)}
             style={{ cursor: 'pointer' }}
             title={product.title}
           >
@@ -162,23 +220,23 @@ function StorefrontProductCard({ product, onQuickView, onBuyNow, onAddToCart }) 
           </h3>
         </div>
 
-        {/* Dynamic Clickable Color Swatches */}
-        {product.variants && product.variants.length > 0 && (
+        {/* Dynamic Clickable Color Swatches (Shows First Image Color + All Variant Colors) */}
+        {colorOptions.length > 1 && (
           <div className="card-variant-swatches" onClick={(e) => e.stopPropagation()}>
-            {product.variants.map((v) => {
-              const isSelected = activeVariant?.id === v.id;
+            {colorOptions.map((opt) => {
+              const isSelected = activeOption?.id === opt.id;
               return (
                 <button
-                  key={v.id}
+                  key={opt.id}
                   type="button"
                   onClick={(e) => {
                     e.stopPropagation();
-                    setSelectedVariantId(v.id);
+                    setSelectedOptionId(opt.id);
                   }}
                   className={`card-swatch-dot ${isSelected ? 'active' : ''}`}
-                  style={{ backgroundColor: v.colorCode || '#000000' }}
-                  title={`${v.colorName}${v.stock ? ` (${v.stock} in stock)` : ''}`}
-                  aria-label={`Select color ${v.colorName}`}
+                  style={{ backgroundColor: opt.colorCode || '#000000' }}
+                  title={`${opt.colorName}${opt.stock ? ` (${opt.stock} in stock)` : ''}`}
+                  aria-label={`Select color ${opt.colorName}`}
                 />
               );
             })}
@@ -193,14 +251,14 @@ function StorefrontProductCard({ product, onQuickView, onBuyNow, onAddToCart }) 
         {/* Actions Row: BUY NOW + Small Cart Icon */}
         <div className="editorial-actions-row">
           <button
-            onClick={() => onBuyNow(product, defaultSize, activeVariant)}
+            onClick={() => onBuyNow(product, defaultSize, activeOption)}
             className="btn-buy-now-solid"
             title="Order via WhatsApp with Inspection on Delivery"
           >
             BUY NOW
           </button>
           <button
-            onClick={() => onAddToCart(product, 1, defaultSize, activeVariant)}
+            onClick={() => onAddToCart(product, 1, defaultSize, activeOption)}
             className="btn-card-cart"
             title="Add to Cart"
             aria-label={`Add ${product.title} to cart`}
@@ -299,12 +357,15 @@ export default function StorefrontPage() {
   const [selectedSize, setSelectedSize] = useState('');
   const [orderSize, setOrderSize] = useState('');
 
-  const handleOpenQuickView = (product, preselectedVariant) => {
+  const handleOpenQuickView = (product, preselectedOption) => {
     setViewProduct(product);
-    const resolvedVariant = preselectedVariant || (product.variants && product.variants.length > 0 ? product.variants[0] : null);
-    setViewVariant(resolvedVariant);
+    const options = getProductColorOptions(product);
+    const resolvedOption = preselectedOption
+      ? (options.find((o) => o.id === preselectedOption.id) || preselectedOption)
+      : (options.length > 0 ? options[0] : null);
+    setViewVariant(resolvedOption);
     setViewImageIndex(0);
-    const sizes = resolvedVariant?.sizes && resolvedVariant.sizes.length > 0 ? resolvedVariant.sizes : (product.sizes || []);
+    const sizes = resolvedOption?.sizes && resolvedOption.sizes.length > 0 ? resolvedOption.sizes : (product.sizes || []);
     setSelectedSize(sizes.length > 0 ? sizes[0] : '');
   };
 
@@ -345,15 +406,16 @@ export default function StorefrontPage() {
 
   const addToCart = (product, qty = 1, sizeChoice, variantChoice) => {
     playAddToCartSound();
-    const chosenVariant = variantChoice || (product.variants && product.variants.length > 0 ? product.variants[0] : null);
-    const chosenColor = chosenVariant?.colorName || product.color || '';
-    const chosenImage = chosenVariant?.images?.[0] || product.image;
+    const options = getProductColorOptions(product);
+    const chosen = variantChoice || (options.length > 0 ? options[0] : null);
+    const chosenColor = chosen?.colorName || product.color || '';
+    const chosenImage = chosen?.images?.[0] || product.image;
     const chosenSize = sizeChoice !== undefined ? sizeChoice : (
-      chosenVariant?.sizes && chosenVariant.sizes.length > 0 ? chosenVariant.sizes[0] :
+      chosen?.sizes && chosen.sizes.length > 0 ? chosen.sizes[0] :
       (product.sizes && product.sizes.length > 0 ? (selectedSize || product.sizes[0]) : '')
     );
 
-    const variantKeyPart = chosenVariant ? chosenVariant.id : (chosenColor ? chosenColor.replace(/\s+/g, '-') : 'default');
+    const variantKeyPart = chosen ? chosen.id : (chosenColor ? chosenColor.replace(/\s+/g, '-') : 'default');
     const sizeKeyPart = chosenSize ? chosenSize.replace(/\s+/g, '-') : 'nosize';
     const itemKey = `${product.id}-${variantKeyPart}-${sizeKeyPart}`;
 
@@ -423,11 +485,12 @@ Hello SMP, I would like to order these items from my shopping bag.`;
   // Open Buy Now Modal for single product
   const handleOpenBuyNow = (product, sizeChoice, variantChoice) => {
     setIsCartOrder(false);
-    const chosenVariant = variantChoice || (product.variants && product.variants.length > 0 ? product.variants[0] : null);
-    const resolvedColor = chosenVariant ? chosenVariant.colorName : (product.color || '');
-    const resolvedImage = chosenVariant?.images?.[0] || product.image;
+    const options = getProductColorOptions(product);
+    const chosen = variantChoice || (options.length > 0 ? options[0] : null);
+    const resolvedColor = chosen ? chosen.colorName : (product.color || '');
+    const resolvedImage = chosen?.images?.[0] || product.image;
     const resolvedSize = sizeChoice !== undefined ? sizeChoice : (
-      chosenVariant?.sizes && chosenVariant.sizes.length > 0 ? chosenVariant.sizes[0] :
+      chosen?.sizes && chosen.sizes.length > 0 ? chosen.sizes[0] :
       (product.sizes && product.sizes.length > 0 ? (selectedSize || product.sizes[0]) : '')
     );
 
@@ -435,7 +498,7 @@ Hello SMP, I would like to order these items from my shopping bag.`;
       ...product,
       color: resolvedColor,
       image: resolvedImage,
-      variantId: chosenVariant?.id || null
+      variantId: chosen?.id || null
     });
     setOrderSize(resolvedSize);
     setQuantity(1);
@@ -1330,7 +1393,10 @@ Please confirm my order and arrange delivery. Thank you!`;
 
       {/* Quick View Full Details Modal */}
       {viewProduct && (() => {
-        const activeVar = viewVariant || (viewProduct.variants && viewProduct.variants.length > 0 ? viewProduct.variants[0] : null);
+        const colorOpts = getProductColorOptions(viewProduct);
+        const activeVar = viewVariant
+          ? (colorOpts.find((o) => o.id === viewVariant.id) || viewVariant)
+          : (colorOpts.length > 0 ? colorOpts[0] : null);
         const varImages = (activeVar?.images && activeVar.images.length > 0)
           ? activeVar.images
           : (viewProduct.image ? [viewProduct.image] : []);
@@ -1391,12 +1457,12 @@ Please confirm my order and arrange delivery. Thank you!`;
                   </span>
                 </div>
 
-                {/* Color Swatches Selector in Quick View */}
-                {viewProduct.variants && viewProduct.variants.length > 0 ? (
+                {/* Color Swatches Selector in Quick View (Shows First Image Color + Variants) */}
+                {colorOpts.length > 1 ? (
                   <div style={{ marginBottom: '14px', background: '#FAF7EF', padding: '12px 14px', borderRadius: '8px', border: '1px solid #E8E2D5' }}>
                     <div style={{ display: 'flex', alignItems: 'center', justifyContent: 'space-between', marginBottom: '8px' }}>
                       <span style={{ fontSize: '11px', textTransform: 'uppercase', letterSpacing: '1px', color: '#66300F', fontWeight: '700' }}>
-                        Available Colors ({viewProduct.variants.length}):
+                        Available Colors ({colorOpts.length}):
                       </span>
                       {activeColor && (
                         <span style={{ fontSize: '11.5px', color: '#66300F', fontWeight: '700' }}>
@@ -1405,27 +1471,27 @@ Please confirm my order and arrange delivery. Thank you!`;
                       )}
                     </div>
                     <div className="detail-variant-swatches-wrap">
-                      {viewProduct.variants.map((v) => {
-                        const isSelected = activeVar?.id === v.id;
+                      {colorOpts.map((opt) => {
+                        const isSelected = activeVar?.id === opt.id;
                         return (
                           <button
-                            key={v.id}
+                            key={opt.id}
                             type="button"
                             onClick={() => {
-                              setViewVariant(v);
+                              setViewVariant(opt);
                               setViewImageIndex(0);
-                              if (v.sizes && v.sizes.length > 0) {
-                                setSelectedSize(v.sizes[0]);
+                              if (opt.sizes && opt.sizes.length > 0) {
+                                setSelectedSize(opt.sizes[0]);
                               }
                             }}
                             className={`detail-swatch-btn ${isSelected ? 'active' : ''}`}
-                            title={`${v.colorName} (${v.stock || 0} in stock)`}
+                            title={`${opt.colorName} (${opt.stock || 0} in stock)`}
                           >
                             <span
                               className="detail-swatch-circle"
-                              style={{ backgroundColor: v.colorCode || '#000000' }}
+                              style={{ backgroundColor: opt.colorCode || '#000000' }}
                             />
-                            <span>{v.colorName}</span>
+                            <span>{opt.colorName}</span>
                           </button>
                         );
                       })}

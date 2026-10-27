@@ -24,6 +24,7 @@ const ProductSchema = new mongoose.Schema({
   stock: { type: Number, default: 10 },
   gender: { type: String, default: '' }, // 'men', 'women', 'unisex'
   color: { type: String, default: '' }, // e.g. 'Emerald Green', 'Burgundy'
+  colorCode: { type: String, default: '#111111' }, // Hex color for primary image swatch
   sizes: [{ type: String }], // Optional sizes, e.g. ['7', '8', '9'] or ['EU 40', 'EU 41']
   variants: [VariantSchema], // Dynamic Color Variants
   featured: { type: Boolean, default: true },
