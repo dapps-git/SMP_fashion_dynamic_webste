@@ -90,222 +90,6 @@ const playAddToCartSound = () => {
   }
 };
 
-// Fallback luxury data if backend is offline during first render
-const FALLBACK_PRODUCTS = [
-  {
-    id: 'prod-1',
-    title: 'Burgundy Leather Top Handle Bag',
-    category: 'bags',
-    categoryName: 'Bags',
-    brand: 'SMP Luxury',
-    price: 490,
-    comparePrice: 650,
-    discount: '-25%',
-    image: 'https://images.unsplash.com/photo-1584917865442-de89df76afd3?auto=format&fit=crop&w=800&q=80',
-    description: 'Sculpted calfskin leather with polished gold-tone hardware clasp. Features reinforced top handles and a detachable shoulder strap for effortless versatility.',
-    details: ['100% Genuine Italian Calfskin', '24K Gold electroplated lock', 'Interior slip & zip compartments', 'Protective bottom metal studs'],
-    stock: 12,
-    color: 'Burgundy',
-    badge: 'Bestseller',
-    variants: [
-      {
-        id: 'var-prod1-burgundy',
-        colorName: 'Burgundy Red',
-        colorCode: '#800020',
-        images: [
-          'https://images.unsplash.com/photo-1584917865442-de89df76afd3?auto=format&fit=crop&w=800&q=80',
-          'https://images.unsplash.com/photo-1566150905458-1bf1fc113f0d?auto=format&fit=crop&w=800&q=80'
-        ],
-        stock: 12,
-        sizes: ['Standard']
-      },
-      {
-        id: 'var-prod1-black',
-        colorName: 'Obsidian Black',
-        colorCode: '#1F1F1F',
-        images: [
-          'https://images.unsplash.com/photo-1548036328-c9fa89d128fa?auto=format&fit=crop&w=800&q=80',
-          'https://images.unsplash.com/photo-1590874103328-eac38a683ce7?auto=format&fit=crop&w=800&q=80'
-        ],
-        stock: 18,
-        sizes: ['Standard']
-      },
-      {
-        id: 'var-prod1-white',
-        colorName: 'Ivory White',
-        colorCode: '#F5F5F0',
-        images: [
-          'https://images.unsplash.com/photo-1590874103328-eac38a683ce7?auto=format&fit=crop&w=800&q=80',
-          'https://images.unsplash.com/photo-1584917865442-de89df76afd3?auto=format&fit=crop&w=800&q=80'
-        ],
-        stock: 14,
-        sizes: ['Standard']
-      },
-      {
-        id: 'var-prod1-brown',
-        colorName: 'Cognac Brown',
-        colorCode: '#8B4513',
-        images: [
-          'https://images.unsplash.com/photo-1591561954557-26941169b49e?auto=format&fit=crop&w=800&q=80',
-          'https://images.unsplash.com/photo-1584917865442-de89df76afd3?auto=format&fit=crop&w=800&q=80'
-        ],
-        stock: 8,
-        sizes: ['Standard']
-      }
-    ]
-  },
-  {
-    id: 'prod-2',
-    title: 'Green Gold-Accent Structured Bag',
-    category: 'bags',
-    categoryName: 'Bags',
-    brand: 'SMP Atelier',
-    price: 520,
-    comparePrice: 690,
-    discount: '-25%',
-    image: 'https://images.unsplash.com/photo-1566150905458-1bf1fc113f0d?auto=format&fit=crop&w=800&q=80',
-    description: 'Deep forest green smooth leather with arched satin-brass hardware. Clean geometric lines create a statement silhouette for evening galas or daytime poise.',
-    details: ['Smooth textured box calfskin', 'Solid brass arch handle', 'Magnetic snap closure', 'Suede interior lining'],
-    stock: 8,
-    color: 'Emerald Forest Green',
-    badge: 'New Arrival'
-  },
-  {
-    id: 'prod-3',
-    title: 'Pearl Handle Satin Evening Clutch',
-    category: 'bags',
-    categoryName: 'Bags',
-    brand: 'SMP Couture',
-    price: 360,
-    comparePrice: 480,
-    discount: '-25%',
-    image: 'https://images.unsplash.com/photo-1590874103328-eac38a683ce7?auto=format&fit=crop&w=800&q=80',
-    description: 'Lustrous ivory pleated satin adorned with a luminous simulated freshwater pearl handle and crystal-pavé floral kiss-lock closure.',
-    details: ['Pleated silk-satin shell', 'Graduated pearl arch handle', 'Crystal-encrusted jeweled clasp', 'Includes delicate chain strap'],
-    stock: 15,
-    color: 'Ivory Pearl White',
-    badge: 'Limited Edition'
-  },
-  {
-    id: 'prod-5',
-    title: 'Royal Chronograph Steel & Gold Watch',
-    category: 'watches',
-    categoryName: 'Watches',
-    brand: 'SMP Horology',
-    price: 790,
-    comparePrice: 1100,
-    discount: '-28%',
-    image: 'https://images.unsplash.com/photo-1522335789203-aabd1fc54bc9?auto=format&fit=crop&w=800&q=80',
-    description: 'Two-tone 316L stainless steel with yellow gold PVD plating. Features a deep sunburst dial, luminescent markers, and three precision subdials.',
-    details: ['Precision Swiss quartz movement', 'Scratch-resistant Sapphire crystal glass', '100m Water resistance', 'Deployment clasp with safety lock'],
-    stock: 7,
-    gender: 'men',
-    color: 'Two-Tone Steel & Gold',
-    badge: 'Masterpiece'
-  },
-  {
-    id: 'prod-6',
-    title: 'Obsidian Black Onyx Dial Timepiece',
-    category: 'watches',
-    categoryName: 'Watches',
-    brand: 'SMP Horology',
-    price: 680,
-    comparePrice: 890,
-    discount: '-23%',
-    image: 'https://images.unsplash.com/photo-1524805444758-089113d48a6d?auto=format&fit=crop&w=800&q=80',
-    description: 'Monochromatic satin black steel casing with minimalist rose-gold hour batons and genuine Italian alligator-embossed leather strap.',
-    details: ['40mm Slimline casing', 'Anti-reflective sapphire coating', 'Japanese automatic movement', 'Water resistant to 50m'],
-    stock: 10,
-    gender: 'men',
-    color: 'Obsidian Black',
-    badge: 'Exclusive'
-  },
-  {
-    id: 'prod-7',
-    title: 'Monaco Rose Gold Skeleton Watch',
-    category: 'watches',
-    categoryName: 'Watches',
-    brand: 'SMP Horology',
-    price: 850,
-    comparePrice: 1250,
-    discount: '-32%',
-    image: 'https://images.unsplash.com/photo-1539185441755-769473a23570?auto=format&fit=crop&w=800&q=80',
-    description: 'Exposed mechanical gears in an intricate skeleton framework encased in high-grade 18K rose gold plated alloy.',
-    details: ['Automatic self-winding mechanism', 'Exposed front & exhibition case back', 'Hand-stitched brown leather band', 'Luminous hands'],
-    stock: 5,
-    gender: 'women',
-    color: '18K Rose Gold',
-    badge: 'Hot Seller'
-  },
-  {
-    id: 'prod-7b',
-    title: 'Petite Pearl & Crystal Mesh Watch',
-    category: 'watches',
-    categoryName: 'Watches',
-    brand: 'SMP Horology',
-    price: 720,
-    comparePrice: 950,
-    discount: '-24%',
-    image: 'https://images.unsplash.com/photo-1508685096489-7aacd43bd3b1?auto=format&fit=crop&w=800&q=80',
-    description: 'Ultra-delicate mother-of-pearl dial framed with pavé crystals and a flexible rose-gold Milanese mesh bracelet.',
-    details: ['Mother of pearl iridescent dial', 'Pavé crystal bezel', 'Adjustable Milanese mesh strap', 'Water resistant 30m'],
-    stock: 8,
-    gender: 'women',
-    color: 'Rose Gold & Pearl',
-    badge: 'Trending'
-  },
-  {
-    id: 'prod-8',
-    title: 'Cognac Leather Bit Loafers',
-    category: 'footwear',
-    categoryName: 'Footwear',
-    brand: 'SMP Calzature',
-    price: 450,
-    comparePrice: 590,
-    discount: '-24%',
-    image: 'https://images.unsplash.com/photo-1614252235316-8c857d38b5f4?auto=format&fit=crop&w=800&q=80',
-    description: 'Burnished cognac calfskin loafers accented with brushed brass horsebit hardware. Hand-stitched apron toe and cushioned leather insole.',
-    details: ['Handcrafted Blake-stitched sole', 'Full grain burnished leather', 'Memory foam comfort arch support', 'Non-slip rubber heel insert'],
-    stock: 14,
-    color: 'Burnished Cognac Brown',
-    sizes: ['7', '8', '9', '10', '11'],
-    badge: 'Classic'
-  },
-  {
-    id: 'prod-9',
-    title: 'Nude Patent Stiletto Pumps',
-    category: 'footwear',
-    categoryName: 'Footwear',
-    brand: 'SMP Couture',
-    price: 420,
-    comparePrice: 560,
-    discount: '-25%',
-    image: 'https://images.unsplash.com/photo-1543163521-1bf539c55dd2?auto=format&fit=crop&w=800&q=80',
-    description: 'Flawless nude patent leather pointed-toe pumps with a sleek 85mm stiletto heel. Engineered for posture-perfect comfort.',
-    details: ['High-shine mirror patent finish', 'Padded goat leather lining', 'Sculpted 85mm heel', 'Iconic red-tinted edge detailing'],
-    stock: 11,
-    color: 'Nude Blush Beige',
-    sizes: ['36', '37', '38', '39', '40'],
-    badge: 'Signature'
-  },
-  {
-    id: 'prod-10',
-    title: 'Monogram Low-Top Luxury Sneakers',
-    category: 'footwear',
-    categoryName: 'Footwear',
-    brand: 'SMP Streetwear',
-    price: 390,
-    comparePrice: 520,
-    discount: '-25%',
-    image: 'https://images.unsplash.com/photo-1595950653106-6c9ebd614d3a?auto=format&fit=crop&w=800&q=80',
-    description: 'Crisp white calfskin leather with monogram brown embossed suede heel tab and lightweight vulcanized rubber platform.',
-    details: ['Supple Italian calfskin upper', 'Perforated toe ventilation', 'Breathable terry lining', 'Durable cupsole with logo tread'],
-    stock: 22,
-    color: 'Crisp White & Monogram Brown',
-    sizes: ['7', '8', '9', '10', '11'],
-    badge: 'New'
-  }
-];
 
 // ─── Storefront Product Card Component with Instant Color Switching ───
 function StorefrontProductCard({ product, onQuickView, onBuyNow, onAddToCart }) {
@@ -435,6 +219,11 @@ export default function StorefrontPage() {
   const [activeGender, setActiveGender] = useState('all'); // 'all', 'men', 'women'
   const [activeBrand, setActiveBrand] = useState('all');
   const [brandsList, setBrandsList] = useState(INITIAL_FALLBACK_BRANDS);
+  const [categoriesList, setCategoriesList] = useState([
+    { id: 'cat-1', name: 'Footwear', slug: 'footwear' },
+    { id: 'cat-2', name: 'Watches', slug: 'watches' },
+    { id: 'cat-3', name: 'Bags', slug: 'bags' }
+  ]);
   const [searchQuery, setSearchQuery] = useState('');
   const [searchOpen, setSearchOpen] = useState(false);
   const [priceFilter, setPriceFilter] = useState('all');
@@ -443,7 +232,20 @@ export default function StorefrontPage() {
   const [loading, setLoading] = useState(true);
   const [mobileMenuOpen, setMobileMenuOpen] = useState(false);
 
-  // Fetch live products and brands from backend
+  // Dynamically compute all categories from API and loaded products
+  const displayCategories = React.useMemo(() => {
+    const list = [...categoriesList];
+    products.forEach((p) => {
+      const slug = (p.category || '').toLowerCase().trim();
+      const name = p.categoryName || (slug ? slug.charAt(0).toUpperCase() + slug.slice(1) : '');
+      if (slug && !list.some((c) => (c.slug || '').toLowerCase() === slug)) {
+        list.push({ id: `cat-${slug}`, slug, name });
+      }
+    });
+    return list;
+  }, [categoriesList, products]);
+
+  // Fetch live products, categories, and brands from backend
   useEffect(() => {
     let isMounted = true;
     const fetchData = async () => {
@@ -452,7 +254,7 @@ export default function StorefrontPage() {
         const prodRes = await fetch(`${API_BASE}/products`);
         if (prodRes.ok) {
           const prodData = await prodRes.json();
-          if (isMounted && Array.isArray(prodData) && prodData.length > 0) {
+          if (isMounted && Array.isArray(prodData)) {
             setProducts(prodData);
           }
         }
@@ -460,6 +262,18 @@ export default function StorefrontPage() {
         console.warn('Live products fetch notice:', err);
       } finally {
         if (isMounted) setLoading(false);
+      }
+
+      try {
+        const catRes = await fetch(`${API_BASE}/categories`);
+        if (catRes.ok) {
+          const catData = await catRes.json();
+          if (isMounted && Array.isArray(catData) && catData.length > 0) {
+            setCategoriesList(catData);
+          }
+        }
+      } catch (err) {
+        console.warn('Live categories fetch notice:', err);
       }
 
       try {
@@ -765,11 +579,14 @@ Please confirm my order and arrange delivery. Thank you!`;
   };
 
   const filteredProducts = products.filter(p => {
-    const matchesCat = activeCategory === 'all' || p.category?.toLowerCase() === activeCategory.toLowerCase();
+    const pCat = (p.category || '').toLowerCase();
+    const pCatName = (p.categoryName || '').toLowerCase();
+    const targetCat = activeCategory.toLowerCase();
+    const matchesCat = activeCategory === 'all' || pCat === targetCat || pCatName === targetCat;
     if (!matchesCat) return false;
 
     // Watch Gender Sub-filter (Men / Women / All)
-    if (activeCategory === 'watches' && activeGender !== 'all') {
+    if (activeCategory.toLowerCase() === 'watches' && activeGender !== 'all') {
       const pGender = (p.gender || '').toLowerCase();
       const text = `${p.title} ${p.description}`.toLowerCase();
       if (activeGender === 'men') {
@@ -930,10 +747,26 @@ Please confirm my order and arrange delivery. Thank you!`;
 
           <nav className="header-nav">
             <a href="#" className="nav-item">Home</a>
-            <a href="#collections" className="nav-item">Collections</a>
-            <a href="#collections" onClick={() => setActiveCategory('footwear')} className="nav-item">Footwear</a>
-            <a href="#collections" onClick={() => setActiveCategory('watches')} className="nav-item">Watches</a>
-            <a href="#collections" onClick={() => setActiveCategory('bags')} className="nav-item">Bags</a>
+            <a 
+              href="#collections" 
+              onClick={() => { setActiveCategory('all'); setActiveGender('all'); }} 
+              className={`nav-item ${activeCategory === 'all' ? 'active-nav' : ''}`}
+            >
+              All Collections
+            </a>
+            {displayCategories.map((cat) => (
+              <a
+                key={cat.id || cat.slug}
+                href="#collections"
+                onClick={() => {
+                  setActiveCategory(cat.slug);
+                  if (cat.slug !== 'watches') setActiveGender('all');
+                }}
+                className={`nav-item ${activeCategory.toLowerCase() === cat.slug.toLowerCase() ? 'active-nav' : ''}`}
+              >
+                {cat.name}
+              </a>
+            ))}
           </nav>
 
           {/* Right Header Actions: Search Button & Shopping Cart */}
@@ -1078,30 +911,21 @@ Please confirm my order and arrange delivery. Thank you!`;
                 <span>All Collections</span>
                 <ChevronRight size={16} color="#A45A28" />
               </a>
-              <a
-                href="#collections"
-                className="mobile-drawer-link"
-                onClick={() => { setActiveCategory('footwear'); setMobileMenuOpen(false); }}
-              >
-                <span>Footwear</span>
-                <ChevronRight size={16} color="#A45A28" />
-              </a>
-              <a
-                href="#collections"
-                className="mobile-drawer-link"
-                onClick={() => { setActiveCategory('watches'); setMobileMenuOpen(false); }}
-              >
-                <span>Watches</span>
-                <ChevronRight size={16} color="#A45A28" />
-              </a>
-              <a
-                href="#collections"
-                className="mobile-drawer-link"
-                onClick={() => { setActiveCategory('bags'); setMobileMenuOpen(false); }}
-              >
-                <span>Bags</span>
-                <ChevronRight size={16} color="#A45A28" />
-              </a>
+              {displayCategories.map((cat) => (
+                <a
+                  key={cat.id || cat.slug}
+                  href="#collections"
+                  className="mobile-drawer-link"
+                  onClick={() => {
+                    setActiveCategory(cat.slug);
+                    if (cat.slug !== 'watches') setActiveGender('all');
+                    setMobileMenuOpen(false);
+                  }}
+                >
+                  <span>{cat.name}</span>
+                  <ChevronRight size={16} color="#A45A28" />
+                </a>
+              ))}
             </div>
 
             <div style={{ marginTop: 'auto', paddingTop: '20px', borderTop: '1px solid #ECE6DC' }}>
@@ -1207,24 +1031,18 @@ Please confirm my order and arrange delivery. Thank you!`;
               >
                 All
               </button>
-              <button
-                onClick={() => { setActiveCategory('footwear'); setActiveGender('all'); }}
-                className={`editorial-cat-btn ${activeCategory === 'footwear' ? 'active' : ''}`}
-              >
-                Footwear
-              </button>
-              <button
-                onClick={() => setActiveCategory('watches')}
-                className={`editorial-cat-btn ${activeCategory === 'watches' ? 'active' : ''}`}
-              >
-                Watches
-              </button>
-              <button
-                onClick={() => { setActiveCategory('bags'); setActiveGender('all'); }}
-                className={`editorial-cat-btn ${activeCategory === 'bags' ? 'active' : ''}`}
-              >
-                Bags
-              </button>
+              {displayCategories.map((cat) => (
+                <button
+                  key={cat.id || cat.slug}
+                  onClick={() => {
+                    setActiveCategory(cat.slug);
+                    if (cat.slug !== 'watches') setActiveGender('all');
+                  }}
+                  className={`editorial-cat-btn ${activeCategory.toLowerCase() === cat.slug.toLowerCase() ? 'active' : ''}`}
+                >
+                  {cat.name}
+                </button>
+              ))}
             </div>
 
             {/* Minimalist Filter Controls: Square-type Brand & Filter Boxes */}
@@ -2121,10 +1939,20 @@ Please confirm my order and arrange delivery. Thank you!`;
             <div className="footer-col">
               <h3>Collections</h3>
               <ul className="footer-links">
-                <li><a href="#collections" onClick={() => setActiveCategory('footwear')}>Luxury Footwear</a></li>
-                <li><a href="#collections" onClick={() => setActiveCategory('watches')}>Horology &amp; Watches</a></li>
-                <li><a href="#collections" onClick={() => setActiveCategory('bags')}>Leather Handbags</a></li>
-                <li><a href="#collections" onClick={() => setActiveCategory('all')}>New Arrivals</a></li>
+                <li><a href="#collections" onClick={() => { setActiveCategory('all'); setActiveGender('all'); }}>All Collections</a></li>
+                {displayCategories.slice(0, 4).map((cat) => (
+                  <li key={cat.id || cat.slug}>
+                    <a
+                      href="#collections"
+                      onClick={() => {
+                        setActiveCategory(cat.slug);
+                        if (cat.slug !== 'watches') setActiveGender('all');
+                      }}
+                    >
+                      {cat.name}
+                    </a>
+                  </li>
+                ))}
               </ul>
             </div>
 

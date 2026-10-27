@@ -20,36 +20,6 @@ const rawApiUrl = process.env.NEXT_PUBLIC_API_URL || 'http://localhost:5005/api'
 const cleanApiUrl = rawApiUrl.replace(/\/+$/, '');
 const API_BASE = cleanApiUrl.endsWith('/api') ? cleanApiUrl : `${cleanApiUrl}/api`;
 
-const FALLBACK_PRODUCTS = [
-  {
-    id: 'prod-1',
-    title: 'Burgundy Leather Top Handle Bag',
-    category: 'bags',
-    categoryName: 'Bags',
-    brand: 'SMP Luxury',
-    price: 490,
-    image: 'https://images.unsplash.com/photo-1584917865442-de89df76afd3?auto=format&fit=crop&w=800&q=80',
-    description: 'Sculpted calfskin leather with polished gold-tone hardware clasp. Features reinforced top handles and a detachable shoulder strap for effortless versatility.',
-    details: ['100% Genuine Italian Calfskin', '24K Gold electroplated lock', 'Interior slip & zip compartments', 'Protective bottom metal studs'],
-    stock: 12,
-    color: 'Burgundy'
-  },
-  {
-    id: 'prod-8',
-    title: 'Cognac Leather Bit Loafers',
-    category: 'footwear',
-    categoryName: 'Footwear',
-    brand: 'SMP Calzature',
-    price: 450,
-    image: 'https://images.unsplash.com/photo-1614252235316-8c857d38b5f4?auto=format&fit=crop&w=800&q=80',
-    description: 'Burnished cognac calfskin loafers accented with brushed brass horsebit hardware. Hand-stitched apron toe and cushioned leather insole.',
-    details: ['Handcrafted Blake-stitched sole', 'Full grain burnished leather', 'Memory foam comfort arch support', 'Non-slip rubber heel insert'],
-    stock: 14,
-    color: 'Burnished Cognac Brown',
-    sizes: ['7', '8', '9', '10', '11']
-  }
-];
-
 const playAddToCartSound = () => {
   try {
     const AudioCtx = window.AudioContext || window.webkitAudioContext;
@@ -143,32 +113,11 @@ export default function ProductInnerPage() {
           setSelectedSize(data.sizes[0]);
         }
       } else {
-        const fallback = FALLBACK_PRODUCTS.find((p) => p.id === id) || FALLBACK_PRODUCTS[0];
-        setProduct(fallback);
-        if (fallback.variants && fallback.variants.length > 0) {
-          setSelectedVariant(fallback.variants[0]);
-          if (fallback.variants[0].sizes && fallback.variants[0].sizes.length > 0) {
-            setSelectedSize(fallback.variants[0].sizes[0]);
-          } else if (fallback.sizes && fallback.sizes.length > 0) {
-            setSelectedSize(fallback.sizes[0]);
-          }
-        } else if (fallback.sizes && fallback.sizes.length > 0) {
-          setSelectedSize(fallback.sizes[0]);
-        }
+        setProduct(null);
       }
     } catch (err) {
-      const fallback = FALLBACK_PRODUCTS.find((p) => p.id === id) || FALLBACK_PRODUCTS[0];
-      setProduct(fallback);
-      if (fallback.variants && fallback.variants.length > 0) {
-        setSelectedVariant(fallback.variants[0]);
-        if (fallback.variants[0].sizes && fallback.variants[0].sizes.length > 0) {
-          setSelectedSize(fallback.variants[0].sizes[0]);
-        } else if (fallback.sizes && fallback.sizes.length > 0) {
-          setSelectedSize(fallback.sizes[0]);
-        }
-      } else if (fallback.sizes && fallback.sizes.length > 0) {
-        setSelectedSize(fallback.sizes[0]);
-      }
+      console.warn('Live product fetch error:', err);
+      setProduct(null);
     } finally {
       setLoading(false);
     }
