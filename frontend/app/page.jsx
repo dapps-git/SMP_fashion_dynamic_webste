@@ -1996,8 +1996,8 @@ Please confirm my order and arrange delivery. Thank you!`;
               <p className="footer-desc">
                 Curating timeless luxury across footwear, horology, and fine leather goods. Handcrafted with master precision and delivered with effortless direct WhatsApp service across the United Arab Emirates.
               </p>
-              <div style={{ marginTop: '20px', display: 'flex', alignItems: 'center', gap: '10px', color: '#241105', fontSize: '13.5px', fontWeight: '500' }}>
-                <Phone size={15} />
+              <div style={{ marginTop: '20px', display: 'flex', alignItems: 'center', gap: '10px', color: '#FFFFFF', fontSize: '13.5px', fontWeight: '500' }}>
+                <Phone size={15} style={{ color: '#E8D5C4' }} />
                 <span>VIP Concierge: +971 52 597 3132</span>
               </div>
             </div>
@@ -2038,12 +2038,12 @@ Please confirm my order and arrange delivery. Thank you!`;
                 Experience 100% peace of mind. Pay zero upfront; our courier presents your luxury piece at your doorstep to inspect and approve before completing payment.
               </p>
               <div style={{ display: 'flex', flexDirection: 'column', gap: '12px' }}>
-                <div style={{ display: 'inline-flex', alignItems: 'center', gap: '8px', background: 'rgba(255, 255, 255, 0.65)', border: '1px solid rgba(102, 48, 15, 0.25)', padding: '8px 14px', borderRadius: '8px', color: '#1A0B02', fontSize: '12px', fontWeight: '600', width: 'fit-content' }}>
-                  <ShieldCheck size={16} />
+                <div style={{ display: 'inline-flex', alignItems: 'center', gap: '8px', background: 'rgba(255, 255, 255, 0.1)', border: '1px solid rgba(255, 255, 255, 0.22)', padding: '8px 14px', borderRadius: '8px', color: '#FFFFFF', fontSize: '12px', fontWeight: '600', width: 'fit-content' }}>
+                  <ShieldCheck size={16} style={{ color: '#25D366' }} />
                   <span>100% Authenticity Guarantee</span>
                 </div>
                 <div>
-                  <div style={{ fontSize: '11px', color: '#241105', fontWeight: '600', textTransform: 'uppercase', letterSpacing: '0.8px', marginBottom: '6px' }}>
+                  <div style={{ fontSize: '11px', color: 'rgba(255, 255, 255, 0.75)', fontWeight: '600', textTransform: 'uppercase', letterSpacing: '0.8px', marginBottom: '8px' }}>
                     Pay in 4 Installments:
                   </div>
                   <div style={{ display: 'flex', alignItems: 'center', gap: '8px' }}>
