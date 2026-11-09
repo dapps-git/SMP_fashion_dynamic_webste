@@ -529,7 +529,27 @@ app.get('/api/products/:id', async (req, res) => {
 app.post('/api/products', authenticateToken, handleUpload, async (req, res) => {
   try {
     const { title, category, brand, price, comparePrice, stock, description, badge, details, imageUrl, seoTitle, seoDescription, seoKeywords, slug, gender, color, colorCode, sizes, variants } = req.body;
-    if (!title || !price) return res.status(400).json({ error: 'Title and price are required' });
+    
+    const cleanTitle = (title || '').trim();
+    if (!cleanTitle) return res.status(400).json({ error: 'Product name is required' });
+    
+    const pNum = parseFloat(price);
+    if (isNaN(pNum) || pNum <= 0) return res.status(400).json({ error: 'Please enter a valid price greater than 0' });
+
+    // Enforce unique product title (no repeating product names)
+    const titleRegex = new RegExp(`^${cleanTitle.replace(/[.*+?^${}()|[\]\\]/g, '\\$&')}$`, 'i');
+    if (mongoose.connection.readyState === 1) {
+      const existingProduct = await Product.findOne({ title: { $regex: titleRegex } });
+      if (existingProduct) {
+        return res.status(400).json({ error: `A product with the name "${cleanTitle}" already exists. Please choose a unique product name.` });
+      }
+    } else {
+      const allProds = fileDb.getProducts();
+      const existingProduct = allProds.find(p => p.title && p.title.trim().toLowerCase() === cleanTitle.toLowerCase());
+      if (existingProduct) {
+        return res.status(400).json({ error: `A product with the name "${cleanTitle}" already exists. Please choose a unique product name.` });
+      }
+    }
 
     let finalImage = imageUrl || '';
     let imagePublicId = '';
@@ -542,7 +562,6 @@ app.post('/api/products', authenticateToken, handleUpload, async (req, res) => {
       }
     }
 
-    const pNum = parseFloat(price);
     const cNum = comparePrice ? parseFloat(comparePrice) : null;
     let discountStr = '';
     if (cNum && cNum > pNum) {
@@ -640,6 +659,33 @@ app.post('/api/products', authenticateToken, handleUpload, async (req, res) => {
 app.put('/api/products/:id', authenticateToken, handleUpload, async (req, res) => {
   try {
     const { title, category, brand, price, comparePrice, stock, description, badge, details, imageUrl, seoTitle, seoDescription, seoKeywords, slug, gender, color, colorCode, sizes, variants } = req.body;
+
+    const cleanTitle = title !== undefined ? String(title).trim() : undefined;
+    if (title !== undefined && !cleanTitle) {
+      return res.status(400).json({ error: 'Product name cannot be empty' });
+    }
+
+    if (cleanTitle) {
+      const titleRegex = new RegExp(`^${cleanTitle.replace(/[.*+?^${}()|[\]\\]/g, '\\$&')}$`, 'i');
+      if (mongoose.connection.readyState === 1) {
+        const existingProduct = await Product.findOne({
+          _id: { $ne: req.params.id },
+          title: { $regex: titleRegex }
+        });
+        if (existingProduct) {
+          return res.status(400).json({ error: `Another product with the name "${cleanTitle}" already exists. Product names must be unique.` });
+        }
+      } else {
+        const allProds = fileDb.getProducts();
+        const existingProduct = allProds.find(p =>
+          (p._id !== req.params.id && p.id !== req.params.id) &&
+          p.title && p.title.trim().toLowerCase() === cleanTitle.toLowerCase()
+        );
+        if (existingProduct) {
+          return res.status(400).json({ error: `Another product with the name "${cleanTitle}" already exists. Product names must be unique.` });
+        }
+      }
+    }
 
     let finalImage = imageUrl;
     let imagePublicId = '';

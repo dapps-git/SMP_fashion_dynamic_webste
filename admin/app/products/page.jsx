@@ -404,6 +404,31 @@ export default function ProductsPage() {
 
   const handleSubmit = async (e) => {
     e.preventDefault();
+
+    const cleanTitle = (formData.title || '').trim();
+    if (!cleanTitle) {
+      alert('Product title / name is required.');
+      return;
+    }
+
+    const cleanPrice = parseFloat(formData.price);
+    if (isNaN(cleanPrice) || cleanPrice <= 0) {
+      alert('Please enter a valid product price greater than 0.');
+      return;
+    }
+
+    // Instant client-side check to prevent repeating product names
+    const duplicate = products.find(p => {
+      const sameName = (p.title || '').trim().toLowerCase() === cleanTitle.toLowerCase();
+      const isDifferentId = editingProduct ? (p.id !== editingProduct.id && p._id !== editingProduct.id) : true;
+      return sameName && isDifferentId;
+    });
+
+    if (duplicate) {
+      alert(`A product named "${cleanTitle}" already exists in your store catalog. Please choose a unique product name.`);
+      return;
+    }
+
     setSubmitting(true);
 
     try {
@@ -782,6 +807,12 @@ export default function ProductsPage() {
                       placeholder="e.g. Burgundy Leather Top Handle Bag"
                       required 
                     />
+                    {Boolean(formData.title.trim() && products.some(p => (p.title || '').trim().toLowerCase() === formData.title.trim().toLowerCase() && (!editingProduct || (p.id !== editingProduct.id && p._id !== editingProduct.id)))) && (
+                      <div style={{ color: '#DC2626', fontSize: '11.5px', marginTop: '5px', fontWeight: '600', display: 'flex', alignItems: 'center', gap: '4px' }}>
+                        <span>⚠️</span>
+                        <span>A product with this name already exists. Names must be unique.</span>
+                      </div>
+                    )}
                   </div>
                   <div className="form-group">
                     <label className="form-label">Brand / Atelier *</label>
