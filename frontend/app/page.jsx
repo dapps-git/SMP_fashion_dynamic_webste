@@ -198,7 +198,7 @@ function StorefrontProductCard({ product, onQuickView, onBuyNow, onAddToCart }) 
         <img
           src={displayImage}
           alt={`${product.title}${displayColor ? ` - ${displayColor}` : ''}`}
-          className="editorial-img variant-display-img"
+          className="editorial-img"
           loading="lazy"
         />
       </div>
@@ -219,29 +219,6 @@ function StorefrontProductCard({ product, onQuickView, onBuyNow, onAddToCart }) 
             {product.title}
           </h3>
         </div>
-
-        {/* Dynamic Clickable Color Swatches (Shows First Image Color + All Variant Colors) */}
-        {colorOptions.length > 1 && (
-          <div className="card-variant-swatches" onClick={(e) => e.stopPropagation()}>
-            {colorOptions.map((opt) => {
-              const isSelected = activeOption?.id === opt.id;
-              return (
-                <button
-                  key={opt.id}
-                  type="button"
-                  onClick={(e) => {
-                    e.stopPropagation();
-                    setSelectedOptionId(opt.id);
-                  }}
-                  className={`card-swatch-dot ${isSelected ? 'active' : ''}`}
-                  style={{ backgroundColor: opt.colorCode || '#000000' }}
-                  title={`${opt.colorName}${opt.stock ? ` (${opt.stock} in stock)` : ''}`}
-                  aria-label={`Select color ${opt.colorName}`}
-                />
-              );
-            })}
-          </div>
-        )}
 
         {/* Clean price row */}
         <div className="editorial-price-row">
@@ -282,6 +259,7 @@ export default function StorefrontPage() {
     { id: 'cat-2', name: 'Watches', slug: 'watches' },
     { id: 'cat-3', name: 'Bags', slug: 'bags' }
   ]);
+  
   const [searchQuery, setSearchQuery] = useState('');
   const [searchOpen, setSearchOpen] = useState(false);
   const [priceFilter, setPriceFilter] = useState('all');
@@ -1399,7 +1377,9 @@ Please confirm my order and arrange delivery. Thank you!`;
           : (colorOpts.length > 0 ? colorOpts[0] : null);
         const varImages = (activeVar?.images && activeVar.images.length > 0)
           ? activeVar.images
-          : (viewProduct.image ? [viewProduct.image] : []);
+          : (Array.isArray(viewProduct.images) && viewProduct.images.length > 0)
+            ? viewProduct.images
+            : (viewProduct.image ? [viewProduct.image] : []);
         const mainImg = varImages[viewImageIndex] || varImages[0] || viewProduct.image;
         const activeColor = activeVar?.colorName || viewProduct.color || '';
         const activeSizes = (activeVar?.sizes && activeVar.sizes.length > 0) ? activeVar.sizes : (viewProduct.sizes || []);
@@ -1421,12 +1401,37 @@ Please confirm my order and arrange delivery. Thank you!`;
               </div>
 
               <div className="modal-content">
-                {/* Main Featured Image */}
-                <div style={{ position: 'relative', width: '100%', height: '300px', borderRadius: '8px', overflow: 'hidden', marginBottom: varImages.length > 1 ? '10px' : '16px', background: '#FAF7EF' }}>
+                {/* Main Featured Image - Generous container with complete, uncropped contain display */}
+                <div style={{
+                  position: 'relative',
+                  width: '100%',
+                  minHeight: '280px',
+                  maxHeight: '440px',
+                  aspectRatio: '1 / 1',
+                  borderRadius: '14px',
+                  overflow: 'hidden',
+                  marginBottom: (varImages.length > 1 || colorOpts.length > 1) ? '12px' : '16px',
+                  background: '#FFFFFF',
+                  border: '1px solid #ECE7DE',
+                  boxShadow: '0 4px 20px rgba(0, 0, 0, 0.04)',
+                  display: 'flex',
+                  alignItems: 'center',
+                  justifyContent: 'center',
+                  padding: '16px',
+                }}>
                   <img
                     src={mainImg}
                     alt={`${viewProduct.title} - ${activeColor}`}
-                    className="variant-display-img"
+                    style={{
+                      maxWidth: '100%',
+                      maxHeight: '100%',
+                      width: 'auto',
+                      height: 'auto',
+                      objectFit: 'contain',
+                      objectPosition: 'center',
+                      display: 'block',
+                      transition: 'opacity 0.2s ease, transform 0.2s ease',
+                    }}
                   />
                 </div>
 
@@ -1470,9 +1475,10 @@ Please confirm my order and arrange delivery. Thank you!`;
                         </span>
                       )}
                     </div>
-                    <div className="detail-variant-swatches-wrap">
+                    <div className="detail-variant-swatches-wrap" style={{ display: 'flex', gap: '8px', flexWrap: 'wrap' }}>
                       {colorOpts.map((opt) => {
                         const isSelected = activeVar?.id === opt.id;
+                        const optThumb = opt.images && opt.images.length > 0 ? opt.images[0] : null;
                         return (
                           <button
                             key={opt.id}
@@ -1485,12 +1491,40 @@ Please confirm my order and arrange delivery. Thank you!`;
                               }
                             }}
                             className={`detail-swatch-btn ${isSelected ? 'active' : ''}`}
+                            style={{
+                              display: 'inline-flex',
+                              alignItems: 'center',
+                              gap: '8px',
+                              padding: '6px 14px',
+                              borderRadius: '24px',
+                              border: isSelected ? '1.5px solid #66300F' : '1px solid #D8D0C3',
+                              background: isSelected ? '#66300F' : '#FFFFFF',
+                              color: isSelected ? '#FFFFFF' : '#332E29',
+                              fontSize: '12px',
+                              fontWeight: isSelected ? '700' : '500',
+                              cursor: 'pointer',
+                              transition: 'all 0.15s ease'
+                            }}
                             title={`${opt.colorName} (${opt.stock || 0} in stock)`}
                           >
-                            <span
-                              className="detail-swatch-circle"
-                              style={{ backgroundColor: opt.colorCode || '#000000' }}
-                            />
+                            {optThumb ? (
+                              <img
+                                src={optThumb}
+                                alt={opt.colorName}
+                                style={{
+                                  width: '20px',
+                                  height: '20px',
+                                  borderRadius: '50%',
+                                  objectFit: 'cover',
+                                  border: isSelected ? '1px solid #FFFFFF' : '1px solid #E5E0D8'
+                                }}
+                              />
+                            ) : (
+                              <span
+                                className="detail-swatch-circle"
+                                style={{ backgroundColor: opt.colorCode || '#000000', width: '12px', height: '12px', borderRadius: '50%' }}
+                              />
+                            )}
                             <span>{opt.colorName}</span>
                           </button>
                         );

@@ -347,11 +347,35 @@ Please confirm my order and arrange delivery. Thank you!`;
           
           {/* Left: Product Image & Variant Gallery */}
           <div>
-            <div style={{ position: 'relative', width: '100%', aspectRatio: '1 / 1.15', background: '#FAF7EF', borderRadius: '12px', overflow: 'hidden', border: '1px solid #EFEAE0' }}>
+            <div style={{
+              position: 'relative',
+              width: '100%',
+              aspectRatio: '1 / 1.1',
+              minHeight: '340px',
+              maxHeight: '480px',
+              background: '#FFFFFF',
+              borderRadius: '14px',
+              overflow: 'hidden',
+              border: '1px solid #ECE7DE',
+              boxShadow: '0 4px 20px rgba(0, 0, 0, 0.04)',
+              display: 'flex',
+              alignItems: 'center',
+              justifyContent: 'center',
+              padding: '16px'
+            }}>
               <img
                 src={activeImage}
                 alt={`${product.title} - ${activeColor || 'Luxury Item'}`}
-                className="variant-display-img"
+                style={{
+                  maxWidth: '100%',
+                  maxHeight: '100%',
+                  width: 'auto',
+                  height: 'auto',
+                  objectFit: 'contain',
+                  objectPosition: 'center',
+                  display: 'block',
+                  transition: 'opacity 0.2s ease, transform 0.2s ease'
+                }}
               />
             </div>
 
@@ -406,21 +430,50 @@ Please confirm my order and arrange delivery. Thank you!`;
                     </span>
                   )}
                 </div>
-                <div className="detail-variant-swatches-wrap">
+                <div className="detail-variant-swatches-wrap" style={{ display: 'flex', gap: '8px', flexWrap: 'wrap' }}>
                   {colorOptions.map((opt) => {
                     const isSelected = (currentVariant?.id === opt.id);
+                    const optThumb = opt.images && opt.images.length > 0 ? opt.images[0] : null;
                     return (
                       <button
                         key={opt.id}
                         type="button"
                         onClick={() => handleSelectVariant(opt)}
                         className={`detail-swatch-btn ${isSelected ? 'active' : ''}`}
+                        style={{
+                          display: 'inline-flex',
+                          alignItems: 'center',
+                          gap: '8px',
+                          padding: '6px 14px',
+                          borderRadius: '24px',
+                          border: isSelected ? '1.5px solid #66300F' : '1px solid #D8D0C3',
+                          background: isSelected ? '#66300F' : '#FFFFFF',
+                          color: isSelected ? '#FFFFFF' : '#332E29',
+                          fontSize: '12px',
+                          fontWeight: isSelected ? '700' : '500',
+                          cursor: 'pointer',
+                          transition: 'all 0.15s ease'
+                        }}
                         title={`${opt.colorName} (${opt.stock || 0} in stock)`}
                       >
-                        <span
-                          className="detail-swatch-circle"
-                          style={{ backgroundColor: opt.colorCode || '#000000' }}
-                        />
+                        {optThumb ? (
+                          <img
+                            src={optThumb}
+                            alt={opt.colorName}
+                            style={{
+                              width: '20px',
+                              height: '20px',
+                              borderRadius: '50%',
+                              objectFit: 'cover',
+                              border: isSelected ? '1px solid #FFFFFF' : '1px solid #E5E0D8'
+                            }}
+                          />
+                        ) : (
+                          <span
+                            className="detail-swatch-circle"
+                            style={{ backgroundColor: opt.colorCode || '#000000', width: '12px', height: '12px', borderRadius: '50%' }}
+                          />
+                        )}
                         <span>{opt.colorName}</span>
                       </button>
                     );

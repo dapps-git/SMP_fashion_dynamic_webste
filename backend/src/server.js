@@ -109,18 +109,33 @@ async function processUploadedFile(file, req) {
   let finalUrl = '';
   let publicId = uniqueId;
 
-  // 1. Try uploading to Cloudinary (from memory buffer or path)
+  // 1. Try uploading to Cloudinary (direct binary stream or path)
   try {
-    let uploadTarget = null;
     if (file.buffer) {
-      const b64 = file.buffer.toString('base64');
-      uploadTarget = `data:${file.mimetype || 'image/jpeg'};base64,${b64}`;
-    } else if (file.path) {
-      uploadTarget = file.path;
-    }
+      const { Readable } = require('stream');
+      const streamRes = await new Promise((resolve, reject) => {
+        const cStream = cloudinary.uploader.upload_stream(
+          {
+            folder: 'smp-fashion',
+            resource_type: 'auto',
+            transformation: [{ width: 1200, height: 1200, crop: 'limit', quality: 'auto:good' }]
+          },
+          (error, result) => {
+            if (error) return reject(error);
+            resolve(result);
+          }
+        );
+        Readable.from(file.buffer).pipe(cStream);
+      });
 
-    if (uploadTarget) {
-      const uploadRes = await cloudinary.uploader.upload(uploadTarget, {
+      if (streamRes && (streamRes.secure_url || streamRes.url)) {
+        return {
+          url: streamRes.secure_url || streamRes.url,
+          publicId: streamRes.public_id || uniqueId
+        };
+      }
+    } else if (file.path) {
+      const uploadRes = await cloudinary.uploader.upload(file.path, {
         folder: 'smp-fashion',
         resource_type: 'auto',
         transformation: [{ width: 1200, height: 1200, crop: 'limit', quality: 'auto:good' }]
@@ -133,7 +148,7 @@ async function processUploadedFile(file, req) {
       }
     }
   } catch (cErr) {
-    console.warn('⚠️ Cloudinary upload note, attempting local fallback:', cErr.message);
+    console.warn('⚠️ Cloudinary stream upload note, attempting local fallback:', cErr.message);
   }
 
   // 2. Safe local file system fallback
