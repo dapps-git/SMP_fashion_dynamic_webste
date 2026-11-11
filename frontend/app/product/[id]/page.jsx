@@ -383,20 +383,47 @@ Please confirm my order. Thank you!`;
         </div>
       )}
 
-      {/* Top Announcement Bar */}
-      <div className="announcement-bar">
-        <div className="announcement-content">
-          <span>✨ Super Master Quality &amp; 1:1 Finishing</span>
-          <span className="bullet-sep">•</span>
-          <span>Cash on Delivery &amp; Card on Delivery Across UAE</span>
-          <span className="bullet-sep">•</span>
-          <span>Tabby &amp; Tamara Available</span>
-          <span className="bullet-sep">•</span>
-          <span>Inspect Before Payment Guarantee</span>
+      {/* Top Announcement Bar - Seamless Infinite Train Marquee (Identical to Home) */}
+      <div className="top-announcement" role="region" aria-label="Announcement Ticker">
+        <div className="top-announcement-track">
+          {/* Ticker Set 1 */}
+          <div className="top-announcement-group">
+            <span className="ticker-badge-item">
+              <img src="/tabby-badge.png" alt="Tabby" className="ticker-payment-badge" />
+              <img src="/tamara-badge.png" alt="Tamara" className="ticker-payment-badge" />
+              <strong>AVAILABLE</strong>
+            </span>
+            <span className="ticker-dot">|</span>
+            <span><strong>100% SECURE SHOPPING</strong></span>
+            <span className="ticker-dot">|</span>
+            <span><strong>QUALITY CHECK</strong></span>
+            <span className="ticker-dot">|</span>
+            <span><strong>FREE DELIVERY 🇦🇪</strong></span>
+            <span className="ticker-dot">|</span>
+            <span><strong>+971 52 597 3132</strong></span>
+            <span className="ticker-dot">|</span>
+          </div>
+          {/* Ticker Set 2 (Seamless infinite loop duplicate) */}
+          <div className="top-announcement-group" aria-hidden="true">
+            <span className="ticker-badge-item">
+              <img src="/tabby-badge.png" alt="Tabby" className="ticker-payment-badge" />
+              <img src="/tamara-badge.png" alt="Tamara" className="ticker-payment-badge" />
+              <strong>AVAILABLE</strong>
+            </span>
+            <span className="ticker-dot">|</span>
+            <span><strong>100% SECURE SHOPPING</strong></span>
+            <span className="ticker-dot">|</span>
+            <span><strong>QUALITY CHECK</strong></span>
+            <span className="ticker-dot">|</span>
+            <span><strong>FREE DELIVERY 🇦🇪</strong></span>
+            <span className="ticker-dot">|</span>
+            <span><strong>+971 52 597 3132</strong></span>
+            <span className="ticker-dot">|</span>
+          </div>
         </div>
       </div>
 
-      {/* Main Site Header / Navbar (as requested by user) */}
+      {/* Main Navigation Header (Fixed/Sticky all over site, identical to Home) */}
       <header className="site-header">
         <div className="header-container">
           <div className="header-left">
@@ -416,12 +443,6 @@ Please confirm my order. Thank you!`;
                   className="brand-logo-img"
                 />
               </Link>
-              <div className="brand-text-block">
-                <Link href="/" style={{ textDecoration: 'none', color: 'inherit' }}>
-                  <span className="brand-name-main">SMP ATELIER</span>
-                  <span className="brand-tagline-sub">Super Master Products</span>
-                </Link>
-              </div>
             </div>
           </div>
 
@@ -432,7 +453,7 @@ Please confirm my order. Thank you!`;
               <Link
                 key={cat.id || cat.slug}
                 href={`/?category=${cat.slug}#collections`}
-                className={`nav-item ${(product?.category || '').toLowerCase() === (cat.slug || '').toLowerCase() ? 'active-nav' : ''}`}
+                className={`nav-item ${(product?.category || '').toLowerCase() === (cat.slug || '').toLowerCase() ? 'active' : ''}`}
               >
                 {cat.name}
               </Link>
@@ -487,35 +508,41 @@ Please confirm my order. Thank you!`;
         </div>
       )}
 
-      {/* Mobile Drawer */}
+      {/* Mobile Drawer (Identical structure to Home) */}
       {mobileMenuOpen && (
-        <div className="mobile-drawer-overlay" onClick={() => setMobileMenuOpen(false)}>
-          <div className="mobile-drawer" onClick={(e) => e.stopPropagation()}>
-            <div className="mobile-drawer-head">
-              <div style={{ display: 'flex', alignItems: 'center', gap: '8px' }}>
-                <img src="/smp-logo.png" alt="SMP" style={{ width: '32px' }} />
-                <span style={{ fontWeight: '700', color: '#66300F', fontSize: '15px' }}>SMP ATELIER</span>
-              </div>
-              <button onClick={() => setMobileMenuOpen(false)} className="modal-close-btn">
-                <X size={20} />
+        <>
+          <div className="mobile-drawer-overlay" onClick={() => setMobileMenuOpen(false)} />
+          <div className="mobile-drawer">
+            <div style={{ display: 'flex', alignItems: 'center', justifyContent: 'space-between', paddingBottom: '16px', borderBottom: '1px solid #ECE6DC' }}>
+              <img src="/smp-logo.png" alt="SMP Logo" style={{ height: '54px', objectFit: 'contain' }} />
+              <button
+                onClick={() => setMobileMenuOpen(false)}
+                style={{ background: 'none', border: 'none', color: '#1C1917', cursor: 'pointer', padding: '4px' }}
+                aria-label="Close menu"
+              >
+                <X size={22} />
               </button>
             </div>
-            <div style={{ padding: '20px 16px', display: 'flex', flexDirection: 'column', gap: '14px' }}>
-              <Link href="/" onClick={() => setMobileMenuOpen(false)} style={{ fontSize: '15px', color: '#2D1E12', textDecoration: 'none', fontWeight: '600' }}>Home</Link>
-              <Link href="/#collections" onClick={() => setMobileMenuOpen(false)} style={{ fontSize: '15px', color: '#2D1E12', textDecoration: 'none', fontWeight: '600' }}>All Collections</Link>
+            <div className="mobile-drawer-links" style={{ padding: '20px 0', display: 'flex', flexDirection: 'column', gap: '4px' }}>
+              <Link href="/" onClick={() => setMobileMenuOpen(false)} className="mobile-drawer-link">
+                <span>Home</span>
+              </Link>
+              <Link href="/#collections" onClick={() => setMobileMenuOpen(false)} className="mobile-drawer-link">
+                <span>All Collections</span>
+              </Link>
               {categories.map((c) => (
                 <Link
                   key={c.id || c.slug}
                   href={`/?category=${c.slug}#collections`}
                   onClick={() => setMobileMenuOpen(false)}
-                  style={{ fontSize: '14.5px', color: '#66300F', textDecoration: 'none' }}
+                  className="mobile-drawer-link"
                 >
-                  {c.name}
+                  <span>{c.name}</span>
                 </Link>
               ))}
             </div>
           </div>
-        </div>
+        </>
       )}
 
       {/* Back to Collections Bar (Exact match to reference top left) */}
@@ -596,52 +623,49 @@ Please confirm my order. Thank you!`;
               </span>
             </div>
 
-            {/* Color Selection Cards (Image thumbnail + label + checkmark badge) */}
-            <div className="product-color-section">
-              <label className="product-section-label">
-                Color: <span style={{ fontWeight: '500', color: '#5A4A3E' }}>{activeColor || 'Default'}</span>
-              </label>
+            {/* Color Selection - All Available Colors in Single Horizontal Line (No image cards) */}
+            {colorOptions && colorOptions.length > 0 && (
+              <div className="product-color-section">
+                <label className="product-section-label">
+                  Color: <span style={{ fontWeight: '500', color: '#5A4A3E' }}>{activeColor || 'Default'}</span>
+                </label>
 
-              <div className="product-color-cards-grid">
-                {colorOptions.map((opt) => {
-                  const isSelected = currentVariant?.id === opt.id;
-                  const optThumb = opt.images?.[0] || product.image;
-                  return (
-                    <button
-                      key={opt.id}
-                      type="button"
-                      onClick={() => handleSelectVariant(opt)}
-                      className={`product-color-card ${isSelected ? 'active' : ''}`}
-                      title={opt.colorName}
-                    >
-                      {/* Active checkmark circle badge at top-right */}
-                      {isSelected && (
-                        <span className="product-color-card-check">
-                          <Check size={11} strokeWidth={3} />
-                        </span>
-                      )}
-
-                      <div className="product-color-card-img-wrap">
-                        <img src={optThumb} alt={opt.colorName} />
-                      </div>
-
-                      <span className="product-color-card-name">
-                        {opt.colorName}
-                      </span>
-                    </button>
-                  );
-                })}
+                <div className="product-colors-line">
+                  {colorOptions.map((opt) => {
+                    const isSelected = currentVariant?.id === opt.id;
+                    return (
+                      <button
+                        key={opt.id}
+                        type="button"
+                        onClick={() => handleSelectVariant(opt)}
+                        className={`product-color-pill ${isSelected ? 'active' : ''}`}
+                        title={opt.colorName}
+                      >
+                        <span
+                          className="product-color-dot"
+                          style={{
+                            backgroundColor: opt.colorCode || '#2D1E12'
+                          }}
+                        />
+                        <span className="product-color-pill-text">{opt.colorName}</span>
+                        {isSelected && (
+                          <Check size={12} strokeWidth={3} className="product-color-check-icon" />
+                        )}
+                      </button>
+                    );
+                  })}
+                </div>
               </div>
-            </div>
+            )}
 
-            {/* Size Selection Row */}
+            {/* Size Selection - All Available Sizes in Single Line with Reduced Font Size */}
             {activeSizes && activeSizes.length > 0 && (
               <div className="product-sizes-section">
                 <label className="product-section-label">
-                  Size (EU):
+                  Size (EU): <span style={{ fontWeight: '500', color: '#5A4A3E' }}>{selectedSize}</span>
                 </label>
 
-                <div className="product-sizes-grid">
+                <div className="product-sizes-line">
                   {activeSizes.map((sz) => (
                     <button
                       key={sz}
