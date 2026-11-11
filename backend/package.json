@@ -5,7 +5,9 @@
   "main": "app.js",
   "scripts": {
     "start": "node src/server.js",
-    "dev": "node src/server.js"
+    "dev": "node src/server.js",
+    "sync-db": "node src/sync-to-mongo.js",
+    "restore-live": "node src/restore-live-to-mongo.js"
   },
   "keywords": [],
   "author": "",

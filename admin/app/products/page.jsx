@@ -95,6 +95,7 @@ export default function ProductsPage() {
   const fileInputRef = useRef(null);
   const [variantUrlInputs, setVariantUrlInputs] = useState({});
   const [variantUploading, setVariantUploading] = useState({});
+  const [customSizeInput, setCustomSizeInput] = useState('');
 
   // Form fields
   const [formData, setFormData] = useState({
@@ -270,6 +271,56 @@ export default function ProductsPage() {
     setFormData(prev => ({
       ...prev,
       variants: prev.variants.map((v, i) => i === index ? { ...v, [field]: value } : v)
+    }));
+  };
+
+  // Helper functions for Available Sizes management
+  const getParsedSizesList = (sizesStr = '') => {
+    if (!sizesStr) return [];
+    return String(sizesStr).split(',').map(s => s.trim()).filter(Boolean);
+  };
+
+  const handleToggleSize = (sizeVal) => {
+    const current = getParsedSizesList(formData.sizes);
+    let updated;
+    if (current.includes(sizeVal)) {
+      updated = current.filter(s => s !== sizeVal);
+    } else {
+      updated = [...current, sizeVal];
+    }
+    setFormData(prev => ({ ...prev, sizes: updated.join(', ') }));
+  };
+
+  const handleApplySizePreset = (presetList) => {
+    setFormData(prev => ({ ...prev, sizes: presetList.join(', ') }));
+  };
+
+  const handleAddCustomSize = (e) => {
+    if (e) e.preventDefault();
+    const val = customSizeInput.trim();
+    if (!val) return;
+    const current = getParsedSizesList(formData.sizes);
+    if (!current.includes(val)) {
+      const updated = [...current, val];
+      setFormData(prev => ({ ...prev, sizes: updated.join(', ') }));
+    }
+    setCustomSizeInput('');
+  };
+
+  const handleRemoveSize = (sizeVal) => {
+    const current = getParsedSizesList(formData.sizes);
+    const updated = current.filter(s => s !== sizeVal);
+    setFormData(prev => ({ ...prev, sizes: updated.join(', ') }));
+  };
+
+  const handleApplySizesToAllVariants = () => {
+    if (!formData.sizes) return;
+    setFormData(prev => ({
+      ...prev,
+      variants: (prev.variants || []).map(v => ({
+        ...v,
+        sizes: prev.sizes
+      }))
     }));
   };
 
@@ -888,18 +939,188 @@ export default function ProductsPage() {
                   </div>
                 </div>
 
-                {/* Available Sizes (Optional) */}
-                <div className="form-group">
-                  <label className="form-label">
-                    Available Sizes <span style={{ color: 'var(--color-text-muted)', fontSize: '11px', fontWeight: 'normal' }}>(Optional - e.g. 7, 8, 9, 10 or EU 40, 41, 42)</span>
-                  </label>
-                  <input 
-                    type="text" 
-                    className="form-input" 
-                    value={formData.sizes} 
-                    onChange={(e) => setFormData({ ...formData, sizes: e.target.value })}
-                    placeholder="e.g. 7, 8, 9, 10 or EU 40, 41, 42"
-                  />
+                {/* Dedicated Available Sizes Section */}
+                <div style={{ margin: '18px 0', padding: '18px', background: '#FCFAF6', borderRadius: '12px', border: '1.5px solid #E5DEC9' }}>
+                  <div style={{ display: 'flex', alignItems: 'center', justifyContent: 'space-between', marginBottom: '8px' }}>
+                    <div style={{ fontSize: '14px', fontWeight: '700', color: '#66300F', display: 'flex', alignItems: 'center', gap: '8px' }}>
+                      <span>📏 Available Sizes Section</span>
+                    </div>
+                    <span style={{ fontSize: '11px', background: '#F8F4EC', color: '#66300F', padding: '3px 9px', borderRadius: '12px', fontWeight: '600', border: '1px solid #E8DEC8' }}>
+                      {getParsedSizesList(formData.sizes).length} Sizes Selected
+                    </span>
+                  </div>
+                  <div style={{ fontSize: '12px', color: 'var(--color-text-muted)', marginBottom: '14px', lineHeight: '1.5' }}>
+                    Configure shoe, apparel, or accessory sizes. Customers will see these as interactive selectable buttons on the product page.
+                  </div>
+
+                  {/* Quick 1-Click Preset Buttons */}
+                  <div style={{ marginBottom: '14px' }}>
+                    <div style={{ fontSize: '11.5px', fontWeight: '700', color: '#66300F', textTransform: 'uppercase', letterSpacing: '0.8px', marginBottom: '8px' }}>
+                      Quick Presets:
+                    </div>
+                    <div style={{ display: 'flex', gap: '8px', flexWrap: 'wrap' }}>
+                      <button
+                        type="button"
+                        onClick={() => handleApplySizePreset(['35', '36', '37', '38', '39', '40', '41', '42'])}
+                        className="btn btn-secondary"
+                        style={{ fontSize: '12px', padding: '5px 12px', borderRadius: '6px' }}
+                      >
+                        👠 Women's Shoes (EU 35-42)
+                      </button>
+
+                      <button
+                        type="button"
+                        onClick={() => handleApplySizePreset(['40', '41', '42', '43', '44', '45', '46'])}
+                        className="btn btn-secondary"
+                        style={{ fontSize: '12px', padding: '5px 12px', borderRadius: '6px' }}
+                      >
+                        👞 Men's Shoes (EU 40-46)
+                      </button>
+
+                      <button
+                        type="button"
+                        onClick={() => handleApplySizePreset(['XS', 'S', 'M', 'L', 'XL', 'XXL'])}
+                        className="btn btn-secondary"
+                        style={{ fontSize: '12px', padding: '5px 12px', borderRadius: '6px' }}
+                      >
+                        👕 Apparel (XS-XXL)
+                      </button>
+
+                      <button
+                        type="button"
+                        onClick={() => handleApplySizePreset(['One Size', 'Standard', '25 cm', '30 cm', '35 cm'])}
+                        className="btn btn-secondary"
+                        style={{ fontSize: '12px', padding: '5px 12px', borderRadius: '6px' }}
+                      >
+                        👜 Bags &amp; Accessories
+                      </button>
+
+                      {formData.sizes && (
+                        <button
+                          type="button"
+                          onClick={() => setFormData(prev => ({ ...prev, sizes: '' }))}
+                          className="btn btn-secondary"
+                          style={{ fontSize: '12px', padding: '5px 12px', borderRadius: '6px', color: '#DC2626' }}
+                        >
+                          ✕ Clear All
+                        </button>
+                      )}
+                    </div>
+                  </div>
+
+                  {/* Clickable Quick Toggle Chips */}
+                  <div style={{ marginBottom: '14px' }}>
+                    <div style={{ fontSize: '11.5px', fontWeight: '700', color: '#66300F', textTransform: 'uppercase', letterSpacing: '0.8px', marginBottom: '8px' }}>
+                      Click to Toggle Sizes:
+                    </div>
+                    <div style={{ display: 'flex', gap: '6px', flexWrap: 'wrap' }}>
+                      {['35', '36', '37', '38', '39', '40', '41', '42', '43', '44', '45', '46', 'XS', 'S', 'M', 'L', 'XL', 'XXL', 'One Size'].map((sz) => {
+                        const isSelected = getParsedSizesList(formData.sizes).includes(sz);
+                        return (
+                          <button
+                            key={sz}
+                            type="button"
+                            onClick={() => handleToggleSize(sz)}
+                            style={{
+                              padding: '5px 11px',
+                              borderRadius: '6px',
+                              border: isSelected ? '1.5px solid #66300F' : '1px solid #D8D2C4',
+                              background: isSelected ? '#66300F' : '#FFFFFF',
+                              color: isSelected ? '#FFFFFF' : '#374151',
+                              fontWeight: isSelected ? '700' : '500',
+                              fontSize: '12px',
+                              cursor: 'pointer',
+                              transition: 'all 0.15s ease'
+                            }}
+                          >
+                            {sz} {isSelected ? '✓' : '+'}
+                          </button>
+                        );
+                      })}
+                    </div>
+                  </div>
+
+                  {/* Custom Size Tag Input */}
+                  <div style={{ display: 'flex', gap: '8px', marginBottom: '14px', alignItems: 'center' }}>
+                    <input
+                      type="text"
+                      className="form-input"
+                      style={{ maxWidth: '240px', height: '36px', fontSize: '13px' }}
+                      placeholder="Type custom size (e.g. 38.5)"
+                      value={customSizeInput}
+                      onChange={(e) => setCustomSizeInput(e.target.value)}
+                      onKeyDown={(e) => {
+                        if (e.key === 'Enter') {
+                          e.preventDefault();
+                          handleAddCustomSize();
+                        }
+                      }}
+                    />
+                    <button
+                      type="button"
+                      onClick={handleAddCustomSize}
+                      className="btn btn-secondary"
+                      style={{ height: '36px', fontSize: '12px', padding: '0 14px' }}
+                    >
+                      + Add Size
+                    </button>
+                  </div>
+
+                  {/* Currently Active Sizes Tags */}
+                  {getParsedSizesList(formData.sizes).length > 0 ? (
+                    <div style={{ background: '#FFFFFF', padding: '12px 14px', borderRadius: '8px', border: '1px solid #E5DFC9' }}>
+                      <div style={{ fontSize: '11px', fontWeight: '700', color: '#786F66', textTransform: 'uppercase', marginBottom: '8px' }}>
+                        Active Sizes on Store:
+                      </div>
+                      <div style={{ display: 'flex', gap: '8px', flexWrap: 'wrap' }}>
+                        {getParsedSizesList(formData.sizes).map((sz) => (
+                          <span
+                            key={sz}
+                            style={{
+                              display: 'inline-flex',
+                              alignItems: 'center',
+                              gap: '6px',
+                              background: '#F5EFE6',
+                              color: '#66300F',
+                              border: '1px solid #D9CBBA',
+                              padding: '3px 9px',
+                              borderRadius: '6px',
+                              fontSize: '12px',
+                              fontWeight: '700'
+                            }}
+                          >
+                            <span>{sz}</span>
+                            <button
+                              type="button"
+                              onClick={() => handleRemoveSize(sz)}
+                              style={{ background: 'none', border: 'none', cursor: 'pointer', color: '#991B1B', padding: 0, display: 'flex', alignItems: 'center', fontSize: '13px', fontWeight: '900' }}
+                              title="Remove this size"
+                            >
+                              ×
+                            </button>
+                          </span>
+                        ))}
+                      </div>
+                    </div>
+                  ) : (
+                    <div style={{ fontSize: '12px', color: '#9CA3AF', fontStyle: 'italic' }}>
+                      No sizes selected yet. Click any size above or apply a preset.
+                    </div>
+                  )}
+
+                  {/* Apply to All Variants Button */}
+                  {formData.variants && formData.variants.length > 0 && formData.sizes && (
+                    <div style={{ marginTop: '12px' }}>
+                      <button
+                        type="button"
+                        onClick={handleApplySizesToAllVariants}
+                        className="btn btn-secondary"
+                        style={{ fontSize: '12px', padding: '6px 14px', color: '#66300F', border: '1px dashed #66300F' }}
+                      >
+                        ⚡ Copy These Sizes to All ({formData.variants.length}) Color Variants
+                      </button>
+                    </div>
+                  )}
                 </div>
 
                 {/* Primary / First Image & Color Option Card */}
@@ -1291,15 +1512,27 @@ export default function ProductsPage() {
                             </div>
 
                             <div className="form-group" style={{ marginBottom: 0 }}>
-                              <label className="form-label" style={{ fontSize: '12px', marginBottom: '4px' }}>
-                                Variant Available Sizes <span style={{ color: 'var(--color-text-muted)', fontSize: '11px' }}>(Optional - comma separated)</span>
-                              </label>
+                              <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center', marginBottom: '4px' }}>
+                                <label className="form-label" style={{ fontSize: '12px', marginBottom: 0 }}>
+                                  Variant Sizes <span style={{ color: 'var(--color-text-muted)', fontSize: '11px' }}>(comma-separated)</span>
+                                </label>
+                                {formData.sizes && (
+                                  <button
+                                    type="button"
+                                    onClick={() => updateVariant(idx, 'sizes', formData.sizes)}
+                                    style={{ background: 'none', border: 'none', color: '#66300F', fontSize: '11px', fontWeight: '600', cursor: 'pointer', textDecoration: 'underline', padding: 0 }}
+                                    title="Copy all sizes from main product size section"
+                                  >
+                                    📋 Copy main sizes
+                                  </button>
+                                )}
+                              </div>
                               <input
                                 type="text"
                                 className="form-input"
                                 value={v.sizes}
                                 onChange={(e) => updateVariant(idx, 'sizes', e.target.value)}
-                                placeholder="e.g. 7, 8, 9, 10 or Standard"
+                                placeholder="e.g. 35, 36, 37, 38, 39, 40, 41, 42"
                               />
                             </div>
                           </div>

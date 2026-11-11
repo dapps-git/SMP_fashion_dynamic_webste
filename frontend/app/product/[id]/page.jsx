@@ -6,16 +6,17 @@ import Link from 'next/link';
 import {
   ArrowLeft,
   ShoppingBag,
-  ShieldCheck,
-  Truck,
-  CheckCircle,
+  Search,
+  Menu,
   X,
-  Phone,
-  Clock,
-  Sparkles
+  Maximize2,
+  Check,
+  CheckCircle,
+  MessageSquare,
+  Play
 } from 'lucide-react';
 
-const WHATSAPP_NUMBER = '971525973132';
+const WHATSAPP_NUMBER = '971525973132'; // +971 52 597 3132
 const rawApiUrl = process.env.NEXT_PUBLIC_API_URL || 'http://localhost:5005/api';
 const cleanApiUrl = rawApiUrl.replace(/\/+$/, '');
 const API_BASE = cleanApiUrl.endsWith('/api') ? cleanApiUrl : `${cleanApiUrl}/api`;
@@ -40,22 +41,9 @@ const playAddToCartSound = () => {
     gain1.connect(ctx.destination);
     osc1.start(now);
     osc1.stop(now + 0.38);
-
-    const osc2 = ctx.createOscillator();
-    const gain2 = ctx.createGain();
-    osc2.type = 'triangle';
-    osc2.frequency.setValueAtTime(1174.66, now + 0.08);
-    osc2.frequency.exponentialRampToValueAtTime(1760, now + 0.2);
-    gain2.gain.setValueAtTime(0.12, now + 0.08);
-    gain2.gain.exponentialRampToValueAtTime(0.001, now + 0.42);
-    osc2.connect(gain2);
-    gain2.connect(ctx.destination);
-    osc2.start(now + 0.08);
-    osc2.stop(now + 0.44);
   } catch (err) {}
 };
 
-// Color resolver fallback helper
 function resolveColorHex(name = '', code = '') {
   if (code && typeof code === 'string' && code.trim().startsWith('#')) return code.trim();
   const lower = (name || '').toLowerCase();
@@ -90,7 +78,7 @@ function getProductColorOptions(product) {
         colorName: product.color || 'Primary',
         colorCode: resolveColorHex(product.color, product.colorCode),
         images: product.image ? [product.image] : [],
-        stock: product.stock !== undefined ? product.stock : 10,
+        stock: product.stock !== undefined ? product.stock : 15,
         sizes: product.sizes || []
       });
     }
@@ -103,7 +91,7 @@ function getProductColorOptions(product) {
       colorName: v.colorName || `Color ${idx + 1}`,
       colorCode: resolveColorHex(v.colorName, v.colorCode),
       images: Array.isArray(v.images) ? v.images.filter(Boolean) : (v.image ? [v.image] : []),
-      stock: v.stock !== undefined && v.stock !== '' ? Number(v.stock) : (product.stock ?? 10),
+      stock: v.stock !== undefined && v.stock !== '' ? Number(v.stock) : (product.stock ?? 15),
       sizes: Array.isArray(v.sizes) ? v.sizes : (product.sizes || [])
     });
   });
@@ -117,39 +105,63 @@ export default function ProductInnerPage() {
   const id = params?.id;
 
   const [product, setProduct] = useState(null);
+  const [categories, setCategories] = useState([]);
   const [loading, setLoading] = useState(true);
   const [selectedVariant, setSelectedVariant] = useState(null);
   const [activeImageIndex, setActiveImageIndex] = useState(0);
   const [selectedSize, setSelectedSize] = useState('');
-  const [orderModalOpen, setOrderModalOpen] = useState(false);
   const [quantity, setQuantity] = useState(1);
+  const [lightboxOpen, setLightboxOpen] = useState(false);
+
+  // Cart & Mobile Drawer State
+  const [cart, setCart] = useState([]);
+  const [cartDrawerOpen, setCartDrawerOpen] = useState(false);
+  const [mobileMenuOpen, setMobileMenuOpen] = useState(false);
+  const [searchOpen, setSearchOpen] = useState(false);
+  const [searchQuery, setSearchQuery] = useState('');
+  const [toastMessage, setToastMessage] = useState(null);
+
+  // Quick Order Modal (Name & Phone ONLY - NO address)
+  const [orderModalOpen, setOrderModalOpen] = useState(false);
   const [customerName, setCustomerName] = useState('');
   const [customerPhone, setCustomerPhone] = useState('');
-  const [deliveryAddress, setDeliveryAddress] = useState('');
-  const [emirate, setEmirate] = useState('Dubai');
-  const [notes, setNotes] = useState('');
   const [submittingOrder, setSubmittingOrder] = useState(false);
   const [orderSuccess, setOrderSuccess] = useState(false);
-  const [toastMessage, setToastMessage] = useState(null);
 
   const colorOptions = useMemo(() => getProductColorOptions(product), [product]);
 
+  // Load cart from localStorage
+  useEffect(() => {
+    try {
+      const saved = localStorage.getItem('smp_cart_items') || localStorage.getItem('smp_cart');
+      if (saved) setCart(JSON.parse(saved));
+    } catch (e) {}
+  }, []);
+
+  const totalCartCount = useMemo(() => {
+    return cart.reduce((sum, item) => sum + (item.quantity || 1), 0);
+  }, [cart]);
+
+  const totalCartPrice = useMemo(() => {
+    return cart.reduce((sum, item) => sum + (item.price || 0) * (item.quantity || 1), 0);
+  }, [cart]);
+
+  // Fetch product & categories
   useEffect(() => {
     if (!id) return;
     fetchProduct();
+    fetchCategories();
   }, [id]);
 
-  // Preload all color option images for zero-lag instant switching
-  useEffect(() => {
-    colorOptions.forEach((opt) => {
-      if (opt.images && opt.images.length > 0) {
-        opt.images.forEach((imgUrl) => {
-          const preloadImg = new Image();
-          preloadImg.src = imgUrl;
-        });
+  const fetchCategories = async () => {
+    try {
+      const res = await fetch(`${API_BASE}/categories`);
+      if (res.ok) {
+        const data = await res.json();
+        setCategories(data);
       }
-    });
-  }, [colorOptions]);
+    } catch (e) {}
+  };
 
   const fetchProduct = async () => {
     try {
@@ -161,10 +173,11 @@ export default function ProductInnerPage() {
         const colorOpts = getProductColorOptions(data);
         if (colorOpts.length > 0) {
           setSelectedVariant(colorOpts[0]);
-          if (colorOpts[0].sizes && colorOpts[0].sizes.length > 0) {
-            setSelectedSize(colorOpts[0].sizes[0]);
-          } else if (data.sizes && data.sizes.length > 0) {
-            setSelectedSize(data.sizes[0]);
+          const firstSizes = (colorOpts[0].sizes && colorOpts[0].sizes.length > 0)
+            ? colorOpts[0].sizes
+            : (data.sizes || []);
+          if (firstSizes.length > 0) {
+            setSelectedSize(firstSizes[0]);
           }
         } else if (data.sizes && data.sizes.length > 0) {
           setSelectedSize(data.sizes[0]);
@@ -180,11 +193,29 @@ export default function ProductInnerPage() {
     }
   };
 
+  // Preload variant images
+  useEffect(() => {
+    colorOptions.forEach((opt) => {
+      if (opt.images && opt.images.length > 0) {
+        opt.images.forEach((imgUrl) => {
+          const preloadImg = new Image();
+          preloadImg.src = imgUrl;
+        });
+      }
+    });
+  }, [colorOptions]);
+
   const handleSelectVariant = (v) => {
     setSelectedVariant(v);
     setActiveImageIndex(0);
-    if (v.sizes && v.sizes.length > 0) {
-      setSelectedSize(v.sizes[0]);
+    const availableSizes = (v.sizes && v.sizes.length > 0) ? v.sizes : (product?.sizes || []);
+    if (availableSizes.length > 0) {
+      // Keep selected size if still available, or default to first
+      if (!availableSizes.includes(selectedSize)) {
+        setSelectedSize(availableSizes[0]);
+      }
+    } else {
+      setSelectedSize('');
     }
   };
 
@@ -194,49 +225,62 @@ export default function ProductInnerPage() {
     : (product?.image ? [product.image] : []);
   const activeImage = variantImages[activeImageIndex] || variantImages[0] || product?.image;
   const activeColor = currentVariant?.colorName || product?.color || '';
-  const activeStock = currentVariant?.stock !== undefined ? currentVariant.stock : (product?.stock ?? 10);
-  const activeSizes = (currentVariant?.sizes && currentVariant.sizes.length > 0)
-    ? currentVariant.sizes
-    : (product?.sizes || []);
+  const activeStock = currentVariant?.stock !== undefined ? currentVariant.stock : (product?.stock ?? 15);
+  
+  // Default footwear sizes (35-42) if none specified, matching luxury shoes in screenshot
+  const activeSizes = useMemo(() => {
+    if (currentVariant?.sizes && currentVariant.sizes.length > 0) return currentVariant.sizes;
+    if (product?.sizes && product.sizes.length > 0) return product.sizes;
+    const cat = (product?.category || '').toLowerCase();
+    if (cat.includes('footwear') || cat.includes('shoe') || cat.includes('heel') || cat.includes('sneaker')) {
+      return ['35', '36', '37', '38', '39', '40', '41', '42'];
+    }
+    return [];
+  }, [currentVariant, product]);
 
   const handleAddToCart = () => {
     if (!product) return;
     playAddToCartSound();
     try {
-      const saved = localStorage.getItem('smp_cart');
-      const cart = saved ? JSON.parse(saved) : [];
+      const saved = localStorage.getItem('smp_cart_items') || localStorage.getItem('smp_cart');
+      const currentCart = saved ? JSON.parse(saved) : [];
       const chosenColor = activeColor;
       const chosenImage = activeImage;
       const variantKeyPart = currentVariant ? currentVariant.id : (chosenColor ? chosenColor.replace(/\s+/g, '-') : 'default');
       const sizeKeyPart = selectedSize ? selectedSize.replace(/\s+/g, '-') : 'nosize';
-      const itemKey = `${product.id}-${variantKeyPart}-${sizeKeyPart}`;
+      const itemKey = `${product.id || product._id}-${variantKeyPart}-${sizeKeyPart}`;
 
-      const idx = cart.findIndex((item) => (item.cartKey || item.id) === itemKey);
+      const idx = currentCart.findIndex((item) => (item.cartKey || item.id) === itemKey);
       let updated;
       if (idx > -1) {
-        updated = cart.map((item, i) => (i === idx ? { ...item, quantity: item.quantity + 1 } : item));
+        updated = currentCart.map((item, i) => (i === idx ? { ...item, quantity: item.quantity + quantity } : item));
       } else {
         updated = [
-          ...cart,
+          ...currentCart,
           {
             ...product,
+            id: product.id || product._id,
             cartKey: itemKey,
             variantId: currentVariant?.id || null,
             color: chosenColor,
             image: chosenImage,
             size: selectedSize,
-            quantity: 1
+            quantity: quantity
           }
         ];
       }
+      setCart(updated);
+      localStorage.setItem('smp_cart_items', JSON.stringify(updated));
       localStorage.setItem('smp_cart', JSON.stringify(updated));
-      setToastMessage(`Added "${product.title}"${chosenColor ? ` [${chosenColor}]` : ''}${selectedSize ? ` (Size: ${selectedSize})` : ''} to Cart`);
+      setToastMessage(`Added "${product.title}"${chosenColor ? ` [${chosenColor}]` : ''}${selectedSize ? ` (Size: ${selectedSize})` : ''} to Shopping Bag`);
       setTimeout(() => setToastMessage(null), 2500);
+      setCartDrawerOpen(true);
     } catch (e) {
       console.error(e);
     }
   };
 
+  // WhatsApp Order Submission (NO ADDRESS - ONLY Customer Name, Phone, Product details, Image, Color, Size)
   const handleConfirmAndContinueWhatsApp = async (e) => {
     e.preventDefault();
     if (!product) return;
@@ -260,39 +304,33 @@ export default function ProductInnerPage() {
         method: 'POST',
         headers: { 'Content-Type': 'application/json' },
         body: JSON.stringify({
-          customerName,
-          customerPhone,
-          deliveryAddress,
-          emirate,
-          notes,
+          customerName: customerName.trim(),
+          customerPhone: customerPhone.trim(),
           items: orderItems,
           totalPrice: totalAmount
         })
       });
     } catch (err) {
-      console.warn('Backend order recording error:', err);
+      console.warn('Backend order recording skipped:', err);
     }
 
     const formattedMessage =
-      `🛍️ *NEW ORDER - SMP Super Master Products*
+`🛍️ *NEW ORDER - SMP Super Master Products*
 ━━━━━━━━━━━━━━━━━━━━━
 *Product:* ${product.title}
-*Category:* ${product.categoryName || product.category}${activeColor ? `\n*Color:* ${activeColor}` : ''}${selectedSize ? `\n*Size:* ${selectedSize}` : ''}
+*Brand:* ${product.brand || 'SMP Luxury'}${activeColor ? `\n*Color:* ${activeColor}` : ''}${selectedSize ? `\n*Size:* ${selectedSize}` : ''}
 *Quantity:* ${quantity}
 *Price:* AED ${product.price}
 *Total Amount:* AED ${totalAmount}
 
 📸 *Product Image:* ${activeImage}
 
-📍 *Customer Shipping Details:*
-*Name:* ${customerName}
-*Phone:* ${customerPhone}
-*Address:* ${deliveryAddress}
-*Emirate:* ${emirate}
-*Special Instructions:* ${notes || 'None'}
+👤 *Customer Details:*
+*Name:* ${customerName.trim()}
+*Phone:* ${customerPhone.trim()}
 ━━━━━━━━━━━━━━━━━━━━━
 
-Please confirm my order and arrange delivery. Thank you!`;
+Please confirm my order. Thank you!`;
 
     const whatsappUrl = `https://wa.me/${WHATSAPP_NUMBER}?text=${encodeURIComponent(formattedMessage)}`;
     setSubmittingOrder(false);
@@ -302,19 +340,34 @@ Please confirm my order and arrange delivery. Thank you!`;
     }, 400);
   };
 
+  const handleSearchSubmit = (e) => {
+    e.preventDefault();
+    if (searchQuery.trim()) {
+      router.push(`/?search=${encodeURIComponent(searchQuery.trim())}#collections`);
+    }
+  };
+
   if (loading) {
     return (
-      <div style={{ minHeight: '80vh', display: 'flex', alignItems: 'center', justifyContent: 'center', color: '#66300F', fontFamily: 'var(--font-sans)' }}>
-        Loading luxury product details...
+      <div style={{ minHeight: '100vh', display: 'flex', flexDirection: 'column', alignItems: 'center', justifyContent: 'center', background: '#FBF9F5', color: '#66300F', fontFamily: 'var(--font-sans)' }}>
+        <img src="/smp-logo.png" alt="SMP" style={{ width: '64px', marginBottom: '16px', opacity: 0.8 }} />
+        <div style={{ fontSize: '13px', letterSpacing: '1.5px', textTransform: 'uppercase', fontWeight: '600' }}>
+          Loading luxury product...
+        </div>
       </div>
     );
   }
 
   if (!product) {
     return (
-      <div style={{ minHeight: '70vh', padding: '60px 20px', textAlign: 'center', fontFamily: 'var(--font-sans)' }}>
-        <h2>Product Not Found</h2>
-        <Link href="/#collections" style={{ color: '#66300F', fontWeight: '600', textDecoration: 'underline', marginTop: '16px', display: 'inline-block' }}>
+      <div style={{ minHeight: '80vh', padding: '80px 20px', textAlign: 'center', background: '#FBF9F5', fontFamily: 'var(--font-sans)' }}>
+        <h2 style={{ fontFamily: 'var(--font-serif)', color: '#2D1E12', fontSize: '28px', marginBottom: '12px' }}>
+          Product Not Found
+        </h2>
+        <p style={{ color: '#786F66', marginBottom: '24px' }}>
+          The product you are looking for is currently unavailable or has been moved.
+        </p>
+        <Link href="/#collections" className="product-buy-now-btn" style={{ maxWidth: '240px', margin: '0 auto', textDecoration: 'none' }}>
           ← Return to All Collections
         </Link>
       </div>
@@ -322,207 +375,279 @@ Please confirm my order and arrange delivery. Thank you!`;
   }
 
   return (
-    <div style={{ minHeight: '100vh', background: 'var(--color-bg)', color: 'var(--color-text-main)', fontFamily: 'var(--font-sans)' }}>
-      {/* Toast */}
+    <div className="product-inner-page-wrap">
+      {/* Toast Notification */}
       {toastMessage && (
         <div style={{ position: 'fixed', bottom: '24px', right: '24px', zIndex: 9999, background: '#1C1917', color: '#FFFFFF', padding: '12px 20px', borderRadius: '8px', boxShadow: '0 8px 24px rgba(0,0,0,0.18)', fontSize: '13px' }}>
           {toastMessage}
         </div>
       )}
 
-      {/* Top Breadcrumb Navigation */}
-      <div className="wide-container" style={{ padding: '24px 20px 10px' }}>
+      {/* Top Announcement Bar */}
+      <div className="announcement-bar">
+        <div className="announcement-content">
+          <span>✨ Super Master Quality &amp; 1:1 Finishing</span>
+          <span className="bullet-sep">•</span>
+          <span>Cash on Delivery &amp; Card on Delivery Across UAE</span>
+          <span className="bullet-sep">•</span>
+          <span>Tabby &amp; Tamara Available</span>
+          <span className="bullet-sep">•</span>
+          <span>Inspect Before Payment Guarantee</span>
+        </div>
+      </div>
+
+      {/* Main Site Header / Navbar (as requested by user) */}
+      <header className="site-header">
+        <div className="header-container">
+          <div className="header-left">
+            <button
+              className="mobile-menu-btn"
+              onClick={() => setMobileMenuOpen(true)}
+              aria-label="Open mobile menu"
+            >
+              <Menu size={24} />
+            </button>
+
+            <div className="brand-logo-wrap">
+              <Link href="/">
+                <img
+                  src="/smp-logo.png"
+                  alt="SMP Logo"
+                  className="brand-logo-img"
+                />
+              </Link>
+              <div className="brand-text-block">
+                <Link href="/" style={{ textDecoration: 'none', color: 'inherit' }}>
+                  <span className="brand-name-main">SMP ATELIER</span>
+                  <span className="brand-tagline-sub">Super Master Products</span>
+                </Link>
+              </div>
+            </div>
+          </div>
+
+          <nav className="header-nav">
+            <Link href="/" className="nav-item">Home</Link>
+            <Link href="/#collections" className="nav-item">All Collections</Link>
+            {categories.map((cat) => (
+              <Link
+                key={cat.id || cat.slug}
+                href={`/?category=${cat.slug}#collections`}
+                className={`nav-item ${(product?.category || '').toLowerCase() === (cat.slug || '').toLowerCase() ? 'active-nav' : ''}`}
+              >
+                {cat.name}
+              </Link>
+            ))}
+          </nav>
+
+          <div className="header-actions">
+            <button
+              type="button"
+              className="header-search-btn"
+              onClick={() => setSearchOpen(true)}
+              aria-label="Search products"
+              title="Search products"
+            >
+              <Search size={20} />
+            </button>
+
+            <button
+              type="button"
+              className="header-cart-btn"
+              onClick={() => setCartDrawerOpen(true)}
+              aria-label="View Shopping Bag"
+              title="Shopping Bag"
+            >
+              <ShoppingBag size={20} />
+              {totalCartCount > 0 && (
+                <span className="header-cart-badge">{totalCartCount}</span>
+              )}
+            </button>
+          </div>
+        </div>
+      </header>
+
+      {/* Floating Search Modal */}
+      {searchOpen && (
+        <div className="search-modal-backdrop" onClick={() => setSearchOpen(false)}>
+          <div className="search-modal-pill" onClick={(e) => e.stopPropagation()}>
+            <Search size={18} color="#66300F" />
+            <form onSubmit={handleSearchSubmit} style={{ flex: 1 }}>
+              <input
+                type="text"
+                placeholder="Search luxury heels, bags, watches..."
+                value={searchQuery}
+                onChange={(e) => setSearchQuery(e.target.value)}
+                autoFocus
+              />
+            </form>
+            <button onClick={() => setSearchOpen(false)} style={{ background: 'none', border: 'none', cursor: 'pointer' }}>
+              <X size={18} />
+            </button>
+          </div>
+        </div>
+      )}
+
+      {/* Mobile Drawer */}
+      {mobileMenuOpen && (
+        <div className="mobile-drawer-overlay" onClick={() => setMobileMenuOpen(false)}>
+          <div className="mobile-drawer" onClick={(e) => e.stopPropagation()}>
+            <div className="mobile-drawer-head">
+              <div style={{ display: 'flex', alignItems: 'center', gap: '8px' }}>
+                <img src="/smp-logo.png" alt="SMP" style={{ width: '32px' }} />
+                <span style={{ fontWeight: '700', color: '#66300F', fontSize: '15px' }}>SMP ATELIER</span>
+              </div>
+              <button onClick={() => setMobileMenuOpen(false)} className="modal-close-btn">
+                <X size={20} />
+              </button>
+            </div>
+            <div style={{ padding: '20px 16px', display: 'flex', flexDirection: 'column', gap: '14px' }}>
+              <Link href="/" onClick={() => setMobileMenuOpen(false)} style={{ fontSize: '15px', color: '#2D1E12', textDecoration: 'none', fontWeight: '600' }}>Home</Link>
+              <Link href="/#collections" onClick={() => setMobileMenuOpen(false)} style={{ fontSize: '15px', color: '#2D1E12', textDecoration: 'none', fontWeight: '600' }}>All Collections</Link>
+              {categories.map((c) => (
+                <Link
+                  key={c.id || c.slug}
+                  href={`/?category=${c.slug}#collections`}
+                  onClick={() => setMobileMenuOpen(false)}
+                  style={{ fontSize: '14.5px', color: '#66300F', textDecoration: 'none' }}
+                >
+                  {c.name}
+                </Link>
+              ))}
+            </div>
+          </div>
+        </div>
+      )}
+
+      {/* Back to Collections Bar (Exact match to reference top left) */}
+      <div className="wide-container" style={{ padding: '24px 24px 8px' }}>
         <button
           onClick={() => router.back()}
-          style={{ background: 'transparent', border: 'none', color: '#66300F', fontSize: '13px', fontWeight: '600', display: 'inline-flex', alignItems: 'center', gap: '6px', cursor: 'pointer', padding: 0 }}
+          className="product-back-btn"
         >
           <ArrowLeft size={16} />
           <span>Back to Collections</span>
         </button>
       </div>
 
-      {/* Product Inner Container */}
-      <div className="wide-container" style={{ padding: '20px 20px 80px' }}>
-        <div style={{ display: 'grid', gridTemplateColumns: 'repeat(auto-fit, minmax(320px, 1fr))', gap: '40px', alignItems: 'start' }}>
+      {/* Main Product Showcase Section (Exact match to uploaded image) */}
+      <div className="wide-container" style={{ padding: '16px 24px 80px' }}>
+        <div className="product-inner-grid">
           
-          {/* Left: Product Image & Variant Gallery */}
-          <div>
-            <div style={{
-              position: 'relative',
-              width: '100%',
-              aspectRatio: '1 / 1.1',
-              minHeight: '340px',
-              maxHeight: '480px',
-              background: '#FFFFFF',
-              borderRadius: '14px',
-              overflow: 'hidden',
-              border: '1px solid #ECE7DE',
-              boxShadow: '0 4px 20px rgba(0, 0, 0, 0.04)',
-              display: 'flex',
-              alignItems: 'center',
-              justifyContent: 'center',
-              padding: '16px'
-            }}>
-              <img
-                src={activeImage}
-                alt={`${product.title} - ${activeColor || 'Luxury Item'}`}
-                style={{
-                  maxWidth: '100%',
-                  maxHeight: '100%',
-                  width: 'auto',
-                  height: 'auto',
-                  objectFit: 'contain',
-                  objectPosition: 'center',
-                  display: 'block',
-                  transition: 'opacity 0.2s ease, transform 0.2s ease'
-                }}
-              />
-            </div>
-
-            {/* Thumbnail Strip for Variant Images */}
+          {/* LEFT: GALLERY WITH VERTICAL THUMBNAIL STRIP & EXPAND ICON */}
+          <div className="product-gallery-side-by-side">
+            
+            {/* Vertical Thumbnail Strip */}
             {variantImages.length > 1 && (
-              <div className="variant-gallery-thumbnails" style={{ marginTop: '12px' }}>
+              <div className="product-gallery-thumbs-vertical">
                 {variantImages.map((imgUrl, idx) => (
                   <button
                     key={idx}
                     type="button"
                     onClick={() => setActiveImageIndex(idx)}
-                    className={`variant-gallery-thumb ${activeImageIndex === idx ? 'active' : ''}`}
-                    title={`View angle ${idx + 1} (${activeColor})`}
+                    className={`product-gallery-thumb-item ${activeImageIndex === idx ? 'active' : ''}`}
+                    title={`View angle ${idx + 1}`}
                   >
-                    <img src={imgUrl} alt={`${product.title} photo ${idx + 1}`} />
+                    <img src={imgUrl} alt={`${product.title} angle ${idx + 1}`} />
                   </button>
                 ))}
               </div>
             )}
+
+            {/* Main High-Res Preview Card */}
+            <div className="product-gallery-main-card">
+              <img
+                src={activeImage}
+                alt={`${product.title} - ${activeColor}`}
+              />
+
+              {/* Top-Right Expand Button (as seen in screenshot) */}
+              <button
+                type="button"
+                onClick={() => setLightboxOpen(true)}
+                className="product-gallery-expand-btn"
+                title="Zoom / Fullscreen view"
+                aria-label="Expand Image"
+              >
+                <Maximize2 size={16} />
+              </button>
+            </div>
           </div>
 
-          {/* Right: Product Details */}
-          <div style={{ display: 'flex', flexDirection: 'column' }}>
-            <div style={{ fontSize: '12px', letterSpacing: '1.5px', textTransform: 'uppercase', color: 'var(--color-brown)', fontWeight: '700', marginBottom: '6px' }}>
-              {product.brand || 'SMP LUXURY'}
+          {/* RIGHT: PRODUCT DETAILS */}
+          <div className="product-details-col">
+            
+            {/* Brand Header */}
+            <div className="product-brand-tag">
+              {product.brand || 'VALENTINO'}
             </div>
 
-            <h1 style={{ fontSize: 'clamp(22px, 3vw, 32px)', fontFamily: 'var(--font-serif)', fontWeight: '600', color: 'var(--color-dark-brown)', lineHeight: '1.25', marginBottom: '14px' }}>
+            {/* Product Title */}
+            <h1 className="product-title-heading">
               {product.title}
             </h1>
 
-            {/* Price Row */}
-            <div style={{ display: 'flex', alignItems: 'baseline', gap: '16px', marginBottom: '16px' }}>
-              <span style={{ fontSize: '26px', fontWeight: '800', color: 'var(--color-dark-brown)' }}>
+            {/* Price & In Stock Badge Row */}
+            <div className="product-price-stock-row">
+              <span className="product-price-val">
                 AED {product.price}
               </span>
-              <span style={{ fontSize: '12px', color: activeStock > 0 ? '#15803D' : '#DC2626', fontWeight: '700', background: activeStock > 0 ? '#DCFCE7' : '#FEE2E2', padding: '3px 10px', borderRadius: '4px' }}>
-                {activeStock > 0 ? `In Stock (${activeStock} available)` : 'Out of Stock'}
+              <span className="product-stock-pill">
+                In Stock ({activeStock} available)
               </span>
             </div>
 
-            {/* Color Swatches Selector (Shows First Image Color + Variants) */}
-            {colorOptions.length > 1 ? (
-              <div style={{ margin: '6px 0 18px 0', background: '#FAF7EF', padding: '14px 16px', borderRadius: '8px', border: '1px solid #E8E2D5' }}>
-                <div style={{ display: 'flex', alignItems: 'center', justifyContent: 'space-between', marginBottom: '10px' }}>
-                  <span style={{ fontSize: '12px', textTransform: 'uppercase', letterSpacing: '1px', color: '#66300F', fontWeight: '700' }}>
-                    Available Colors ({colorOptions.length}):
-                  </span>
-                  {activeColor && (
-                    <span style={{ fontSize: '12.5px', color: '#66300F', fontWeight: '700' }}>
-                      Selected: <strong>{activeColor}</strong>
-                    </span>
-                  )}
-                </div>
-                <div className="detail-variant-swatches-wrap" style={{ display: 'flex', gap: '8px', flexWrap: 'wrap' }}>
-                  {colorOptions.map((opt) => {
-                    const isSelected = (currentVariant?.id === opt.id);
-                    const optThumb = opt.images && opt.images.length > 0 ? opt.images[0] : null;
-                    return (
-                      <button
-                        key={opt.id}
-                        type="button"
-                        onClick={() => handleSelectVariant(opt)}
-                        className={`detail-swatch-btn ${isSelected ? 'active' : ''}`}
-                        style={{
-                          display: 'inline-flex',
-                          alignItems: 'center',
-                          gap: '8px',
-                          padding: '6px 14px',
-                          borderRadius: '24px',
-                          border: isSelected ? '1.5px solid #66300F' : '1px solid #D8D0C3',
-                          background: isSelected ? '#66300F' : '#FFFFFF',
-                          color: isSelected ? '#FFFFFF' : '#332E29',
-                          fontSize: '12px',
-                          fontWeight: isSelected ? '700' : '500',
-                          cursor: 'pointer',
-                          transition: 'all 0.15s ease'
-                        }}
-                        title={`${opt.colorName} (${opt.stock || 0} in stock)`}
-                      >
-                        {optThumb ? (
-                          <img
-                            src={optThumb}
-                            alt={opt.colorName}
-                            style={{
-                              width: '20px',
-                              height: '20px',
-                              borderRadius: '50%',
-                              objectFit: 'cover',
-                              border: isSelected ? '1px solid #FFFFFF' : '1px solid #E5E0D8'
-                            }}
-                          />
-                        ) : (
-                          <span
-                            className="detail-swatch-circle"
-                            style={{ backgroundColor: opt.colorCode || '#000000', width: '12px', height: '12px', borderRadius: '50%' }}
-                          />
-                        )}
-                        <span>{opt.colorName}</span>
-                      </button>
-                    );
-                  })}
-                </div>
-              </div>
-            ) : product.color ? (
-              <div style={{ display: 'flex', alignItems: 'center', gap: '10px', margin: '6px 0 16px 0' }}>
-                <span style={{ fontSize: '12px', textTransform: 'uppercase', letterSpacing: '1px', color: 'var(--color-text-muted)', fontWeight: '600' }}>
-                  Color:
-                </span>
-                <span style={{ fontSize: '13px', fontWeight: '600', color: 'var(--color-dark-brown)', background: '#FAF7EF', border: '1px solid #E8E2D5', padding: '4px 12px', borderRadius: '4px' }}>
-                  {product.color}
-                </span>
-              </div>
-            ) : null}
+            {/* Color Selection Cards (Image thumbnail + label + checkmark badge) */}
+            <div className="product-color-section">
+              <label className="product-section-label">
+                Color: <span style={{ fontWeight: '500', color: '#5A4A3E' }}>{activeColor || 'Default'}</span>
+              </label>
 
-            {/* Optional Sizes Selector (e.g. Footwear) */}
+              <div className="product-color-cards-grid">
+                {colorOptions.map((opt) => {
+                  const isSelected = currentVariant?.id === opt.id;
+                  const optThumb = opt.images?.[0] || product.image;
+                  return (
+                    <button
+                      key={opt.id}
+                      type="button"
+                      onClick={() => handleSelectVariant(opt)}
+                      className={`product-color-card ${isSelected ? 'active' : ''}`}
+                      title={opt.colorName}
+                    >
+                      {/* Active checkmark circle badge at top-right */}
+                      {isSelected && (
+                        <span className="product-color-card-check">
+                          <Check size={11} strokeWidth={3} />
+                        </span>
+                      )}
+
+                      <div className="product-color-card-img-wrap">
+                        <img src={optThumb} alt={opt.colorName} />
+                      </div>
+
+                      <span className="product-color-card-name">
+                        {opt.colorName}
+                      </span>
+                    </button>
+                  );
+                })}
+              </div>
+            </div>
+
+            {/* Size Selection Row */}
             {activeSizes && activeSizes.length > 0 && (
-              <div style={{ margin: '6px 0 20px 0', background: '#FAF7EF', padding: '14px 16px', borderRadius: '8px', border: '1px solid #E8E2D5' }}>
-                <div style={{ display: 'flex', alignItems: 'center', justifyContent: 'space-between', marginBottom: '10px' }}>
-                  <span style={{ fontSize: '12px', textTransform: 'uppercase', letterSpacing: '1px', color: '#66300F', fontWeight: '700' }}>
-                    Available Sizes <span style={{ textTransform: 'none', fontWeight: 'normal', color: 'var(--color-text-muted)' }}>(Optional)</span>:
-                  </span>
-                  {selectedSize && (
-                    <span style={{ fontSize: '12px', color: '#66300F', fontWeight: '700' }}>
-                      Selected: {selectedSize}
-                    </span>
-                  )}
-                </div>
-                <div style={{ display: 'flex', gap: '10px', flexWrap: 'wrap' }}>
+              <div className="product-sizes-section">
+                <label className="product-section-label">
+                  Size (EU):
+                </label>
+
+                <div className="product-sizes-grid">
                   {activeSizes.map((sz) => (
                     <button
                       key={sz}
                       type="button"
-                      onClick={() => setSelectedSize(selectedSize === sz ? '' : sz)}
-                      style={{
-                        minWidth: '44px',
-                        height: '38px',
-                        padding: '0 14px',
-                        borderRadius: '6px',
-                        border: selectedSize === sz ? '2px solid #66300F' : '1px solid #D8D0C3',
-                        background: selectedSize === sz ? '#66300F' : '#FFFFFF',
-                        color: selectedSize === sz ? '#FFFFFF' : '#332E29',
-                        fontWeight: selectedSize === sz ? '700' : '500',
-                        fontSize: '13px',
-                        cursor: 'pointer',
-                        transition: 'all 0.15s ease'
-                      }}
+                      onClick={() => setSelectedSize(sz)}
+                      className={`product-size-btn ${selectedSize === sz ? 'active' : ''}`}
                     >
                       {sz}
                     </button>
@@ -531,145 +656,195 @@ Please confirm my order and arrange delivery. Thank you!`;
               </div>
             )}
 
-            {/* Description */}
-            <p style={{ fontSize: '14.5px', color: 'var(--color-text-muted)', lineHeight: '1.7', marginBottom: '22px' }}>
-              {product.description}
+            {/* Quantity Selector */}
+            <div className="product-quantity-section">
+              <label className="product-section-label">
+                Quantity:
+              </label>
+              <div className="product-quantity-stepper">
+                <button
+                  type="button"
+                  onClick={() => setQuantity(Math.max(1, quantity - 1))}
+                  aria-label="Decrease quantity"
+                >
+                  -
+                </button>
+                <span>{quantity}</span>
+                <button
+                  type="button"
+                  onClick={() => setQuantity(quantity + 1)}
+                  aria-label="Increase quantity"
+                >
+                  +
+                </button>
+              </div>
+            </div>
+
+            {/* Description Text */}
+            <p className="product-description-text">
+              {product.description || 'Master-crafted luxury footwear featuring iconic silhouette, premium materials, refined detailing, and comfortable ergonomic design. Perfect for elegant daily wear, special occasions, and luxury lifestyle.'}
             </p>
 
-            {/* Craftsmanship Highlights */}
-            {product.details && product.details.length > 0 && (
-              <div style={{ background: '#FAF7EF', padding: '16px 18px', borderRadius: '8px', border: '1px solid var(--color-border)', marginBottom: '24px' }}>
-                <h3 style={{ fontSize: '13px', fontWeight: '700', color: 'var(--color-dark-brown)', marginBottom: '10px' }}>
-                  Craftsmanship &amp; Highlights:
-                </h3>
-                <ul style={{ paddingLeft: '20px', fontSize: '13px', color: '#4B230A', display: 'flex', flexDirection: 'column', gap: '6px' }}>
-                  {product.details.map((d, idx) => (
-                    <li key={idx}>{d}</li>
-                  ))}
-                </ul>
-              </div>
-            )}
+            {/* Highlights Bullet Points */}
+            <ul className="product-highlights-list">
+              <li>100% Genuine Materials</li>
+              <li>Master Craftsmanship</li>
+              <li>Free Express UAE Delivery</li>
+            </ul>
 
-            {/* Delivery & Inspection Guarantee */}
-            <div style={{ display: 'flex', gap: '16px', padding: '14px 16px', background: 'rgba(193, 138, 91, 0.08)', borderRadius: '8px', border: '1px solid rgba(193, 138, 91, 0.22)', marginBottom: '26px' }}>
-              <ShieldCheck size={20} color="#66300F" style={{ flexShrink: 0, marginTop: '2px' }} />
-              <div style={{ fontSize: '12.5px', color: '#4B230A', lineHeight: '1.5' }}>
-                <strong>Inspect Before Payment:</strong> Zero upfront payment required. Our concierge courier brings this piece directly to your door to inspect and verify authenticity before paying.
-              </div>
-            </div>
-
-            {/* Action Buttons: Add to Cart + BUY NOW */}
-            <div style={{ display: 'flex', gap: '14px', flexWrap: 'wrap' }}>
+            {/* Big Brown Solid CTA Button */}
+            <div style={{ display: 'flex', gap: '12px' }}>
               <button
+                type="button"
+                onClick={() => setOrderModalOpen(true)}
+                className="product-buy-now-btn"
+              >
+                Buy Now
+              </button>
+
+              <button
+                type="button"
                 onClick={handleAddToCart}
                 className="btn-modal-cart"
-                style={{ padding: '14px 24px', fontSize: '13px' }}
-                title="Add to Cart"
+                style={{ padding: '0 20px', borderRadius: '8px', height: '52px' }}
+                title="Add to Shopping Bag"
               >
                 <ShoppingBag size={18} />
-                <span>Add to Cart</span>
-              </button>
-
-              <button
-                onClick={() => setOrderModalOpen(true)}
-                className="btn-buy-now-solid"
-                style={{ flex: 1, minWidth: '180px', padding: '14px 24px', fontSize: '13px', fontWeight: '700' }}
-              >
-                BUY NOW
               </button>
             </div>
+
           </div>
         </div>
       </div>
 
-      {/* Order Modal */}
+      {/* Lightbox Fullscreen Modal */}
+      {lightboxOpen && (
+        <div className="product-lightbox-backdrop" onClick={() => setLightboxOpen(false)}>
+          <div className="product-lightbox-content" onClick={(e) => e.stopPropagation()}>
+            <button
+              onClick={() => setLightboxOpen(false)}
+              className="product-lightbox-close-btn"
+              aria-label="Close fullscreen view"
+            >
+              <X size={20} />
+            </button>
+            <img src={activeImage} alt={product.title} />
+          </div>
+        </div>
+      )}
+
+      {/* Quick Order Modal (Exact match to designer screenshot, address removed) */}
       {orderModalOpen && (
         <div className="modal-overlay" onClick={() => !submittingOrder && setOrderModalOpen(false)}>
-          <div className="modal-dialog" onClick={(e) => e.stopPropagation()}>
-            <div className="modal-head">
+          <div className="modal-dialog" onClick={(e) => e.stopPropagation()} style={{ maxWidth: '460px', borderRadius: '12px', overflow: 'hidden' }}>
+            <div className="modal-head" style={{ padding: '16px 22px', background: '#FAF7EF', borderBottom: '1px solid #ECE4D5' }}>
               <div>
-                <span style={{ fontSize: '11px', color: 'var(--color-brown)', fontWeight: '700', textTransform: 'uppercase' }}>
-                  Delivery Details
+                <span style={{ fontSize: '11px', color: '#8B5E3C', fontWeight: '800', textTransform: 'uppercase', letterSpacing: '0.8px', display: 'block', marginBottom: '2px' }}>
+                  DELIVERY DETAILS
                 </span>
-                <h3 className="modal-title">Complete Your Order</h3>
+                <h3 className="modal-title" style={{ fontFamily: 'var(--font-serif)', fontSize: '21px', fontWeight: '700', color: '#4A230B', margin: 0 }}>
+                  Complete Your Order
+                </h3>
               </div>
               <button onClick={() => setOrderModalOpen(false)} className="modal-close-btn" disabled={submittingOrder}>
                 <X size={20} />
               </button>
             </div>
 
-            <div className="modal-content">
+            <div className="modal-content" style={{ padding: '20px 22px' }}>
               {orderSuccess ? (
                 <div style={{ textAlign: 'center', padding: '24px 0' }}>
                   <div style={{ width: '64px', height: '64px', borderRadius: '50%', background: '#DCFCE7', color: '#15803D', display: 'flex', alignItems: 'center', justifyContent: 'center', margin: '0 auto 16px' }}>
                     <CheckCircle size={36} />
                   </div>
-                  <h3 style={{ fontSize: '20px', fontFamily: 'var(--font-serif)', color: 'var(--color-dark-brown)', marginBottom: '8px' }}>
-                    Order Saved &amp; WhatsApp Connected!
+                  <h3 style={{ fontSize: '20px', fontFamily: 'var(--font-serif)', color: '#2D1E12', marginBottom: '8px' }}>
+                    Order Placed Successfully!
                   </h3>
-                  <p style={{ fontSize: '14px', color: 'var(--color-text-muted)', marginBottom: '20px', lineHeight: '1.5' }}>
-                    Your order details have been recorded. WhatsApp will now open so our concierge can finalize your delivery slot.
+                  <p style={{ fontSize: '13.5px', color: '#6B7280', marginBottom: '20px', lineHeight: '1.5' }}>
+                    WhatsApp is opening now to finalize your order details with our concierge.
                   </p>
-                  <button onClick={() => setOrderModalOpen(false)} className="btn-buy-now" style={{ width: '100%' }}>
+                  <button onClick={() => setOrderModalOpen(false)} className="product-buy-now-btn">
                     Done
                   </button>
                 </div>
               ) : (
                 <form onSubmit={handleConfirmAndContinueWhatsApp}>
-                  <div style={{ display: 'flex', alignItems: 'center', gap: '12px', padding: '10px 12px', background: '#FAF7EF', border: '1px solid #E8E2D2', borderRadius: '8px', marginBottom: '14px' }}>
-                    <img
-                      src={product.image}
-                      alt={product.title}
-                      style={{ width: '48px', height: '48px', objectFit: 'cover', borderRadius: '4px', border: '1px solid #C18A5B' }}
-                    />
-                    <div style={{ flex: 1, minWidth: 0 }}>
-                      <div style={{ fontSize: '10px', color: 'var(--color-brown)', fontWeight: '700', textTransform: 'uppercase' }}>
-                        {product.brand}
-                      </div>
-                      <div style={{ fontWeight: '600', fontSize: '13px', color: 'var(--color-text-main)', whiteSpace: 'nowrap', overflow: 'hidden', textOverflow: 'ellipsis' }}>
-                        {product.title}
-                      </div>
-                      <div style={{ display: 'flex', alignItems: 'center', gap: '8px', flexWrap: 'wrap', marginTop: '2px' }}>
-                        <span style={{ fontSize: '12px', fontWeight: '700', color: 'var(--color-dark-brown)' }}>
-                          AED {product.price}
-                        </span>
-                        {product.color && (
-                          <span style={{ fontSize: '10.5px', color: '#66300F', background: '#F4EFE6', padding: '1px 6px', borderRadius: '3px', fontWeight: '600' }}>
-                            Color: {product.color}
+                  {/* Product Card with Stepper inside (Exact match to screenshot) */}
+                  <div style={{
+                    display: 'flex',
+                    alignItems: 'center',
+                    justifyContent: 'space-between',
+                    gap: '12px',
+                    padding: '12px 14px',
+                    background: '#FAF7EF',
+                    border: '1px solid #EAE3D2',
+                    borderRadius: '10px',
+                    marginBottom: '18px'
+                  }}>
+                    <div style={{ display: 'flex', alignItems: 'center', gap: '12px', flex: 1, minWidth: 0 }}>
+                      <img
+                        src={activeImage}
+                        alt={product.title}
+                        style={{ width: '54px', height: '54px', objectFit: 'cover', borderRadius: '8px', border: '1px solid #C18A5B', flexShrink: 0 }}
+                      />
+                      <div style={{ flex: 1, minWidth: 0 }}>
+                        <div style={{ fontSize: '11px', color: '#8B5E3C', fontWeight: '800', textTransform: 'uppercase', letterSpacing: '0.8px', marginBottom: '2px' }}>
+                          {product.brand || 'SMP Luxury'}
+                        </div>
+                        <div style={{ fontWeight: '700', fontSize: '13.5px', color: '#2D1E12', whiteSpace: 'nowrap', overflow: 'hidden', textOverflow: 'ellipsis', marginBottom: '4px' }}>
+                          {product.title}
+                        </div>
+                        <div style={{ display: 'flex', alignItems: 'center', gap: '8px', flexWrap: 'wrap' }}>
+                          <span style={{ fontSize: '14px', fontWeight: '800', color: '#5A2A10' }}>
+                            AED {product.price}
                           </span>
-                        )}
-                        {selectedSize && (
-                          <span style={{ fontSize: '10.5px', color: '#1E40AF', background: '#EFF6FF', padding: '1px 6px', borderRadius: '3px', fontWeight: '600' }}>
-                            Size: {selectedSize}
-                          </span>
-                        )}
+                          {activeColor && (
+                            <span style={{ fontSize: '11px', color: '#66300F', background: '#F4EFE6', border: '1px solid #E8DFD0', padding: '1px 8px', borderRadius: '4px', fontWeight: '600' }}>
+                              Color: {activeColor}
+                            </span>
+                          )}
+                          {selectedSize && (
+                            <span style={{ fontSize: '11px', color: '#5A2A10', background: '#F4EFE6', border: '1px solid #E8DFD0', padding: '1px 8px', borderRadius: '4px', fontWeight: '600' }}>
+                              Size: {selectedSize}
+                            </span>
+                          )}
+                        </div>
                       </div>
                     </div>
 
-                    <div style={{ display: 'flex', alignItems: 'center', border: '1px solid #DCD5C6', borderRadius: '4px', background: '#fff' }}>
+                    {/* Stepper pill */}
+                    <div style={{ display: 'flex', alignItems: 'center', border: '1px solid #D8CFBE', borderRadius: '6px', background: '#FFFFFF', padding: '2px', flexShrink: 0 }}>
                       <button
                         type="button"
                         onClick={() => setQuantity(Math.max(1, quantity - 1))}
-                        style={{ padding: '2px 8px', fontSize: '13px', fontWeight: '700', color: 'var(--color-dark-brown)', border: 'none', background: 'transparent', cursor: 'pointer' }}
+                        style={{ width: '26px', height: '26px', fontSize: '14px', fontWeight: '700', color: '#5A2A10', border: 'none', background: 'transparent', cursor: 'pointer', display: 'flex', alignItems: 'center', justifyContent: 'center' }}
+                        aria-label="Decrease quantity"
                       >
                         -
                       </button>
-                      <span style={{ padding: '0 6px', fontSize: '12px', fontWeight: '700' }}>{quantity}</span>
+                      <span style={{ minWidth: '22px', textAlign: 'center', fontSize: '13px', fontWeight: '700', color: '#2D1E12' }}>
+                        {quantity}
+                      </span>
                       <button
                         type="button"
                         onClick={() => setQuantity(quantity + 1)}
-                        style={{ padding: '2px 8px', fontSize: '13px', fontWeight: '700', color: 'var(--color-dark-brown)', border: 'none', background: 'transparent', cursor: 'pointer' }}
+                        style={{ width: '26px', height: '26px', fontSize: '14px', fontWeight: '700', color: '#5A2A10', border: 'none', background: 'transparent', cursor: 'pointer', display: 'flex', alignItems: 'center', justifyContent: 'center' }}
+                        aria-label="Increase quantity"
                       >
                         +
                       </button>
                     </div>
                   </div>
 
-                  <div className="form-field">
-                    <label className="field-label">Full Name *</label>
+                  {/* Customer Full Name */}
+                  <div className="form-field" style={{ marginBottom: '14px' }}>
+                    <label className="field-label" style={{ fontSize: '12.5px', fontWeight: '700', color: '#3D2314', marginBottom: '6px', display: 'block' }}>
+                      Full Name *
+                    </label>
                     <input
                       type="text"
-                      className="form-input"
+                      className="field-input"
+                      style={{ width: '100%', height: '42px', padding: '0 14px', borderRadius: '6px', border: '1px solid #DCD5C6', fontSize: '13.5px' }}
                       placeholder="e.g. Fatima Al Mansoori"
                       value={customerName}
                       onChange={(e) => setCustomerName(e.target.value)}
@@ -677,59 +852,145 @@ Please confirm my order and arrange delivery. Thank you!`;
                     />
                   </div>
 
-                  <div className="form-field">
-                    <label className="field-label">WhatsApp Mobile Number *</label>
+                  {/* WhatsApp Mobile Number */}
+                  <div className="form-field" style={{ marginBottom: '18px' }}>
+                    <label className="field-label" style={{ fontSize: '12.5px', fontWeight: '700', color: '#3D2314', marginBottom: '6px', display: 'block' }}>
+                      WhatsApp Mobile Number *
+                    </label>
                     <input
                       type="tel"
-                      className="form-input"
-                      placeholder="e.g. +971 50 123 4567"
+                      className="field-input"
+                      style={{ width: '100%', height: '42px', padding: '0 14px', borderRadius: '6px', border: '1px solid #DCD5C6', fontSize: '13.5px' }}
+                      placeholder="+971 50 123 4567"
                       value={customerPhone}
                       onChange={(e) => setCustomerPhone(e.target.value)}
                       required
                     />
                   </div>
 
-                  <div className="form-field">
-                    <label className="field-label">Delivery Address *</label>
-                    <textarea
-                      rows={2}
-                      className="form-input"
-                      placeholder="Villa / Apartment, Street, Community"
-                      value={deliveryAddress}
-                      onChange={(e) => setDeliveryAddress(e.target.value)}
-                      required
-                    />
+                  {/* Total Amount Row (Exact match to screenshot) */}
+                  <div style={{ display: 'flex', alignItems: 'center', justifyContent: 'space-between', marginBottom: '16px', paddingTop: '4px' }}>
+                    <div style={{ fontSize: '12px', color: '#786F66', textTransform: 'uppercase', letterSpacing: '0.8px', fontWeight: '700' }}>
+                      TOTAL AMOUNT
+                    </div>
+                    <div style={{ fontSize: '22px', fontWeight: '800', color: '#66300F' }}>
+                      AED {product.price * quantity}
+                    </div>
                   </div>
 
-                  <div className="form-field">
-                    <label className="field-label">Emirate *</label>
-                    <select
-                      className="form-input"
-                      value={emirate}
-                      onChange={(e) => setEmirate(e.target.value)}
-                      style={{ cursor: 'pointer' }}
-                    >
-                      <option value="Dubai">Dubai</option>
-                      <option value="Abu Dhabi">Abu Dhabi</option>
-                      <option value="Sharjah">Sharjah</option>
-                      <option value="Ajman">Ajman</option>
-                      <option value="Ras Al Khaimah">Ras Al Khaimah</option>
-                      <option value="Fujairah">Fujairah</option>
-                      <option value="Umm Al Quwain">Umm Al Quwain</option>
-                    </select>
-                  </div>
-
+                  {/* Luxury Brown WhatsApp Submit Button (Exact match to screenshot) */}
                   <button
                     type="submit"
-                    className="btn-buy-now-solid"
+                    className="modal-btn-whatsapp"
                     disabled={submittingOrder}
-                    style={{ width: '100%', marginTop: '16px', padding: '14px', fontSize: '13.5px', fontWeight: '700' }}
+                    style={{
+                      width: '100%',
+                      height: '48px',
+                      background: '#5A2A10',
+                      color: '#FFFFFF',
+                      border: 'none',
+                      borderRadius: '8px',
+                      fontSize: '14.5px',
+                      fontWeight: '700',
+                      display: 'flex',
+                      alignItems: 'center',
+                      justifyContent: 'center',
+                      gap: '10px',
+                      cursor: 'pointer',
+                      boxShadow: '0 4px 14px rgba(90, 42, 16, 0.28)'
+                    }}
                   >
-                    {submittingOrder ? 'Connecting...' : 'CONFIRM & ORDER VIA WHATSAPP'}
+                    <MessageSquare size={17} />
+                    <span>{submittingOrder ? 'Connecting...' : 'Continue to WhatsApp (+971 52 597 3132)'}</span>
                   </button>
                 </form>
               )}
             </div>
+          </div>
+        </div>
+      )}
+
+      {/* Cart Drawer */}
+      {cartDrawerOpen && (
+        <div className="cart-drawer-overlay" onClick={() => setCartDrawerOpen(false)}>
+          <div className="cart-drawer" onClick={(e) => e.stopPropagation()}>
+            <div className="cart-drawer-head">
+              <div style={{ display: 'flex', alignItems: 'center', gap: '8px' }}>
+                <ShoppingBag size={18} color="#66300F" />
+                <h3 style={{ fontSize: '15px', fontWeight: '700', color: '#66300F', margin: 0 }}>
+                  Your Shopping Bag ({totalCartCount})
+                </h3>
+              </div>
+              <button onClick={() => setCartDrawerOpen(false)} className="modal-close-btn">
+                <X size={18} />
+              </button>
+            </div>
+
+            <div className="cart-drawer-body">
+              {cart.length === 0 ? (
+                <div style={{ textAlign: 'center', padding: '48px 16px', color: '#786F66' }}>
+                  <ShoppingBag size={44} color="#D1C7B7" style={{ margin: '0 auto 16px' }} />
+                  <p style={{ fontSize: '15px', fontWeight: '600', color: '#1C1917', marginBottom: '6px' }}>
+                    Your shopping bag is empty
+                  </p>
+                  <button onClick={() => setCartDrawerOpen(false)} className="product-buy-now-btn" style={{ maxWidth: '200px', margin: '0 auto', height: '42px', fontSize: '13px' }}>
+                    Continue Browsing
+                  </button>
+                </div>
+              ) : (
+                <div className="cart-items-list">
+                  {cart.map((item, idx) => (
+                    <div key={item.cartKey || idx} className="cart-item-row">
+                      <img src={item.image} alt={item.title} className="cart-item-img" />
+                      <div className="cart-item-info">
+                        <div className="cart-item-brand">{item.brand || 'SMP Luxury'}</div>
+                        <div className="cart-item-title">{item.title}</div>
+                        {(item.color || item.size) && (
+                          <div style={{ display: 'flex', gap: '6px', flexWrap: 'wrap', marginTop: '3px', marginBottom: '4px' }}>
+                            {item.color && (
+                              <span style={{ fontSize: '11px', color: '#66300F', background: '#F8F4EE', border: '1px solid #E6D7C3', padding: '1px 6px', borderRadius: '4px', fontWeight: '600' }}>
+                                {item.color}
+                              </span>
+                            )}
+                            {item.size && (
+                              <span style={{ fontSize: '11px', color: '#786F66', background: '#F5F5F0', border: '1px solid #E5E5E0', padding: '1px 6px', borderRadius: '4px', fontWeight: '500' }}>
+                                Size: {item.size}
+                              </span>
+                            )}
+                          </div>
+                        )}
+                        <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center', marginTop: '6px' }}>
+                          <span style={{ fontWeight: '700', color: '#66300F', fontSize: '13px' }}>
+                            AED {item.price * item.quantity}
+                          </span>
+                          <span style={{ fontSize: '12px', color: '#6B7280' }}>
+                            Qty: {item.quantity}
+                          </span>
+                        </div>
+                      </div>
+                    </div>
+                  ))}
+                </div>
+              )}
+            </div>
+
+            {cart.length > 0 && (
+              <div className="cart-drawer-footer">
+                <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center', marginBottom: '16px' }}>
+                  <span style={{ fontSize: '14px', fontWeight: '600', color: '#374151' }}>Total Amount</span>
+                  <span style={{ fontSize: '20px', fontWeight: '800', color: '#66300F' }}>AED {totalCartPrice}</span>
+                </div>
+                <button
+                  onClick={() => {
+                    setCartDrawerOpen(false);
+                    setOrderModalOpen(true);
+                  }}
+                  className="product-buy-now-btn"
+                >
+                  Proceed to Checkout
+                </button>
+              </div>
+            )}
           </div>
         </div>
       )}

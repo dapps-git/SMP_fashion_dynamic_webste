@@ -6,7 +6,7 @@ const DB_PATH = path.join(__dirname, '..', 'data', 'db.json');
 const INITIAL_DATA = {
   admin: {
     username: 'fashionauraadmin@gmail.com',
-    password: 'fashionauraadmin#8989',
+    password: '$2b$10$uWEEHiQt3hb.gKMCfoTd4OBanBa2bgoO2jVrbyb1hciWqkyvFfNYa',
     name: 'Fashion Aura Admin',
     email: 'fashionauraadmin@gmail.com'
   },

@@ -1,7 +1,7 @@
 {
   "admin": {
     "username": "fashionauraadmin@gmail.com",
-    "password": "fashionauraadmin#8989",
+    "password": "$2b$10$uWEEHiQt3hb.gKMCfoTd4OBanBa2bgoO2jVrbyb1hciWqkyvFfNYa",
     "name": "Fashion Aura Admin",
     "email": "fashionauraadmin@gmail.com"
   },
@@ -12,7 +12,8 @@
       "slug": "footwear",
       "description": "Handcrafted luxury sneakers, heels, and classic loafers",
       "image": "https://images.unsplash.com/photo-1549298916-b41d501d3772?auto=format&fit=crop&w=800&q=80",
-      "itemCount": 6
+      "itemCount": 45,
+      "_id": "cat-1"
     },
     {
       "id": "cat-2",
@@ -20,7 +21,8 @@
       "slug": "watches",
       "description": "Master crafted precision timepieces and luxury chronographs",
       "image": "https://images.unsplash.com/photo-1522335789203-aabd1fc54bc9?auto=format&fit=crop&w=800&q=80",
-      "itemCount": 4
+      "itemCount": 6,
+      "_id": "cat-2"
     },
     {
       "id": "cat-3",
@@ -28,47 +30,576 @@
       "slug": "bags",
       "description": "Iconic top-handle bags, calfskin clutches, and crossbodies",
       "image": "https://images.unsplash.com/photo-1584917865442-de89df76afd3?auto=format&fit=crop&w=800&q=80",
-      "itemCount": 5
+      "itemCount": 6,
+      "_id": "cat-3"
     }
   ],
   "products": [
     {
-      "id": "prod-1792860309930",
-      "_id": "prod-1792860309930",
-      "title": "bag",
+      "id": "prod-1794321497441",
+      "_id": "prod-1794321497441",
+      "title": "Low Heeled Slingbacks in Lambskin & Patent Calfskin",
       "category": "footwear",
       "categoryName": "Footwear",
-      "gender": "",
-      "color": "blue",
+      "gender": "women",
+      "color": "Cream & Black",
+      "colorCode": "#f0d2a8",
       "sizes": [],
       "variants": [
         {
-          "id": "var-1792860263268-0",
-          "colorName": "black",
+          "id": "var-1794321409401-0",
+          "colorName": "Black",
           "colorCode": "#111111",
           "images": [
-            "https://res.cloudinary.com/gdq6wwvf/image/upload/v1792860277/smp-fashion/raso9r8dzzs5vpjtwcrh.png"
+            "https://res.cloudinary.com/gdq6wwvf/image/upload/v1794321421/smp-fashion/ns4lzlqp1uit87suyv6b.webp"
           ],
           "stock": 10,
           "sizes": []
         },
         {
-          "id": "var-1792860280311-1",
-          "colorName": "red",
-          "colorCode": "#f41010",
+          "id": "var-1794321409550-1",
+          "colorName": "Black & White",
+          "colorCode": "#111111",
           "images": [
-            "https://res.cloudinary.com/gdq6wwvf/image/upload/v1792860295/smp-fashion/ofhsutodxbjdzwhjrkuc.png"
+            "https://res.cloudinary.com/gdq6wwvf/image/upload/v1794321423/smp-fashion/off9wqick63oq7qbrkul.webp"
+          ],
+          "stock": 10,
+          "sizes": []
+        },
+        {
+          "id": "var-1794321433982-2",
+          "colorName": "Red / Burgundy",
+          "colorCode": "#800020",
+          "images": [
+            "https://res.cloudinary.com/gdq6wwvf/image/upload/v1794321444/smp-fashion/nbmupbhgn6ca3vnm1pfn.webp"
           ],
           "stock": 10,
           "sizes": []
         }
       ],
-      "brand": "Graff",
-      "price": 777,
+      "brand": "Chanel",
+      "price": 425,
       "comparePrice": null,
       "discount": "",
-      "image": "https://res.cloudinary.com/gdq6wwvf/image/upload/v1792860308/smp-fashion/yrimyo737ywts9cepilg.png",
-      "imagePublicId": "smp-fashion/yrimyo737ywts9cepilg",
+      "image": "https://res.cloudinary.com/gdq6wwvf/image/upload/v1794321496/smp-fashion/qeublw5c5u1akfa7grds.webp",
+      "imagePublicId": "smp-fashion/qeublw5c5u1akfa7grds",
+      "description": "Elegant Chanel-inspired slingback flats featuring a chic square toe, glossy black trim, and iconic CC detailing. Designed with a delicate adjustable ankle strap and a comfortable low block heel, these timeless beauties blend classic sophistication with modern elegance.\r\n",
+      "details": [
+        "100% Genuine Materials",
+        "Master Craftsmanship",
+        "Free Express UAE Delivery"
+      ],
+      "stock": 15,
+      "featured": true,
+      "badge": "",
+      "seoTitle": "Low Heeled Slingbacks in Lambskin & Patent Calfskin | Chanel UAE Luxury",
+      "seoDescription": "Elegant Chanel-inspired slingback flats featuring a chic square toe, glossy black trim, and iconic CC detailing. Designed with a delicate adjustable ankle ",
+      "seoKeywords": "Low Heeled Slingbacks in Lambskin & Patent Calfskin, Chanel, luxury fashion UAE, buy Chanel Dubai, order via WhatsApp",
+      "slug": "low-heeled-slingbacks-in-lambskin-patent-calfskin",
+      "createdAt": "2026-11-10T14:38:17.441Z"
+    },
+    {
+      "id": "prod-1794321240447",
+      "_id": "prod-1794321240447",
+      "title": "SLINGBACKS 1",
+      "category": "footwear",
+      "categoryName": "Footwear",
+      "gender": "",
+      "color": "Ivory × Champagne Gold",
+      "colorCode": "#D6B36A",
+      "sizes": [],
+      "variants": [
+        {
+          "id": "var-1794321136041-0",
+          "colorName": "Ivory × Glossy Black",
+          "colorCode": "#080808",
+          "images": [
+            "https://res.cloudinary.com/gdq6wwvf/image/upload/v1794321151/smp-fashion/n9rffrqbb19lqiqpqyvb.webp"
+          ],
+          "stock": 10,
+          "sizes": []
+        },
+        {
+          "id": "var-1794321136201-1",
+          "colorName": "Black × Aqua Blue",
+          "colorCode": "#35C8E0",
+          "images": [
+            "https://res.cloudinary.com/gdq6wwvf/image/upload/v1794321180/smp-fashion/gdomg6zhhiuclnetfoak.webp"
+          ],
+          "stock": 10,
+          "sizes": []
+        },
+        {
+          "id": "var-1794321136614-2",
+          "colorName": "Butter Yellow × Glossy Black",
+          "colorCode": " #E7C66A",
+          "images": [
+            "https://res.cloudinary.com/gdq6wwvf/image/upload/v1794321217/smp-fashion/n3uem1bcisnozv4ctd64.webp"
+          ],
+          "stock": 10,
+          "sizes": []
+        }
+      ],
+      "brand": "Chanel",
+      "price": 425,
+      "comparePrice": null,
+      "discount": "",
+      "image": "https://res.cloudinary.com/gdq6wwvf/image/upload/v1794321239/smp-fashion/q4kwsxdqk3qdxbwdngfm.webp",
+      "imagePublicId": "smp-fashion/q4kwsxdqk3qdxbwdngfm",
+      "description": "A timeless blend of elegance and sophistication. Featuring a chic square toe, contrasting glossy cap toe, luxurious burgundy insole, and a comfortable block heel with a classic slingback design. Perfect for adding a refined touch to everyday looks and special occasions. ",
+      "details": [
+        "100% Genuine Materials",
+        "Master Craftsmanship",
+        "Free Express UAE Delivery"
+      ],
+      "stock": 15,
+      "featured": true,
+      "badge": "",
+      "seoTitle": "SLINGBACKS 1 | Chanel UAE Luxury",
+      "seoDescription": "A timeless blend of elegance and sophistication. Featuring a chic square toe, contrasting glossy cap toe, luxurious burgundy insole, and a comfortable bloc",
+      "seoKeywords": "SLINGBACKS 1, Chanel, luxury fashion UAE, buy Chanel Dubai, order via WhatsApp",
+      "slug": "slingbacks-1",
+      "createdAt": "2026-11-10T14:34:00.447Z"
+    },
+    {
+      "id": "prod-1794320867580",
+      "_id": "prod-1794320867580",
+      "title": "SLINGBACKS  ",
+      "category": "footwear",
+      "categoryName": "Footwear",
+      "gender": "women",
+      "color": "Champagne",
+      "colorCode": "#e8cf8d",
+      "sizes": [],
+      "variants": [
+        {
+          "id": "var-1794320756123-0",
+          "colorName": "White",
+          "colorCode": "#FFFFFF",
+          "images": [
+            "https://res.cloudinary.com/gdq6wwvf/image/upload/v1794320798/smp-fashion/dhrkhwbzcqvl5quluvoz.webp"
+          ],
+          "stock": 10,
+          "sizes": []
+        },
+        {
+          "id": "var-1794320756274-1",
+          "colorName": "Black",
+          "colorCode": "#111111",
+          "images": [
+            "https://res.cloudinary.com/gdq6wwvf/image/upload/v1794320798/smp-fashion/vlkwitpmzkslppfa1pqh.webp"
+          ],
+          "stock": 10,
+          "sizes": []
+        }
+      ],
+      "brand": "Chanel",
+      "price": 425,
+      "comparePrice": null,
+      "discount": "",
+      "image": "https://res.cloudinary.com/gdq6wwvf/image/upload/v1794320866/smp-fashion/r1q9rmbic8sq8ddixkrc.webp",
+      "imagePublicId": "smp-fashion/r1q9rmbic8sq8ddixkrc",
+      "description": "A timeless blend of sophistication and chic elegance. Featuring a beautiful butter beige finish, glossy black toe cap, delicate gold detailing, and a rich burgundy insole. Designed with a comfortable block heel and classic slingback silhouette, perfect for elevating both everyday outfits and special occasions. ",
+      "details": [
+        "100% Genuine Materials",
+        "Master Craftsmanship",
+        "Free Express UAE Delivery"
+      ],
+      "stock": 15,
+      "featured": true,
+      "badge": "",
+      "seoTitle": "SLINGBACKS   | Luxury SMP Fashion UAE",
+      "seoDescription": "A timeless blend of sophistication and chic elegance. Featuring a beautiful butter beige finish, glossy black toe cap, delicate gold detailing, and a rich burgu",
+      "seoKeywords": "SLINGBACKS  , luxury UAE, Chanel, designer fashion",
+      "slug": "slingbacks",
+      "createdAt": "2026-11-10T14:27:47.580Z"
+    },
+    {
+      "id": "prod-1794320319496",
+      "_id": "prod-1794320319496",
+      "title": "Love Struck 105 sandals ",
+      "category": "footwear",
+      "categoryName": "Footwear",
+      "gender": "women",
+      "color": "Rose Bronze Metallic",
+      "colorCode": "#A87955",
+      "sizes": [],
+      "variants": [
+        {
+          "id": "var-1794320146182-0",
+          "colorName": "Rose Gold",
+          "colorCode": " #B88978",
+          "images": [
+            "https://res.cloudinary.com/gdq6wwvf/image/upload/v1794320204/smp-fashion/pkqbhvy0tu9z3djzrv4w.webp"
+          ],
+          "stock": 10,
+          "sizes": []
+        },
+        {
+          "id": "var-1794320146324-1",
+          "colorName": "Black",
+          "colorCode": "#111111",
+          "images": [
+            "https://res.cloudinary.com/gdq6wwvf/image/upload/v1794320224/smp-fashion/oxmufohtrzy4ljjv7sas.webp"
+          ],
+          "stock": 10,
+          "sizes": []
+        },
+        {
+          "id": "var-1794320224693-3",
+          "colorName": "Silver",
+          "colorCode": "#C4C9D0",
+          "images": [
+            "https://res.cloudinary.com/gdq6wwvf/image/upload/v1794320253/smp-fashion/xq6uzubwu4rigtdlwt7z.webp"
+          ],
+          "stock": 10,
+          "sizes": []
+        }
+      ],
+      "brand": "Aquazzura",
+      "price": 425,
+      "comparePrice": null,
+      "discount": "",
+      "image": "https://res.cloudinary.com/gdq6wwvf/image/upload/v1794320318/smp-fashion/f8tuywueyniydc6rcxm8.webp",
+      "imagePublicId": "smp-fashion/f8tuywueyniydc6rcxm8",
+      "description": "Elegant strappy heels featuring delicate metallic chain detailing, a sleek open-toe silhouette, and a refined ankle strap. Finished with a glossy metallic touch and a graceful slim heel, these statement sandals add effortless glamour to any occasion. Perfect for parties, special events, and sophisticated evening styling.\r\n",
+      "details": [
+        "100% Genuine Materials",
+        "Master Craftsmanship",
+        "Free Express UAE Delivery"
+      ],
+      "stock": 15,
+      "featured": true,
+      "badge": "",
+      "seoTitle": "Love Struck 105 sandals  | Luxury SMP Fashion UAE",
+      "seoDescription": "Elegant strappy heels featuring delicate metallic chain detailing, a sleek open-toe silhouette, and a refined ankle strap. Finished with a glossy metallic touch",
+      "seoKeywords": "Love Struck 105 sandals , luxury UAE, Aquazzura, designer fashion",
+      "slug": "love-struck-105-sandals",
+      "createdAt": "2026-11-10T14:18:39.496Z"
+    },
+    {
+      "id": "prod-1794319919879",
+      "_id": "prod-1794319919879",
+      "title": " Sandals",
+      "category": "footwear",
+      "categoryName": "Footwear",
+      "gender": "women",
+      "color": "Champagne Beige",
+      "colorCode": "#D8CBA5",
+      "sizes": [],
+      "variants": [
+        {
+          "id": "var-1794319841305-0",
+          "colorName": "Ivory White",
+          "colorCode": "#F2F1EC",
+          "images": [
+            "https://res.cloudinary.com/gdq6wwvf/image/upload/v1794319850/smp-fashion/l3rda7lws3ko5zjgaxgd.webp"
+          ],
+          "stock": 10,
+          "sizes": []
+        }
+      ],
+      "brand": "Chanel",
+      "price": 375,
+      "comparePrice": null,
+      "discount": "",
+      "image": "https://res.cloudinary.com/gdq6wwvf/image/upload/v1794319919/smp-fashion/lctbc6peh2h6erptmges.webp",
+      "imagePublicId": "smp-fashion/lctbc6peh2h6erptmges",
+      "description": "Elegant quilted sandals featuring a soft cushioned footbed, pearl-embellished CC accents, and delicate gold-tone hardware. Designed with adjustable straps and a chic, comfortable silhouette, these sandals blend timeless sophistication with everyday luxury. Available in Champagne Beige and Classic White.",
+      "details": [
+        "100% Genuine Materials",
+        "Master Craftsmanship",
+        "Free Express UAE Delivery"
+      ],
+      "stock": 15,
+      "featured": true,
+      "badge": "",
+      "seoTitle": "Sandals | Chanel UAE Luxury",
+      "seoDescription": "Elegant quilted sandals featuring a soft cushioned footbed, pearl-embellished CC accents, and delicate gold-tone hardware. Designed with adjustable straps ",
+      "seoKeywords": "Sandals, Chanel, luxury fashion UAE, buy Chanel Dubai, order via WhatsApp",
+      "slug": "sandals",
+      "createdAt": "2026-11-10T14:11:59.879Z",
+      "updatedAt": "2026-11-10T14:12:07.970Z"
+    },
+    {
+      "id": "prod-1794319757699",
+      "_id": "prod-1794319757699",
+      "title": "Flat ",
+      "category": "footwear",
+      "categoryName": "Footwear",
+      "gender": "women",
+      "color": "Ivory White + Gold",
+      "colorCode": "#F4F2ED",
+      "sizes": [],
+      "variants": [
+        {
+          "id": "var-1794319713238-0",
+          "colorName": "Black + Gold",
+          "colorCode": "#111522",
+          "images": [
+            "https://res.cloudinary.com/gdq6wwvf/image/upload/v1794319723/smp-fashion/vk0jjiooifyd1sgvvmyq.webp"
+          ],
+          "stock": 10,
+          "sizes": []
+        }
+      ],
+      "brand": "Chanel",
+      "price": 375,
+      "comparePrice": null,
+      "discount": "",
+      "image": "https://res.cloudinary.com/gdq6wwvf/image/upload/v1794319756/smp-fashion/yraj7sev13pwjt5qkbzt.webp",
+      "imagePublicId": "smp-fashion/yraj7sev13pwjt5qkbzt",
+      "description": "Elevate your everyday style with these chic chain-detail flat sandals, featuring beautifully intertwined gold-tone chains and soft, elegant straps. A perfect blend of timeless sophistication and effortless comfort.",
+      "details": [
+        "100% Genuine Materials",
+        "Master Craftsmanship",
+        "Free Express UAE Delivery"
+      ],
+      "stock": 15,
+      "featured": true,
+      "badge": "",
+      "seoTitle": "Flat | Chanel UAE Luxury",
+      "seoDescription": "Elevate your everyday style with these chic chain-detail flat sandals, featuring beautifully intertwined gold-tone chains and soft, elegant straps. A perfe",
+      "seoKeywords": "Flat, Chanel, luxury fashion UAE, buy Chanel Dubai, order via WhatsApp",
+      "slug": "flat",
+      "createdAt": "2026-11-10T14:09:17.699Z"
+    },
+    {
+      "id": "prod-1794319498607",
+      "_id": "prod-1794319498607",
+      "title": "SLINGBACKS HEELS",
+      "category": "footwear",
+      "categoryName": "Footwear",
+      "gender": "women",
+      "color": "Pink & White",
+      "colorCode": "#E987A8",
+      "sizes": [],
+      "variants": [
+        {
+          "id": "var-1794319267557-0",
+          "colorName": "Black & Gold",
+          "colorCode": "#D4AF37",
+          "images": [
+            "https://res.cloudinary.com/gdq6wwvf/image/upload/v1794319364/smp-fashion/cy18nkysfzgeymhcic6x.webp"
+          ],
+          "stock": 10,
+          "sizes": []
+        },
+        {
+          "id": "var-1794319267748-1",
+          "colorName": "Black & White",
+          "colorCode": "#111111",
+          "images": [
+            "https://res.cloudinary.com/gdq6wwvf/image/upload/v1794319342/smp-fashion/n3rr4ihrupnwldth9lzo.webp"
+          ],
+          "stock": 10,
+          "sizes": []
+        },
+        {
+          "id": "var-1794319267925-2",
+          "colorName": "Turquoise & White",
+          "colorCode": "#20B8B0",
+          "images": [
+            "https://res.cloudinary.com/gdq6wwvf/image/upload/v1794319285/smp-fashion/wdktrzqzgz3ls1nihucg.webp"
+          ],
+          "stock": 10,
+          "sizes": []
+        },
+        {
+          "id": "var-1794319268091-3",
+          "colorName": "Burgundy & Black",
+          "colorCode": "#800020",
+          "images": [
+            "https://res.cloudinary.com/gdq6wwvf/image/upload/v1794319317/smp-fashion/yn3tv1heqw1jbmwtuhb5.webp"
+          ],
+          "stock": 10,
+          "sizes": []
+        },
+        {
+          "id": "var-1794319409800-4",
+          "colorName": "Pink & Burgundy",
+          "colorCode": "#800020",
+          "images": [
+            "https://res.cloudinary.com/gdq6wwvf/image/upload/v1794319426/smp-fashion/l1tcspjraotkjywp8mvi.webp"
+          ],
+          "stock": 10,
+          "sizes": []
+        },
+        {
+          "id": "var-1794319436937-5",
+          "colorName": "Blue & Burgundy",
+          "colorCode": "#72d1e9",
+          "images": [
+            "https://res.cloudinary.com/gdq6wwvf/image/upload/v1794319465/smp-fashion/wjbkwa2zdjkxsfszixge.webp"
+          ],
+          "stock": 10,
+          "sizes": []
+        }
+      ],
+      "brand": "Chanel",
+      "price": 375,
+      "comparePrice": null,
+      "discount": "",
+      "image": "https://res.cloudinary.com/gdq6wwvf/image/upload/v1794319497/smp-fashion/clohil543jddg3tymuac.webp",
+      "imagePublicId": "smp-fashion/clohil543jddg3tymuac",
+      "description": "Step into sophistication with these elegant two-tone slingback heels, inspired by the iconic Chanel aesthetic. Featuring a chic cap-toe design, delicate slingback straps, and a comfortable block heel, these beauties are the perfect blend of classic charm and modern elegance. \r\n\r\nAvailable in stunning color combinations to complement every mood and outfit. From everyday elegance to special occasions, make every step effortlessly stylish. ",
+      "details": [
+        "100% Genuine Materials",
+        "Master Craftsmanship",
+        "Free Express UAE Delivery"
+      ],
+      "stock": 15,
+      "featured": true,
+      "badge": "",
+      "seoTitle": "SLINGBACKS HEELS | Chanel UAE Luxury",
+      "seoDescription": "Step into sophistication with these elegant two-tone slingback heels, inspired by the iconic Chanel aesthetic. Featuring a chic cap-toe design, delicate sl",
+      "seoKeywords": "SLINGBACKS HEELS, Chanel, luxury fashion UAE, buy Chanel Dubai, order via WhatsApp",
+      "slug": "slingbacks-heels",
+      "createdAt": "2026-11-10T14:04:58.607Z",
+      "updatedAt": "2026-11-10T14:05:46.816Z"
+    },
+    {
+      "id": "prod-1794318881406",
+      "_id": "prod-1794318881406",
+      "title": "ballerinas",
+      "category": "footwear",
+      "categoryName": "Footwear",
+      "gender": "women",
+      "color": "Pink",
+      "colorCode": "#ec98b5",
+      "sizes": [],
+      "variants": [
+        {
+          "id": "var-1794318482665-0",
+          "colorName": "Mint Green",
+          "colorCode": "#68B8AA",
+          "images": [
+            "https://res.cloudinary.com/gdq6wwvf/image/upload/v1794318495/smp-fashion/jludvabkg3h7nvcr02ix.webp"
+          ],
+          "stock": 10,
+          "sizes": []
+        },
+        {
+          "id": "var-1794318484151-2",
+          "colorName": "Ivory & Cognac",
+          "colorCode": "#df8f34",
+          "images": [
+            "https://res.cloudinary.com/gdq6wwvf/image/upload/v1794318546/smp-fashion/vn1odquk4zpfshmirzch.webp"
+          ],
+          "stock": 10,
+          "sizes": []
+        },
+        {
+          "id": "var-1794318484476-3",
+          "colorName": "Lime Blue",
+          "colorCode": "#6fc7ce",
+          "images": [
+            "https://res.cloudinary.com/gdq6wwvf/image/upload/v1794318614/smp-fashion/xwcmfl2aoqplpdfhk9pz.webp"
+          ],
+          "stock": 10,
+          "sizes": []
+        },
+        {
+          "id": "var-1794318712698-4",
+          "colorName": "Black & White",
+          "colorCode": "#111111",
+          "images": [
+            "https://res.cloudinary.com/gdq6wwvf/image/upload/v1794318724/smp-fashion/yrtvafc15iwgutvhqkhf.webp"
+          ],
+          "stock": 10,
+          "sizes": []
+        },
+        {
+          "id": "var-1794318713068-5",
+          "colorName": "Lavender Purple",
+          "colorCode": "#c9a9ea",
+          "images": [
+            "https://res.cloudinary.com/gdq6wwvf/image/upload/v1794318733/smp-fashion/yuqtzxpcfite1qqvf322.webp"
+          ],
+          "stock": 10,
+          "sizes": []
+        },
+        {
+          "id": "var-1794318713214-6",
+          "colorName": "Coral Pink",
+          "colorCode": "#f99090",
+          "images": [
+            "https://res.cloudinary.com/gdq6wwvf/image/upload/v1794318784/smp-fashion/rueoetewq3rsuxzs6df4.webp"
+          ],
+          "stock": 10,
+          "sizes": []
+        }
+      ],
+      "brand": "Chanel",
+      "price": 375,
+      "comparePrice": null,
+      "discount": "",
+      "image": "https://res.cloudinary.com/gdq6wwvf/image/upload/v1794318880/smp-fashion/h2xnymv5sxcomt8w02go.webp",
+      "imagePublicId": "smp-fashion/h2xnymv5sxcomt8w02go",
+      "description": "Elegant Chanel-inspired ballet flats featuring a chic two-tone design, delicate bow detailing, and iconic CC embroidery. Available in beautiful shades including Tiffany Blue, Bubblegum Pink, Mint Green, Ivory & Cognac, Black & White, Lavender, and Coral Pink. A perfect blend of timeless elegance, feminine charm, and everyday sophistication. ✨",
+      "details": [
+        "100% Genuine Materials",
+        "Master Craftsmanship",
+        "Free Express UAE Delivery"
+      ],
+      "stock": 15,
+      "featured": true,
+      "badge": "",
+      "seoTitle": "SLINGBACKS | Chanel UAE Luxury",
+      "seoDescription": "Elegant Chanel-inspired ballet flats featuring a chic two-tone design, delicate bow detailing, and iconic CC embroidery. Available in beautiful shades incl",
+      "seoKeywords": "SLINGBACKS, Chanel, luxury fashion UAE, buy Chanel Dubai, order via WhatsApp",
+      "slug": "slingbacks",
+      "createdAt": "2026-11-10T13:54:41.406Z",
+      "updatedAt": "2026-11-10T14:21:43.542Z"
+    },
+    {
+      "id": "prod-1794318363780",
+      "_id": "prod-1794318363780",
+      "title": "J'Adior Slide",
+      "category": "footwear",
+      "categoryName": "Footwear",
+      "gender": "women",
+      "color": "Baby Pink",
+      "colorCode": "#f3dde7",
+      "sizes": [],
+      "variants": [
+        {
+          "id": "var-1794317921202-1",
+          "colorName": "Mint Green",
+          "colorCode": "#FFFFFF",
+          "images": [
+            "https://res.cloudinary.com/gdq6wwvf/image/upload/v1794318095/smp-fashion/xoptkpdqnzioyk80qw1t.webp"
+          ],
+          "stock": 10,
+          "sizes": []
+        },
+        {
+          "id": "var-1794317921405-2",
+          "colorName": "Beige / Nude",
+          "colorCode": "#E2D5C3",
+          "images": [
+            "https://res.cloudinary.com/gdq6wwvf/image/upload/v1794318187/smp-fashion/wxj0owbia5gbkgxdapmf.webp"
+          ],
+          "stock": 10,
+          "sizes": []
+        },
+        {
+          "id": "var-1794317921563-3",
+          "colorName": "Black",
+          "colorCode": "#111111",
+          "images": [
+            "https://res.cloudinary.com/gdq6wwvf/image/upload/v1794318232/smp-fashion/fa7jik5dsl30huvgeh2i.webp"
+          ],
+          "stock": 10,
+          "sizes": []
+        }
+      ],
+      "brand": "Dior",
+      "price": 425,
+      "comparePrice": null,
+      "discount": "",
+      "image": "https://res.cloudinary.com/gdq6wwvf/image/upload/v1794318363/smp-fashion/j7zr7fnlvue7kpfcvbhz.webp",
+      "imagePublicId": "smp-fashion/j7zr7fnlvue7kpfcvbhz",
       "description": "",
       "details": [
         "100% Genuine Materials",
@@ -78,11 +609,1731 @@
       "stock": 15,
       "featured": true,
       "badge": "",
-      "seoTitle": "bag | Luxury SMP Fashion UAE",
-      "seoDescription": "Shop bag at SMP Super Master Products.",
-      "seoKeywords": "bag, luxury UAE, Graff, designer fashion",
-      "slug": "bag",
-      "createdAt": "2026-10-24T16:45:09.930Z"
+      "seoTitle": "J'Adior Slide | Dior UAE Luxury",
+      "seoDescription": "Buy authentic J'Adior Slide by Dior. 100% Genuine luxury master piece with free UAE delivery & inspect-before-payment.",
+      "seoKeywords": "J'Adior Slide, Dior, luxury fashion UAE, buy Dior Dubai, order via WhatsApp",
+      "slug": "j-adior-slide",
+      "createdAt": "2026-11-10T13:46:03.780Z"
+    },
+    {
+      "id": "prod-1794317684514",
+      "_id": "prod-1794317684514",
+      "title": " Laminated Sneakers",
+      "category": "footwear",
+      "categoryName": "Footwear",
+      "gender": "women",
+      "color": "Metallic Gold",
+      "colorCode": "#B89A5A",
+      "sizes": [],
+      "variants": [
+        {
+          "id": "var-1794317584251-0",
+          "colorName": "Metallic Silver",
+          "colorCode": "#A9A9AD",
+          "images": [
+            "https://res.cloudinary.com/gdq6wwvf/image/upload/v1794317592/smp-fashion/gz8xufcxflnchfcm8xfc.webp"
+          ],
+          "stock": 10,
+          "sizes": []
+        }
+      ],
+      "brand": "Chanel",
+      "price": 425,
+      "comparePrice": null,
+      "discount": "",
+      "image": "https://res.cloudinary.com/gdq6wwvf/image/upload/v1794317683/smp-fashion/jpevnisza7jrayug47wj.webp",
+      "imagePublicId": "smp-fashion/jpevnisza7jrayug47wj",
+      "description": "Stylish sporty sneakers featuring a chunky cushioned sole, intricate panel detailing, bold logo embroidery, and eye-catching lace accents. Designed with a modern street-style aesthetic, these sneakers effortlessly combine comfort and statement-making fashion.",
+      "details": [
+        "100% Genuine Materials",
+        "Master Craftsmanship",
+        "Free Express UAE Delivery"
+      ],
+      "stock": 15,
+      "featured": true,
+      "badge": "",
+      "seoTitle": "Laminated Sneakers | Chanel UAE Luxury",
+      "seoDescription": "Stylish sporty sneakers featuring a chunky cushioned sole, intricate panel detailing, bold logo embroidery, and eye-catching lace accents. Designed with a ",
+      "seoKeywords": "Laminated Sneakers, Chanel, luxury fashion UAE, buy Chanel Dubai, order via WhatsApp",
+      "slug": "laminated-sneakers",
+      "createdAt": "2026-11-10T13:34:44.514Z",
+      "updatedAt": "2026-11-10T13:35:01.093Z"
+    },
+    {
+      "id": "prod-1794317463741",
+      "_id": "prod-1794317463741",
+      "title": "Fall-Winter 2026 Collection ",
+      "category": "footwear",
+      "categoryName": "Footwear",
+      "gender": "women",
+      "color": "Chocolate Brown",
+      "colorCode": "#654638",
+      "sizes": [],
+      "variants": [
+        {
+          "id": "var-1794317376241-0",
+          "colorName": "Red / Burgundy",
+          "colorCode": "#800020",
+          "images": [
+            "https://res.cloudinary.com/gdq6wwvf/image/upload/v1794317384/smp-fashion/qan5ngc61udyf9a5uqvi.webp"
+          ],
+          "stock": 10,
+          "sizes": []
+        },
+        {
+          "id": "var-1794317376471-1",
+          "colorName": "Black",
+          "colorCode": "#111111",
+          "images": [
+            "https://res.cloudinary.com/gdq6wwvf/image/upload/v1794317391/smp-fashion/fshciglqglhyporzq9zq.webp"
+          ],
+          "stock": 10,
+          "sizes": []
+        }
+      ],
+      "brand": "Chanel",
+      "price": 455,
+      "comparePrice": null,
+      "discount": "",
+      "image": "https://res.cloudinary.com/gdq6wwvf/image/upload/v1794317463/smp-fashion/x4plhryg5pfgp8b5gwab.webp",
+      "imagePublicId": "smp-fashion/x4plhryg5pfgp8b5gwab",
+      "description": "Elegant pointed-toe slingback mules featuring a chic two-tone design, a sculpted block heel, and a delicate gold CC-inspired accent. With their sleek silhouette and refined detailing, these heels are perfect for elevating everyday outfits and special occasion looks.",
+      "details": [
+        "100% Genuine Materials",
+        "Master Craftsmanship",
+        "Free Express UAE Delivery"
+      ],
+      "stock": 15,
+      "featured": true,
+      "badge": "",
+      "seoTitle": "Fall-Winter 2026 Collection | Chanel UAE Luxury",
+      "seoDescription": "Elegant pointed-toe slingback mules featuring a chic two-tone design, a sculpted block heel, and a delicate gold CC-inspired accent. With their sleek silho",
+      "seoKeywords": "Fall-Winter 2026 Collection, Chanel, luxury fashion UAE, buy Chanel Dubai, order via WhatsApp",
+      "slug": "fall-winter-2026-collection",
+      "createdAt": "2026-11-10T13:31:03.741Z"
+    },
+    {
+      "id": "prod-1794317257416",
+      "_id": "prod-1794317257416",
+      "title": "Women s Donna platform sandal  ",
+      "category": "footwear",
+      "categoryName": "Footwear",
+      "gender": "women",
+      "color": "Black",
+      "colorCode": "#111111",
+      "sizes": [],
+      "variants": [
+        {
+          "id": "var-1794317196379-0",
+          "colorName": "Black",
+          "colorCode": "#111111",
+          "images": [
+            "https://res.cloudinary.com/gdq6wwvf/image/upload/v1794317206/smp-fashion/erxj61povasuaf636gi6.webp"
+          ],
+          "stock": 10,
+          "sizes": []
+        },
+        {
+          "id": "var-1794317197097-1",
+          "colorName": "Red / Burgundy",
+          "colorCode": "#800020",
+          "images": [
+            "https://res.cloudinary.com/gdq6wwvf/image/upload/v1794317231/smp-fashion/crsq1v6a3xhgtzhjgdor.webp"
+          ],
+          "stock": 10,
+          "sizes": []
+        }
+      ],
+      "brand": "Gucci",
+      "price": 455,
+      "comparePrice": null,
+      "discount": "",
+      "image": "https://res.cloudinary.com/gdq6wwvf/image/upload/v1794317256/smp-fashion/bahzis5qr75oxrzh63wv.webp",
+      "imagePublicId": "smp-fashion/bahzis5qr75oxrzh63wv",
+      "description": "Step into glamour with these stunning Gucci-inspired platform heels, featuring a chic open-toe silhouette, glossy finish, elegant ankle straps, and signature horsebit detailing. Designed with a statement platform and sleek stiletto heel for a bold yet sophisticated look. Available in metallic silver, classic black, and rich burgundy. Perfect for parties, evening wear, special occasions, and luxurious styling.",
+      "details": [
+        "100% Genuine Materials",
+        "Master Craftsmanship",
+        "Free Express UAE Delivery"
+      ],
+      "stock": 15,
+      "featured": true,
+      "badge": "",
+      "seoTitle": "Women s Donna platform sandal | Gucci UAE Luxury",
+      "seoDescription": "Step into glamour with these stunning Gucci-inspired platform heels, featuring a chic open-toe silhouette, glossy finish, elegant ankle straps, and signatu",
+      "seoKeywords": "Women s Donna platform sandal, Gucci, luxury fashion UAE, buy Gucci Dubai, order via WhatsApp",
+      "slug": "women-s-donna-platform-sandal",
+      "createdAt": "2026-11-10T13:27:37.416Z"
+    },
+    {
+      "id": "prod-1794316799851",
+      "_id": "prod-1794316799851",
+      "title": "Gucci Horsebit",
+      "category": "footwear",
+      "categoryName": "Footwear",
+      "gender": "women",
+      "color": "Gold / Champagne",
+      "colorCode": "#D4AF37",
+      "sizes": [],
+      "variants": [
+        {
+          "id": "var-1794316587655-0",
+          "colorName": "Blush Pink / Nude",
+          "colorCode": "#D5B0A8",
+          "images": [
+            "https://res.cloudinary.com/gdq6wwvf/image/upload/v1794316707/smp-fashion/xb1vrz6b0hhnswovafj1.webp"
+          ],
+          "stock": 10,
+          "sizes": []
+        },
+        {
+          "id": "var-1794316589055-1",
+          "colorName": "Red / Burgundy",
+          "colorCode": "#800020",
+          "images": [
+            "https://res.cloudinary.com/gdq6wwvf/image/upload/v1794316700/smp-fashion/goqqndfw7xob2hjotcy5.webp"
+          ],
+          "stock": 10,
+          "sizes": []
+        },
+        {
+          "id": "var-1794316589294-2",
+          "colorName": "White",
+          "colorCode": "#FFFFFF",
+          "images": [
+            "https://res.cloudinary.com/gdq6wwvf/image/upload/v1794316606/smp-fashion/vczvbgsytnafpzfmw2mz.webp"
+          ],
+          "stock": 10,
+          "sizes": []
+        },
+        {
+          "id": "var-1794316589462-3",
+          "colorName": "Brown / Cognac",
+          "colorCode": "#8B4513",
+          "images": [
+            "https://res.cloudinary.com/gdq6wwvf/image/upload/v1794316621/smp-fashion/my3msld4qftdzempu09n.webp"
+          ],
+          "stock": 10,
+          "sizes": []
+        },
+        {
+          "id": "var-1794316627783-4",
+          "colorName": "Black",
+          "colorCode": "#111111",
+          "images": [
+            "https://res.cloudinary.com/gdq6wwvf/image/upload/v1794316744/smp-fashion/jjjuekewmavoinkc2cvm.webp"
+          ],
+          "stock": 10,
+          "sizes": []
+        }
+      ],
+      "brand": "Gucci",
+      "price": 375,
+      "comparePrice": null,
+      "discount": "",
+      "image": "https://res.cloudinary.com/gdq6wwvf/image/upload/v1794316799/smp-fashion/vswhlcfsimugz7nischu.webp",
+      "imagePublicId": "smp-fashion/vswhlcfsimugz7nischu",
+      "description": "Elegant Gucci-inspired horsebit slingback heels featuring a sophisticated open-toe design, sleek adjustable slingback straps, and signature gold-tone horsebit detailing. Crafted with a chic mid-block heel for a perfect blend of comfort and timeless elegance. Available in luxurious metallic gold, blush pink, classic white, black, cognac brown, and rich burgundy. Perfect for office wear, casual chic styling, parties, and special occasions.",
+      "details": [
+        "100% Genuine Materials",
+        "Master Craftsmanship",
+        "Free Express UAE Delivery"
+      ],
+      "stock": 15,
+      "featured": true,
+      "badge": "",
+      "seoTitle": "Gucci Horsebit | Gucci UAE Luxury",
+      "seoDescription": "Elegant Gucci-inspired horsebit slingback heels featuring a sophisticated open-toe design, sleek adjustable slingback straps, and signature gold-tone horse",
+      "seoKeywords": "Gucci Horsebit, Gucci, luxury fashion UAE, buy Gucci Dubai, order via WhatsApp",
+      "slug": "gucci-horsebit",
+      "createdAt": "2026-11-10T13:19:59.851Z",
+      "updatedAt": "2026-11-10T13:35:10.524Z"
+    },
+    {
+      "id": "prod-1794316463119",
+      "_id": "prod-1794316463119",
+      "title": "LOUBOUTIN",
+      "category": "footwear",
+      "categoryName": "Footwear",
+      "gender": "women",
+      "color": "Beige / Nude",
+      "colorCode": "#D8BDA5",
+      "sizes": [],
+      "variants": [
+        {
+          "id": "var-1794316337593-0",
+          "colorName": "White",
+          "colorCode": "#FFFFFF",
+          "images": [
+            "https://res.cloudinary.com/gdq6wwvf/image/upload/v1794316363/smp-fashion/rvehwrneinrugebgfgop.webp"
+          ],
+          "stock": 10,
+          "sizes": []
+        },
+        {
+          "id": "var-1794316337819-1",
+          "colorName": "Black",
+          "colorCode": "#111111",
+          "images": [
+            "https://res.cloudinary.com/gdq6wwvf/image/upload/v1794316364/smp-fashion/pekb5f7j4dwmjky6ob92.webp"
+          ],
+          "stock": 10,
+          "sizes": []
+        }
+      ],
+      "brand": "Christian Louboutin ",
+      "price": 455,
+      "comparePrice": null,
+      "discount": "",
+      "image": "https://res.cloudinary.com/gdq6wwvf/image/upload/v1794316462/smp-fashion/qtl2di0qax2zttggqgeh.webp",
+      "imagePublicId": "smp-fashion/qtl2di0qax2zttggqgeh",
+      "description": "Elegant peep-toe high-heel mules featuring a sleek, glossy finish and a sophisticated open-toe design. Crafted with a feminine silhouette, graceful stiletto heels, and signature red soles for a luxurious statement. Available in timeless black, classic white, and beautiful dusty rose. Perfect for parties, special occasions, evening wear, and glamorous styling.",
+      "details": [
+        "100% Genuine Materials",
+        "Master Craftsmanship",
+        "Free Express UAE Delivery"
+      ],
+      "stock": 15,
+      "featured": true,
+      "badge": "",
+      "seoTitle": "LOUBOUTIN | Christian Louboutin UAE Luxury",
+      "seoDescription": "Elegant peep-toe high-heel mules featuring a sleek, glossy finish and a sophisticated open-toe design. Crafted with a feminine silhouette, graceful stilett",
+      "seoKeywords": "LOUBOUTIN, Christian Louboutin, luxury fashion UAE, buy Christian Louboutin Dubai, order via WhatsApp",
+      "slug": "louboutin",
+      "createdAt": "2026-11-10T13:14:23.119Z"
+    },
+    {
+      "id": "prod-1794316184959",
+      "_id": "prod-1794316184959",
+      "title": "Clasic",
+      "category": "footwear",
+      "categoryName": "Footwear",
+      "gender": "women",
+      "color": "Beige & Black",
+      "colorCode": "#C8AD8C",
+      "sizes": [],
+      "variants": [
+        {
+          "id": "var-1794316055813-0",
+          "colorName": "Black & Beige",
+          "colorCode": "#111111",
+          "images": [
+            "https://res.cloudinary.com/gdq6wwvf/image/upload/v1794316068/smp-fashion/uyys0ggqwsluywketaoy.webp"
+          ],
+          "stock": 10,
+          "sizes": []
+        }
+      ],
+      "brand": "Chanel",
+      "price": 375,
+      "comparePrice": null,
+      "discount": "",
+      "image": "https://res.cloudinary.com/gdq6wwvf/image/upload/v1794316184/smp-fashion/a735plem5qkgg2magv7v.webp",
+      "imagePublicId": "smp-fashion/a735plem5qkgg2magv7v",
+      "description": "Elegant pointed-toe slingback heels featuring a chic two-tone design with a sleek black toe cap and a sophisticated beige or black upper. Designed with a stylish mid-block heel, delicate slingback strap, and luxurious gold-tone detailing. Perfect for office wear, formal occasions, and effortlessly elegant everyday styling.",
+      "details": [
+        "100% Genuine Materials",
+        "Master Craftsmanship",
+        "Free Express UAE Delivery"
+      ],
+      "stock": 15,
+      "featured": true,
+      "badge": "",
+      "seoTitle": "Clasic | Chanel UAE Luxury",
+      "seoDescription": "Elegant pointed-toe slingback heels featuring a chic two-tone design with a sleek black toe cap and a sophisticated beige or black upper. Designed with a s",
+      "seoKeywords": "Clasic, Chanel, luxury fashion UAE, buy Chanel Dubai, order via WhatsApp",
+      "slug": "clasic",
+      "createdAt": "2026-11-10T13:09:44.959Z"
+    },
+    {
+      "id": "prod-1794061187298",
+      "_id": "prod-1794061187298",
+      "title": "Rosalie Jewel",
+      "category": "footwear",
+      "categoryName": "Footwear",
+      "gender": "women",
+      "color": "White",
+      "colorCode": "#FFFFFF",
+      "sizes": [],
+      "variants": [
+        {
+          "id": "var-1794061099383-0",
+          "colorName": "White",
+          "colorCode": "#FFFFFF",
+          "images": [
+            "https://res.cloudinary.com/gdq6wwvf/image/upload/v1794061161/smp-fashion/uoiaqis9kwf0yjabs0pk.jpg"
+          ],
+          "stock": 10,
+          "sizes": []
+        },
+        {
+          "id": "var-1794061113011-1",
+          "colorName": "Beige / Nude",
+          "colorCode": "#E2D5C3",
+          "images": [],
+          "stock": 10,
+          "sizes": []
+        },
+        {
+          "id": "var-1794061113346-2",
+          "colorName": "White",
+          "colorCode": "#FFFFFF",
+          "images": [],
+          "stock": 10,
+          "sizes": []
+        }
+      ],
+      "brand": "Christian Louboutin ",
+      "price": 475,
+      "comparePrice": null,
+      "discount": "",
+      "image": "https://res.cloudinary.com/gdq6wwvf/image/upload/v1794061186/smp-fashion/qr7sp4cgrgv4hdlqgvlm.jpg",
+      "imagePublicId": "smp-fashion/qr7sp4cgrgv4hdlqgvlm",
+      "description": "",
+      "details": [
+        "100% Genuine Materials",
+        "Master Craftsmanship",
+        "Free Express UAE Delivery"
+      ],
+      "stock": 15,
+      "featured": true,
+      "badge": "",
+      "seoTitle": "Rosalie Jewel | Luxury SMP Fashion UAE",
+      "seoDescription": "Shop Rosalie Jewel at SMP Super Master Products.",
+      "seoKeywords": "Rosalie Jewel, luxury UAE, Christian Louboutin , designer fashion",
+      "slug": "rosalie-jewel",
+      "createdAt": "2026-11-07T14:19:47.298Z"
+    },
+    {
+      "id": "prod-1794060603781",
+      "_id": "prod-1794060603781",
+      "title": "Love Struck 105 sandals SuperMaster quality",
+      "category": "footwear",
+      "categoryName": "Footwear",
+      "gender": "women",
+      "color": "Taupe Nude",
+      "colorCode": "#A58A7C",
+      "sizes": [],
+      "variants": [
+        {
+          "id": "var-1794060395803-0",
+          "colorName": "Midnight Navy",
+          "colorCode": " #172C58",
+          "images": [
+            "https://res.cloudinary.com/gdq6wwvf/image/upload/v1794060535/smp-fashion/jirukgo3vaijzg37ldjx.jpg"
+          ],
+          "stock": 10,
+          "sizes": []
+        },
+        {
+          "id": "var-1794060398754-1",
+          "colorName": "Black",
+          "colorCode": "#111111",
+          "images": [
+            "https://res.cloudinary.com/gdq6wwvf/image/upload/v1794060545/smp-fashion/ieg6sravugoueduln5lq.jpg"
+          ],
+          "stock": 10,
+          "sizes": []
+        },
+        {
+          "id": "var-1794060398908-2",
+          "colorName": "Red / Burgundy",
+          "colorCode": "#800020",
+          "images": [
+            "https://res.cloudinary.com/gdq6wwvf/image/upload/v1794060552/smp-fashion/mkjleixy0lguwopkahnp.jpg"
+          ],
+          "stock": 10,
+          "sizes": []
+        },
+        {
+          "id": "var-1794060399069-3",
+          "colorName": "Brown / Cognac",
+          "colorCode": "#8B4513",
+          "images": [
+            "https://res.cloudinary.com/gdq6wwvf/image/upload/v1794060584/smp-fashion/ijxxc7ynljgdjo1kpc8g.jpg"
+          ],
+          "stock": 10,
+          "sizes": []
+        }
+      ],
+      "brand": "Aquazzura",
+      "price": 425,
+      "comparePrice": null,
+      "discount": "",
+      "image": "https://res.cloudinary.com/gdq6wwvf/image/upload/v1794060603/smp-fashion/dtceyxkdvik4fzptwget.jpg",
+      "imagePublicId": "smp-fashion/dtceyxkdvik4fzptwget",
+      "description": "Elegant Aquazzura-inspired strappy heels featuring delicate braided detailing, sleek pointed-toe silhouettes, and a sophisticated high heel. Designed with intricate embellishments and a refined finish, these statement heels add timeless glamour and feminine elegance to any occasion. Available in classic black, taupe nude, midnight navy, burgundy, and chocolate brown.",
+      "details": [
+        "100% Genuine Materials",
+        "Master Craftsmanship",
+        "Free Express UAE Delivery"
+      ],
+      "stock": 15,
+      "featured": true,
+      "badge": "",
+      "seoTitle": "Love Struck 105 sandals SuperMaster quality | Aquazzura UAE Luxury",
+      "seoDescription": "Elegant Aquazzura-inspired strappy heels featuring delicate braided detailing, sleek pointed-toe silhouettes, and a sophisticated high heel. Designed with ",
+      "seoKeywords": "Love Struck 105 sandals SuperMaster quality, Aquazzura, luxury fashion UAE, buy Aquazzura Dubai, order via WhatsApp",
+      "slug": "love-struck-105-sandals-supermaster-quality",
+      "createdAt": "2026-11-07T14:10:03.781Z"
+    },
+    {
+      "id": "prod-1794060111717",
+      "_id": "prod-1794060111717",
+      "title": "SuperMaster quality",
+      "category": "footwear",
+      "categoryName": "Footwear",
+      "gender": "women",
+      "color": "Baby Blue",
+      "colorCode": "#96CEE6",
+      "sizes": [],
+      "variants": [
+        {
+          "id": "var-1794059797384-0",
+          "colorName": "Dusty Pink",
+          "colorCode": "#DDB0AE",
+          "images": [
+            "https://res.cloudinary.com/gdq6wwvf/image/upload/v1794059824/smp-fashion/z90pk5j063uunjjoh1cf.jpg"
+          ],
+          "stock": 10,
+          "sizes": []
+        },
+        {
+          "id": "var-1794059797657-1",
+          "colorName": "Beige / Nude",
+          "colorCode": "#D4BD9E  ",
+          "images": [
+            "https://res.cloudinary.com/gdq6wwvf/image/upload/v1794059836/smp-fashion/uk2wliuprhgj7p7dzw0t.jpg"
+          ],
+          "stock": 10,
+          "sizes": []
+        }
+      ],
+      "brand": "Valentino ",
+      "price": 455,
+      "comparePrice": null,
+      "discount": "",
+      "image": "https://res.cloudinary.com/gdq6wwvf/image/upload/v1794060111/smp-fashion/rha2gjbur31yeeydm1lm.jpg",
+      "imagePublicId": "smp-fashion/rha2gjbur31yeeydm1lm",
+      "description": "Valentino Butterfly Embellished Heels – Elegant Luxury Collection\r\n\r\nStep into elegance with these stunning Valentino-inspired butterfly heels, featuring a delicate butterfly embellishment adorned with sparkling crystals, a chic pointed-toe silhouette, and a sophisticated slim heel.\r\n\r\nDesigned to add a touch of glamour and femininity to every occasion, these heels are perfect for parties, weddings, special occasions, and elegant evening looks.\r\n",
+      "details": [
+        "100% Genuine Materials",
+        "Master Craftsmanship",
+        "Free Express UAE Delivery"
+      ],
+      "stock": 15,
+      "featured": true,
+      "badge": "",
+      "seoTitle": "SuperMaster quality | Valentino UAE Luxury",
+      "seoDescription": "Valentino Butterfly Embellished Heels – Elegant Luxury Collection\r\n\r\nStep into elegance with these stunning Valentino-inspired butterfly heels, featuring a",
+      "seoKeywords": "SuperMaster quality, Valentino, luxury fashion UAE, buy Valentino Dubai, order via WhatsApp",
+      "slug": "supermaster-quality",
+      "createdAt": "2026-11-07T14:01:51.717Z",
+      "updatedAt": "2026-11-07T14:04:15.953Z"
+    },
+    {
+      "id": "prod-1794059580169",
+      "_id": "prod-1794059580169",
+      "title": "SuperMaster quality",
+      "category": "footwear",
+      "categoryName": "Footwear",
+      "gender": "women",
+      "color": "Multicolor Polka Dot",
+      "colorCode": "#FFFFFF",
+      "sizes": [],
+      "variants": [
+        {
+          "id": "var-1794059393376-0",
+          "colorName": "Dark Brown",
+          "colorCode": "#452C26",
+          "images": [
+            "https://res.cloudinary.com/gdq6wwvf/image/upload/v1794059542/smp-fashion/hctvvy6bnwezwnhgeis3.jpg"
+          ],
+          "stock": 10,
+          "sizes": []
+        },
+        {
+          "id": "var-1794059395657-1",
+          "colorName": "Red / Burgundy",
+          "colorCode": "#800020",
+          "images": [
+            "https://res.cloudinary.com/gdq6wwvf/image/upload/v1794059526/smp-fashion/lpqcxaou1g5fu6t0fsbz.jpg"
+          ],
+          "stock": 10,
+          "sizes": []
+        },
+        {
+          "id": "var-1794059396046-2",
+          "colorName": "Black",
+          "colorCode": "#111111",
+          "images": [
+            "https://res.cloudinary.com/gdq6wwvf/image/upload/v1794059484/smp-fashion/mjbblnn43kehs8np6grj.jpg"
+          ],
+          "stock": 10,
+          "sizes": []
+        },
+        {
+          "id": "var-1794059396216-3",
+          "colorName": "Dark Brown",
+          "colorCode": "#FFFFFF",
+          "images": [
+            "https://res.cloudinary.com/gdq6wwvf/image/upload/v1794059617/smp-fashion/k0moykjgcikfk091jxzb.jpg"
+          ],
+          "stock": 10,
+          "sizes": []
+        },
+        {
+          "id": "var-1794059621381-4",
+          "colorName": "Metallic Gold / Silver",
+          "colorCode": "#9C968E",
+          "images": [
+            "https://res.cloudinary.com/gdq6wwvf/image/upload/v1794059630/smp-fashion/pgcy4t42wkvwecsny3dt.jpg"
+          ],
+          "stock": 10,
+          "sizes": []
+        },
+        {
+          "id": "var-1794059621533-5",
+          "colorName": "Light Beige / Taupe",
+          "colorCode": "#C8B9A9",
+          "images": [
+            "https://res.cloudinary.com/gdq6wwvf/image/upload/v1794059669/smp-fashion/n4wunl99kj1n9hnhkksn.jpg"
+          ],
+          "stock": 10,
+          "sizes": []
+        }
+      ],
+      "brand": "maison Margiela",
+      "price": 475,
+      "comparePrice": null,
+      "discount": "",
+      "image": "https://res.cloudinary.com/gdq6wwvf/image/upload/v1794059579/smp-fashion/mpr3bhdzaqz0r697k6a3.jpg",
+      "imagePublicId": "smp-fashion/mpr3bhdzaqz0r697k6a3",
+      "description": "Maison Margiela Tabi Ballet Flats – Elegant & Timeless Collection\r\n\r\nDiscover the perfect blend of modern elegance and minimalist sophistication with these Maison Margiela-inspired Tabi ballet flats. Featuring the iconic split-toe design, a soft and refined silhouette, and a comfortable flat sole, these shoes are a must-have for every fashion-forward wardrobe.\r\n\r\nAvailable in a beautiful range of versatile and statement-making colors, perfect for everyday styling, casual outings, and chic occasions.\r\n",
+      "details": [
+        "100% Genuine Materials",
+        "Master Craftsmanship",
+        "Free Express UAE Delivery"
+      ],
+      "stock": 15,
+      "featured": true,
+      "badge": "",
+      "seoTitle": "SuperMaster quality | Luxury SMP Fashion UAE",
+      "seoDescription": "Shop SuperMaster quality at SMP Super Master Products.",
+      "seoKeywords": "SuperMaster quality, luxury UAE, maison Margiela, designer fashion",
+      "slug": "supermaster-quality",
+      "createdAt": "2026-11-07T13:53:00.169Z",
+      "updatedAt": "2026-11-07T13:54:45.388Z"
+    },
+    {
+      "id": "prod-1794059001401",
+      "_id": "prod-1794059001401",
+      "title": "SuperMaster quality",
+      "category": "footwear",
+      "categoryName": "Footwear",
+      "gender": "women",
+      "color": "Nude Beige",
+      "colorCode": "#D9B49A",
+      "sizes": [],
+      "variants": [
+        {
+          "id": "var-1794058828620-0",
+          "colorName": "Silver Chrome",
+          "colorCode": "#C0C0C0",
+          "images": [
+            "https://res.cloudinary.com/gdq6wwvf/image/upload/v1794058929/smp-fashion/soe5kumgvax25qatjuex.jpg"
+          ],
+          "stock": 10,
+          "sizes": []
+        },
+        {
+          "id": "var-1794058928943-1",
+          "colorName": "Jet Black",
+          "colorCode": "#0A0A0A",
+          "images": [
+            "https://res.cloudinary.com/gdq6wwvf/image/upload/v1794058940/smp-fashion/gchbj1i3wp94osb5k0hv.jpg"
+          ],
+          "stock": 10,
+          "sizes": []
+        },
+        {
+          "id": "var-1794058930379-2",
+          "colorName": "Ivory White",
+          "colorCode": "#F5F3ED ",
+          "images": [
+            "https://res.cloudinary.com/gdq6wwvf/image/upload/v1794058948/smp-fashion/fmv0zjyvkjfbgahwbjqo.jpg"
+          ],
+          "stock": 10,
+          "sizes": []
+        }
+      ],
+      "brand": "Gucci",
+      "price": 455,
+      "comparePrice": null,
+      "discount": "",
+      "image": "https://res.cloudinary.com/gdq6wwvf/image/upload/v1794059000/smp-fashion/qmosrmyalqyu61hyxqy2.jpg",
+      "imagePublicId": "smp-fashion/qmosrmyalqyu61hyxqy2",
+      "description": "Stylish open-toe heels featuring a chic horsebit-inspired metallic accent, elegant ankle straps, and a bold block heel design. With their sleek finish and sophisticated silhouette, these statement sandals offer the perfect blend of modern elegance and timeless charm, ideal for parties, formal occasions, and elevated everyday styling.",
+      "details": [
+        "100% Genuine Materials",
+        "Master Craftsmanship",
+        "Free Express UAE Delivery"
+      ],
+      "stock": 15,
+      "featured": true,
+      "badge": "",
+      "seoTitle": "SuperMaster quality | Gucci UAE Luxury",
+      "seoDescription": "Buy authentic SuperMaster quality by Gucci. 100% Genuine luxury master piece with free UAE delivery & inspect-before-payment.",
+      "seoKeywords": "SuperMaster quality, Gucci, luxury fashion UAE, buy Gucci Dubai, order via WhatsApp",
+      "slug": "supermaster-quality",
+      "createdAt": "2026-11-07T13:43:21.401Z"
+    },
+    {
+      "id": "prod-1794058618534",
+      "_id": "prod-1794058618534",
+      "title": "SuperMaster quality",
+      "category": "footwear",
+      "categoryName": "Footwear",
+      "gender": "women",
+      "color": "Metallic Gold",
+      "colorCode": "#C49A25",
+      "sizes": [],
+      "variants": [
+        {
+          "id": "var-1794058642654-0",
+          "colorName": "Ivory White",
+          "colorCode": "#F2EEE8",
+          "images": [
+            "https://res.cloudinary.com/gdq6wwvf/image/upload/v1794058665/smp-fashion/so3ya24oahanrrgnntbe.jpg"
+          ],
+          "stock": 10,
+          "sizes": []
+        },
+        {
+          "id": "var-1794058642955-1",
+          "colorName": "Wine Burgundy",
+          "colorCode": "#76283D",
+          "images": [
+            "https://res.cloudinary.com/gdq6wwvf/image/upload/v1794058687/smp-fashion/jo9ryqrlb4hdhkljqvp6.jpg"
+          ],
+          "stock": 10,
+          "sizes": []
+        },
+        {
+          "id": "var-1794058685122-2",
+          "colorName": "Silver",
+          "colorCode": "#AEB0B4",
+          "images": [
+            "https://res.cloudinary.com/gdq6wwvf/image/upload/v1794058719/smp-fashion/dflax9urckrsl6l1ci4u.jpg"
+          ],
+          "stock": 10,
+          "sizes": []
+        },
+        {
+          "id": "var-1794058685371-3",
+          "colorName": "Cherry Red",
+          "colorCode": "#B8243A",
+          "images": [
+            "https://res.cloudinary.com/gdq6wwvf/image/upload/v1794060739/smp-fashion/bhgne6rfjzfpomz1d8ui.jpg"
+          ],
+          "stock": 10,
+          "sizes": []
+        }
+      ],
+      "brand": "Chanel",
+      "price": 445,
+      "comparePrice": null,
+      "discount": "",
+      "image": "https://res.cloudinary.com/gdq6wwvf/image/upload/v1794060749/smp-fashion/vbhvqeknbwkhgwzwufly.jpg",
+      "imagePublicId": "smp-fashion/vbhvqeknbwkhgwzwufly",
+      "description": "Elegant pointed-toe pumps featuring a refined silhouette, sleek finish, and beautifully contrasting details. Designed with a graceful high heel and a sophisticated design, these timeless shoes offer a perfect blend of modern elegance and classic charm, making them ideal for formal occasions, office wear, parties, and special events.",
+      "details": [
+        "100% Genuine Materials",
+        "Master Craftsmanship",
+        "Free Express UAE Delivery"
+      ],
+      "stock": 15,
+      "featured": true,
+      "badge": "",
+      "seoTitle": "SuperMaster quality | Chanel UAE Luxury",
+      "seoDescription": "Elegant pointed-toe pumps featuring a refined silhouette, sleek finish, and beautifully contrasting details. Designed with a graceful high heel and a sophi",
+      "seoKeywords": "SuperMaster quality, Chanel, luxury fashion UAE, buy Chanel Dubai, order via WhatsApp",
+      "slug": "supermaster-quality",
+      "createdAt": "2026-11-07T13:36:58.534Z",
+      "updatedAt": "2026-11-07T14:12:30.458Z"
+    },
+    {
+      "id": "prod-1794058467018",
+      "_id": "prod-1794058467018",
+      "title": "SuperMaster quality",
+      "category": "footwear",
+      "categoryName": "Footwear",
+      "gender": "women",
+      "color": "Brown",
+      "colorCode": "#4A241C",
+      "sizes": [],
+      "variants": [
+        {
+          "id": "var-1794058440908-0",
+          "colorName": "Red / Burgundy",
+          "colorCode": "#8B102D",
+          "images": [
+            "https://res.cloudinary.com/gdq6wwvf/image/upload/v1794058452/smp-fashion/v0vrjymx7xynevpzkkvi.jpg"
+          ],
+          "stock": 10,
+          "sizes": []
+        }
+      ],
+      "brand": "Yvessaintlaurent",
+      "price": 425,
+      "comparePrice": null,
+      "discount": "",
+      "image": "https://res.cloudinary.com/gdq6wwvf/image/upload/v1794058466/smp-fashion/goti37eoex2si0zvvgae.jpg",
+      "imagePublicId": "smp-fashion/goti37eoex2si0zvvgae",
+      "description": "Chic pointed-toe slingback heels featuring a glossy finish, elegant cut-out detailing, and delicate crystal-embellished buckle accents. Designed with a sleek silhouette and a refined stiletto heel, these sophisticated pumps effortlessly elevate any outfit, making them perfect for parties, formal occasions, and stylish evening looks.",
+      "details": [
+        "100% Genuine Materials",
+        "Master Craftsmanship",
+        "Free Express UAE Delivery"
+      ],
+      "stock": 15,
+      "featured": true,
+      "badge": "",
+      "seoTitle": "SuperMaster quality | Yvessaintlaurent UAE Luxury",
+      "seoDescription": "Chic pointed-toe slingback heels featuring a glossy finish, elegant cut-out detailing, and delicate crystal-embellished buckle accents. Designed with a sle",
+      "seoKeywords": "SuperMaster quality, Yvessaintlaurent, luxury fashion UAE, buy Yvessaintlaurent Dubai, order via WhatsApp",
+      "slug": "supermaster-quality",
+      "createdAt": "2026-11-07T13:34:27.018Z"
+    },
+    {
+      "id": "prod-1794058247451",
+      "_id": "prod-1794058247451",
+      "title": "SuperMaster quality",
+      "category": "footwear",
+      "categoryName": "Footwear",
+      "gender": "women",
+      "color": "Red",
+      "colorCode": "#C8103A",
+      "sizes": [],
+      "variants": [
+        {
+          "id": "var-1794058287090-0",
+          "colorName": "Black",
+          "colorCode": "#171719",
+          "images": [],
+          "stock": 10,
+          "sizes": []
+        }
+      ],
+      "brand": "RENE CAOVILLA",
+      "price": 455,
+      "comparePrice": null,
+      "discount": "",
+      "image": "https://res.cloudinary.com/gdq6wwvf/image/upload/v1794058246/smp-fashion/fgmfe8nhsercy0imiut9.jpg",
+      "imagePublicId": "smp-fashion/fgmfe8nhsercy0imiut9",
+      "description": "Elegant pointed-toe heels featuring intricate floral lace detailing embellished with sparkling embellishments. Designed with delicate wraparound straps and a sleek stiletto heel, these statement heels blend sophistication with glamour, making them perfect for evening occasions, parties, and special celebrations.",
+      "details": [
+        "100% Genuine Materials",
+        "Master Craftsmanship",
+        "Free Express UAE Delivery"
+      ],
+      "stock": 15,
+      "featured": true,
+      "badge": "",
+      "seoTitle": "#C8103A | RENE CAOVILLA UAE Luxury",
+      "seoDescription": "Elegant pointed-toe heels featuring intricate floral lace detailing embellished with sparkling embellishments. Designed with delicate wraparound straps and",
+      "seoKeywords": "#C8103A, RENE CAOVILLA, luxury fashion UAE, buy RENE CAOVILLA Dubai, order via WhatsApp",
+      "slug": "c8103a",
+      "createdAt": "2026-11-07T13:30:47.451Z",
+      "updatedAt": "2026-11-07T14:06:05.502Z"
+    },
+    {
+      "id": "prod-1794057893837",
+      "_id": "prod-1794057893837",
+      "title": "SuperMaster quality",
+      "category": "footwear",
+      "categoryName": "Footwear",
+      "gender": "women",
+      "color": "Tan Brown",
+      "colorCode": "#9A4F2F",
+      "sizes": [
+        "35"
+      ],
+      "variants": [
+        {
+          "id": "var-1794057933473-0",
+          "colorName": "Burgundy",
+          "colorCode": "#652630",
+          "images": [
+            "https://res.cloudinary.com/gdq6wwvf/image/upload/v1794057958/smp-fashion/qse1mshgsgwwaxmghfyw.jpg"
+          ],
+          "stock": 10,
+          "sizes": [
+            "35"
+          ]
+        },
+        {
+          "id": "var-1794057933858-1",
+          "colorName": "Black",
+          "colorCode": "#171719",
+          "images": [
+            "https://res.cloudinary.com/gdq6wwvf/image/upload/v1794057977/smp-fashion/hd3idr41n7drmzggmjtm.jpg"
+          ],
+          "stock": 10,
+          "sizes": [
+            "35"
+          ]
+        }
+      ],
+      "brand": "Yvessaintlaurent",
+      "price": 425,
+      "comparePrice": null,
+      "discount": "",
+      "image": "https://res.cloudinary.com/gdq6wwvf/image/upload/v1794057892/smp-fashion/ippqymefp7yik1ttocn1.jpg",
+      "imagePublicId": "smp-fashion/ippqymefp7yik1ttocn1",
+      "description": "Elegant wedge sandals featuring a stylish lace-up design, chic straps, and a beautifully textured espadrille-inspired platform. The combination of sleek detailing and a woven wedge heel creates a sophisticated yet versatile look, perfect for casual outings, summer styling, and effortlessly elevated everyday wear.",
+      "details": [
+        "100% Genuine Materials",
+        "Master Craftsmanship",
+        "Free Express UAE Delivery"
+      ],
+      "stock": 15,
+      "featured": true,
+      "badge": "",
+      "seoTitle": "SuperMaster quality | Yvessaintlaurent UAE Luxury",
+      "seoDescription": "Elegant wedge sandals featuring a stylish lace-up design, chic straps, and a beautifully textured espadrille-inspired platform. The combination of sleek de",
+      "seoKeywords": "SuperMaster quality, Yvessaintlaurent, luxury fashion UAE, buy Yvessaintlaurent Dubai, order via WhatsApp",
+      "slug": "supermaster-quality",
+      "createdAt": "2026-11-07T13:24:53.837Z",
+      "updatedAt": "2026-11-07T13:27:36.284Z"
+    },
+    {
+      "id": "prod-1793890405384",
+      "_id": "prod-1793890405384",
+      "title": "Rolex GMT MASTER ",
+      "category": "watches",
+      "categoryName": "Watches",
+      "gender": "men",
+      "color": "Batman",
+      "colorCode": "#1457A6",
+      "sizes": [],
+      "variants": [],
+      "brand": "Rolex",
+      "price": 4200,
+      "comparePrice": null,
+      "discount": "",
+      "image": "https://res.cloudinary.com/gdq6wwvf/image/upload/v1793890404/smp-fashion/zypiq9xkxsi0bldkrw6l.jpg",
+      "imagePublicId": "smp-fashion/zypiq9xkxsi0bldkrw6l",
+      "description": "",
+      "details": [
+        "100% Genuine Materials",
+        "Master Craftsmanship",
+        "Free Express UAE Delivery"
+      ],
+      "stock": 15,
+      "featured": true,
+      "badge": "",
+      "seoTitle": "Rolex GMT MASTER | Rolex UAE Luxury",
+      "seoDescription": "Buy authentic Rolex GMT MASTER by Rolex. 100% Genuine luxury master piece with free UAE delivery & inspect-before-payment.",
+      "seoKeywords": "Rolex GMT MASTER, Rolex, luxury fashion UAE, buy Rolex Dubai, order via WhatsApp",
+      "slug": "rolex-gmt-master",
+      "createdAt": "2026-11-05T14:53:25.384Z",
+      "updatedAt": "2026-11-07T13:25:28.346Z"
+    },
+    {
+      "id": "prod-1793635509130",
+      "_id": "prod-1793635509130",
+      "title": "Miss Z Degrastrass Perla",
+      "category": "footwear",
+      "categoryName": "Footwear",
+      "gender": "women",
+      "color": "Champagne Nude",
+      "colorCode": "#CDB49A",
+      "sizes": [
+        "30"
+      ],
+      "variants": [
+        {
+          "id": "var-1793635376084-0",
+          "colorName": "Wine Burgundy",
+          "colorCode": "#651B36",
+          "images": [
+            "https://res.cloudinary.com/gdq6wwvf/image/upload/v1793635557/smp-fashion/pppaio8ck0wlcfmdgfh4.jpg",
+            "https://res.cloudinary.com/gdq6wwvf/image/upload/v1793635607/smp-fashion/spdzinyxve0eyfd2kury.jpg"
+          ],
+          "stock": 10,
+          "sizes": [
+            "30"
+          ]
+        },
+        {
+          "id": "var-1793635538949-1",
+          "colorName": "Ivory Pearl",
+          "colorCode": "#E8E2D2",
+          "images": [
+            "https://res.cloudinary.com/gdq6wwvf/image/upload/v1793635607/smp-fashion/vshbpiq8ktsyftuit9or.jpg",
+            "https://res.cloudinary.com/gdq6wwvf/image/upload/v1793635621/smp-fashion/rw2pvls4tjh0zhxbqvsp.jpg"
+          ],
+          "stock": 10,
+          "sizes": [
+            "30"
+          ]
+        },
+        {
+          "id": "var-1793635539358-2",
+          "colorName": "Classic Black",
+          "colorCode": "#171719",
+          "images": [
+            "https://res.cloudinary.com/gdq6wwvf/image/upload/v1793635609/smp-fashion/gxo5hbzkdzegfjrloosc.jpg",
+            "https://res.cloudinary.com/gdq6wwvf/image/upload/v1793635613/smp-fashion/but4cq2xjn9uvhu1dzcm.jpg"
+          ],
+          "stock": 10,
+          "sizes": [
+            "30"
+          ]
+        }
+      ],
+      "brand": "Christian Louboutin ",
+      "price": 425,
+      "comparePrice": null,
+      "discount": "",
+      "image": "https://res.cloudinary.com/gdq6wwvf/image/upload/v1793635508/smp-fashion/er149ki6a056ublmradm.jpg",
+      "imagePublicId": "smp-fashion/er149ki6a056ublmradm",
+      "description": "Make every entrance unforgettable with these stunning pearl-embellished stiletto pumps. Featuring delicate pearl and crystal detailing, a sheer mesh finish, a sleek pointed toe, and the iconic red sole for a luxurious statement.\r\n\r\nPerfect for weddings, parties, special occasions, and glamorous evening looks. ",
+      "details": [
+        "100% Genuine Materials",
+        "Master Craftsmanship",
+        "Free Express UAE Delivery"
+      ],
+      "stock": 15,
+      "featured": true,
+      "badge": "",
+      "seoTitle": "Miss Z Degrastrass Perla | SMP Luxury UAE Luxury",
+      "seoDescription": "Make every entrance unforgettable with these stunning pearl-embellished stiletto pumps. Featuring delicate pearl and crystal detailing, a sheer mesh finish",
+      "seoKeywords": "Miss Z Degrastrass Perla, SMP Luxury, luxury fashion UAE, buy SMP Luxury Dubai, order via WhatsApp",
+      "slug": "miss-z-degrastrass-perla",
+      "createdAt": "2026-11-02T16:05:09.130Z",
+      "updatedAt": "2026-11-02T16:08:39.120Z"
+    },
+    {
+      "id": "prod-1793634347263",
+      "_id": "prod-1793634347263",
+      "title": "MULES",
+      "category": "footwear",
+      "categoryName": "Footwear",
+      "gender": "women",
+      "color": "Gray Beige",
+      "colorCode": "#A9A394",
+      "sizes": [],
+      "variants": [
+        {
+          "id": "var-1793634374628-0",
+          "colorName": "Classic Black Leather",
+          "colorCode": "#17191C",
+          "images": [
+            "https://res.cloudinary.com/gdq6wwvf/image/upload/v1793634406/smp-fashion/b0hbwr5fwqt66ida49ve.jpg"
+          ],
+          "stock": 10,
+          "sizes": []
+        },
+        {
+          "id": "var-1793634375902-1",
+          "colorName": "Jet Black Suede",
+          "colorCode": "#19161B",
+          "images": [
+            "https://res.cloudinary.com/gdq6wwvf/image/upload/v1793634423/smp-fashion/kgeevzmyqk7jyzian7ee.jpg"
+          ],
+          "stock": 10,
+          "sizes": []
+        },
+        {
+          "id": "var-1793634421639-2",
+          "colorName": "Mushroom Taupe / Mocha",
+          "colorCode": "#89766F",
+          "images": [
+            "https://res.cloudinary.com/gdq6wwvf/image/upload/v1793634447/smp-fashion/enzxf0epwau94fx6gei7.jpg"
+          ],
+          "stock": 10,
+          "sizes": []
+        },
+        {
+          "id": "var-1793634421975-3",
+          "colorName": "Deep Plum / Aubergine",
+          "colorCode": "#382333",
+          "images": [
+            "https://res.cloudinary.com/gdq6wwvf/image/upload/v1793634459/smp-fashion/ktchnhaxfyklxxcchqum.jpg"
+          ],
+          "stock": 10,
+          "sizes": []
+        }
+      ],
+      "brand": "Chanel",
+      "price": 425,
+      "comparePrice": null,
+      "discount": "",
+      "image": "https://res.cloudinary.com/gdq6wwvf/image/upload/v1793634346/smp-fashion/bmvh9h5rzcgkqilq7rog.jpg",
+      "imagePublicId": "smp-fashion/bmvh9h5rzcgkqilq7rog",
+      "description": "Elegant slingback loafers featuring a chic interlocking CC-inspired gold-tone embellishment, soft suede and leather finishes, and a cozy plush lining for ultimate comfort.\r\n\r\nDesigned with a timeless silhouette and a delicate slingback strap, these beauties are perfect for effortless everyday luxury. 🤎🖤",
+      "details": [
+        "100% Genuine Materials",
+        "Master Craftsmanship",
+        "Free Express UAE Delivery"
+      ],
+      "stock": 15,
+      "featured": true,
+      "badge": "",
+      "seoTitle": "MULES | Chanel UAE Luxury",
+      "seoDescription": "Elegant slingback loafers featuring a chic interlocking CC-inspired gold-tone embellishment, soft suede and leather finishes, and a cozy plush lining for u",
+      "seoKeywords": "MULES, Chanel, luxury fashion UAE, buy Chanel Dubai, order via WhatsApp",
+      "slug": "mules",
+      "createdAt": "2026-11-02T15:45:47.263Z",
+      "updatedAt": "2026-11-02T15:48:25.419Z"
+    },
+    {
+      "id": "prod-1793368649180",
+      "_id": "prod-1793368649180",
+      "title": " Summer Charms Suede Mule",
+      "category": "footwear",
+      "categoryName": "Footwear",
+      "gender": "women",
+      "color": "Dusty Pink",
+      "colorCode": "#c9878d",
+      "sizes": [
+        "35"
+      ],
+      "variants": [
+        {
+          "id": "var-1793368663177-0",
+          "colorName": "Rust Brown",
+          "colorCode": "#A65E3F",
+          "images": [
+            "https://res.cloudinary.com/gdq6wwvf/image/upload/v1793368676/smp-fashion/cslaazzk5wj8vja1vud4.jpg"
+          ],
+          "stock": 10,
+          "sizes": [
+            "35"
+          ]
+        },
+        {
+          "id": "var-1793368663778-1",
+          "colorName": "Classic Black",
+          "colorCode": "#171719",
+          "images": [
+            "https://res.cloudinary.com/gdq6wwvf/image/upload/v1793368733/smp-fashion/e90jtrpicrjmr86bwr5c.jpg"
+          ],
+          "stock": 10,
+          "sizes": [
+            "35"
+          ]
+        },
+        {
+          "id": "var-1793368664185-2",
+          "colorName": "Denim Blue",
+          "colorCode": "\t#52718D",
+          "images": [
+            "https://res.cloudinary.com/gdq6wwvf/image/upload/v1793368757/smp-fashion/b7i0aeobqcueyw2zmzlx.jpg"
+          ],
+          "stock": 10,
+          "sizes": [
+            "35"
+          ]
+        },
+        {
+          "id": "var-1793368664544-3",
+          "colorName": "Light Pink Beige",
+          "colorCode": "#D1B6B0",
+          "images": [
+            "https://res.cloudinary.com/gdq6wwvf/image/upload/v1793368822/smp-fashion/jrplify1ftgjjklnkaw9.jpg"
+          ],
+          "stock": 10,
+          "sizes": [
+            "35"
+          ]
+        },
+        {
+          "id": "var-1793368665276-5",
+          "colorName": "Deep Burgundy",
+          "colorCode": "#501A2A",
+          "images": [
+            "https://res.cloudinary.com/gdq6wwvf/image/upload/v1793368888/smp-fashion/sjbqopi0a4ejwi7zfqdt.jpg"
+          ],
+          "stock": 10,
+          "sizes": [
+            "35"
+          ]
+        }
+      ],
+      "brand": "Loropiana",
+      "price": 375,
+      "comparePrice": null,
+      "discount": "",
+      "image": "https://res.cloudinary.com/gdq6wwvf/image/upload/v1793368648/smp-fashion/vg5mtbnice3v6xyukbki.jpg",
+      "imagePublicId": "smp-fashion/vg5mtbnice3v6xyukbki",
+      "description": "Step into effortless elegance with our stylish suede block heel slippers. Designed with a soft suede finish, chic front bow detailing, and elegant metallic charm accents, these slippers add a touch of luxury to your everyday look.",
+      "details": [
+        "100% Genuine Materials",
+        "Master Craftsmanship",
+        "Free Express UAE Delivery"
+      ],
+      "stock": 15,
+      "featured": true,
+      "badge": "",
+      "seoTitle": "Summer Charms Suede Mule | Loropiana UAE Luxury",
+      "seoDescription": "Step into effortless elegance with our stylish suede block heel slippers. Designed with a soft suede finish, chic front bow detailing, and elegant metallic",
+      "seoKeywords": "Summer Charms Suede Mule, Loropiana, luxury fashion UAE, buy Loropiana Dubai, order via WhatsApp",
+      "slug": "summer-charms-suede-mule",
+      "createdAt": "2026-10-30T13:57:29.180Z",
+      "updatedAt": "2026-10-30T14:04:21.126Z"
+    },
+    {
+      "id": "prod-1793204643361",
+      "_id": "prod-1793204643361",
+      "title": "Oran Sandal",
+      "category": "footwear",
+      "categoryName": "Footwear",
+      "gender": "women",
+      "color": "Blush Pink",
+      "colorCode": "#E8C8D2",
+      "sizes": [
+        "35"
+      ],
+      "variants": [
+        {
+          "id": "var-1793204707626-0",
+          "colorName": "Bottle Green",
+          "colorCode": "#064F40",
+          "images": [
+            "https://res.cloudinary.com/gdq6wwvf/image/upload/v1793204784/smp-fashion/dlf7mw31trb3iwb3y2sp.jpg"
+          ],
+          "stock": 10,
+          "sizes": [
+            "35"
+          ]
+        },
+        {
+          "id": "var-1793204769660-1",
+          "colorName": "Burgundy",
+          "colorCode": "#801F3D",
+          "images": [
+            "https://res.cloudinary.com/gdq6wwvf/image/upload/v1793205462/smp-fashion/epzhzoxrgxsrvtduw4k0.jpg"
+          ],
+          "stock": 10,
+          "sizes": [
+            "35"
+          ]
+        },
+        {
+          "id": "var-1793204818964-2",
+          "colorName": "White with Tan Sole",
+          "colorCode": "#F7F5F0 ",
+          "images": [
+            "https://res.cloudinary.com/gdq6wwvf/image/upload/v1793204874/smp-fashion/w5bvsllnyp2ghhinizvj.jpg"
+          ],
+          "stock": 10,
+          "sizes": [
+            "35"
+          ]
+        },
+        {
+          "id": "var-1793204819411-3",
+          "colorName": "Royal Blue",
+          "colorCode": "#174FA5",
+          "images": [
+            "https://res.cloudinary.com/gdq6wwvf/image/upload/v1793205487/smp-fashion/dcnqz9ud2a5yleyhi50d.jpg"
+          ],
+          "stock": 10,
+          "sizes": [
+            "35"
+          ]
+        },
+        {
+          "id": "var-1793204819721-4",
+          "colorName": "Navy Blue & Silver",
+          "colorCode": "#172B50 ",
+          "images": [
+            "https://res.cloudinary.com/gdq6wwvf/image/upload/v1793205075/smp-fashion/zdef2fmqtyqfypepc6ly.jpg"
+          ],
+          "stock": 10,
+          "sizes": [
+            "35"
+          ]
+        },
+        {
+          "id": "var-1793204819959-5",
+          "colorName": "Metallic Silver",
+          "colorCode": "#C0C0C5",
+          "images": [
+            "https://res.cloudinary.com/gdq6wwvf/image/upload/v1793205090/smp-fashion/r4x481dpwtolkhm1okwb.jpg"
+          ],
+          "stock": 10,
+          "sizes": [
+            "35"
+          ]
+        },
+        {
+          "id": "var-1793204820170-6",
+          "colorName": "Black & Silver",
+          "colorCode": "#1C1C1E ",
+          "images": [
+            "https://res.cloudinary.com/gdq6wwvf/image/upload/v1793205167/smp-fashion/ynxniskgpd2p3u1svjxc.jpg"
+          ],
+          "stock": 10,
+          "sizes": [
+            "35"
+          ]
+        },
+        {
+          "id": "var-1793205776713-7",
+          "colorName": "Tan / Caramel Brown",
+          "colorCode": "#B8754D",
+          "images": [
+            "https://res.cloudinary.com/gdq6wwvf/image/upload/v1793205852/smp-fashion/zz2byocqkfg2rmz1rt3g.jpg"
+          ],
+          "stock": 10,
+          "sizes": [
+            "35"
+          ]
+        },
+        {
+          "id": "var-1793205776881-8",
+          "colorName": "Cream & Brown",
+          "colorCode": "#A66F4B",
+          "images": [
+            "https://res.cloudinary.com/gdq6wwvf/image/upload/v1793205924/smp-fashion/z9x4kzyrztjkdcr4wdtq.jpg"
+          ],
+          "stock": 10,
+          "sizes": [
+            "35"
+          ]
+        },
+        {
+          "id": "var-1793205777105-9",
+          "colorName": "Black & Cream",
+          "colorCode": "#E8DDC7",
+          "images": [],
+          "stock": 10,
+          "sizes": [
+            "35"
+          ]
+        },
+        {
+          "id": "var-1793206168194-10",
+          "colorName": "Dusty Pink",
+          "colorCode": "#D99A9A",
+          "images": [
+            "https://res.cloudinary.com/gdq6wwvf/image/upload/v1793206311/smp-fashion/bjngzdb7toxsrvak2wpw.jpg"
+          ],
+          "stock": 10,
+          "sizes": [
+            "35"
+          ]
+        },
+        {
+          "id": "var-1793206168885-11",
+          "colorName": "Purple",
+          "colorCode": "#913AC4",
+          "images": [
+            "https://res.cloudinary.com/gdq6wwvf/image/upload/v1793206341/smp-fashion/eylirmemke1bobbfwsno.jpg"
+          ],
+          "stock": 10,
+          "sizes": [
+            "35"
+          ]
+        },
+        {
+          "id": "var-1793369352515-12",
+          "colorName": "Dark Chocolate Brown",
+          "colorCode": "#38201F",
+          "images": [
+            "https://res.cloudinary.com/gdq6wwvf/image/upload/v1793369424/smp-fashion/hsducxntor5dnozk9gbg.jpg"
+          ],
+          "stock": 10,
+          "sizes": [
+            "35"
+          ]
+        },
+        {
+          "id": "var-1793369353013-13",
+          "colorName": "Taupe Grey",
+          "colorCode": "#8A8175",
+          "images": [
+            "https://res.cloudinary.com/gdq6wwvf/image/upload/v1793369443/smp-fashion/ootmxjddblhghgdzgmio.jpg"
+          ],
+          "stock": 10,
+          "sizes": [
+            "35"
+          ]
+        },
+        {
+          "id": "var-1793369353542-14",
+          "colorName": "Bright Orange",
+          "colorCode": "#F05A24",
+          "images": [
+            "https://res.cloudinary.com/gdq6wwvf/image/upload/v1793369465/smp-fashion/psblampzfcjeqq1yxwex.jpg"
+          ],
+          "stock": 10,
+          "sizes": [
+            "35"
+          ]
+        },
+        {
+          "id": "var-1793369353974-15",
+          "colorName": "Peach Pink",
+          "colorCode": "#EFAFA5",
+          "images": [
+            "https://res.cloudinary.com/gdq6wwvf/image/upload/v1793369490/smp-fashion/favlzipob9whu3ssyqbb.jpg"
+          ],
+          "stock": 10,
+          "sizes": [
+            "35"
+          ]
+        },
+        {
+          "id": "var-1793369985127-16",
+          "colorName": "Blush Pink",
+          "colorCode": "\t#E8D8DC",
+          "images": [
+            "https://res.cloudinary.com/gdq6wwvf/image/upload/v1793370010/smp-fashion/bnghkrbw2sor0ltvm4vj.jpg"
+          ],
+          "stock": 10,
+          "sizes": [
+            "35"
+          ]
+        },
+        {
+          "id": "var-1793369985452-17",
+          "colorName": "Classic Black",
+          "colorCode": "\t#171719",
+          "images": [
+            "https://res.cloudinary.com/gdq6wwvf/image/upload/v1793370051/smp-fashion/akrsswxhd6y6ynx7azhi.jpg"
+          ],
+          "stock": 10,
+          "sizes": [
+            "35"
+          ]
+        },
+        {
+          "id": "var-1793369985794-18",
+          "colorName": "Black & Beige",
+          "colorCode": "#252322",
+          "images": [
+            "https://res.cloudinary.com/gdq6wwvf/image/upload/v1793370082/smp-fashion/aj2mb6cndanvk7gaxdqo.jpg"
+          ],
+          "stock": 10,
+          "sizes": [
+            "35"
+          ]
+        },
+        {
+          "id": "var-1793369986122-19",
+          "colorName": "Metallic Rose Gold",
+          "colorCode": "#A66B57",
+          "images": [
+            "https://res.cloudinary.com/gdq6wwvf/image/upload/v1793370108/smp-fashion/c7brzw8k33dl7flldstu.jpg"
+          ],
+          "stock": 10,
+          "sizes": [
+            "35"
+          ]
+        },
+        {
+          "id": "var-1793370127531-20",
+          "colorName": "Black with Black Stones",
+          "colorCode": "#151517",
+          "images": [
+            "https://res.cloudinary.com/gdq6wwvf/image/upload/v1793370155/smp-fashion/u97mosf9rotkq2pdcz4u.jpg"
+          ],
+          "stock": 10,
+          "sizes": [
+            "35"
+          ]
+        },
+        {
+          "id": "var-1793370127696-21",
+          "colorName": "Champagne Beige with Stones",
+          "colorCode": "#C6AD91",
+          "images": [
+            "https://res.cloudinary.com/gdq6wwvf/image/upload/v1793370159/smp-fashion/tdxp9xdoi0m30w8pevwt.jpg"
+          ],
+          "stock": 10,
+          "sizes": [
+            "35"
+          ]
+        }
+      ],
+      "brand": "Hermes",
+      "price": 375,
+      "comparePrice": null,
+      "discount": "",
+      "image": "https://res.cloudinary.com/gdq6wwvf/image/upload/v1793204642/smp-fashion/uo5xqvsrjzv4wt2s1xak.jpg",
+      "imagePublicId": "smp-fashion/uo5xqvsrjzv4wt2s1xak",
+      "description": "Step into effortless style with our trendy H-style flat sandals, designed to add a touch of luxury to your everyday look. Featuring a stylish H-shaped strap, a sleek flat sole, and beautiful detailing, these sandals are perfect for both casual outings and special occasions.",
+      "details": [
+        "100% Genuine Materials",
+        "Master Craftsmanship",
+        "Free Express UAE Delivery"
+      ],
+      "stock": 15,
+      "featured": true,
+      "badge": "",
+      "seoTitle": "Oran Sandal | Luxury SMP Fashion UAE",
+      "seoDescription": "Shop Oran Sandal at SMP Super Master Products.",
+      "seoKeywords": "Oran Sandal, luxury UAE, Hermes, designer fashion",
+      "slug": "oran-sandal",
+      "createdAt": "2026-10-28T16:24:03.361Z",
+      "updatedAt": "2026-10-30T14:22:49.497Z"
+    },
+    {
+      "id": "prod-1793203763586",
+      "_id": "prod-1793203763586",
+      "title": "Kelly ",
+      "category": "bags",
+      "categoryName": "Footwear",
+      "gender": "women",
+      "color": "Cognac Brown",
+      "colorCode": "#A66B3F",
+      "sizes": [
+        "25 cm"
+      ],
+      "variants": [
+        {
+          "id": "var-1793203608341-0",
+          "colorName": "Black",
+          "colorCode": "#111111",
+          "images": [
+            "https://res.cloudinary.com/gdq6wwvf/image/upload/v1793203658/smp-fashion/wcckvckso59nz4zo3rpu.jpg"
+          ],
+          "stock": 10,
+          "sizes": [
+            "35 to 45"
+          ]
+        },
+        {
+          "id": "var-1793203656580-1",
+          "colorName": "Blush Pink",
+          "colorCode": "#D9B3C4\t",
+          "images": [
+            "https://res.cloudinary.com/gdq6wwvf/image/upload/v1793203679/smp-fashion/f2ja0uepufrovy3uparv.jpg"
+          ],
+          "stock": 10,
+          "sizes": [
+            "35 to 45"
+          ]
+        },
+        {
+          "id": "var-1793203656733-2",
+          "colorName": "Charcoal Gray",
+          "colorCode": "#424343\t",
+          "images": [
+            "https://res.cloudinary.com/gdq6wwvf/image/upload/v1793203830/smp-fashion/dozriuhci4mgvnonjzkn.jpg"
+          ],
+          "stock": 10,
+          "sizes": [
+            "35 to 45"
+          ]
+        },
+        {
+          "id": "var-1793203834583-3",
+          "colorName": "Burgundy Wine",
+          "colorCode": "#672F3C\t",
+          "images": [
+            "https://res.cloudinary.com/gdq6wwvf/image/upload/v1793203890/smp-fashion/gnqfomu3wvfwftuuqz1w.jpg"
+          ],
+          "stock": 10,
+          "sizes": [
+            "25 cm"
+          ]
+        }
+      ],
+      "brand": "Hermes",
+      "price": 2100,
+      "comparePrice": null,
+      "discount": "",
+      "image": "https://res.cloudinary.com/gdq6wwvf/image/upload/v1793203762/smp-fashion/mxckpa4scbw1eekfnupw.jpg",
+      "imagePublicId": "smp-fashion/mxckpa4scbw1eekfnupw",
+      "description": "Discover timeless elegance with this sophisticated top-handle handbag, featuring a structured silhouette, premium textured finish, a stylish top handle, and elegant gold-tone hardware. The matching detachable shoulder strap offers versatile styling, making it perfect for everyday wear, parties, and special occasions.",
+      "details": [
+        "100% Genuine Materials",
+        "Master Craftsmanship",
+        "Free Express UAE Delivery"
+      ],
+      "stock": 15,
+      "featured": true,
+      "badge": "",
+      "seoTitle": "Kelly 25 cm | Luxury SMP Fashion UAE",
+      "seoDescription": "Shop Kelly 25 cm at SMP Super Master Products.",
+      "seoKeywords": "Kelly 25 cm, luxury UAE, Hermes, designer fashion",
+      "slug": "kelly-25-cm",
+      "createdAt": "2026-10-28T16:09:23.586Z",
+      "updatedAt": "2026-11-06T10:32:35.080Z"
+    },
+    {
+      "id": "prod-1793202945924",
+      "_id": "prod-1793202945924",
+      "title": "CC Suede&ShearlingSlingback Loafers ",
+      "category": "footwear",
+      "categoryName": "Footwear",
+      "gender": "women",
+      "color": "Black",
+      "colorCode": "#111111",
+      "sizes": [
+        "35 to 45"
+      ],
+      "variants": [
+        {
+          "id": "var-1793202893307-0",
+          "colorName": "Camel Tan",
+          "colorCode": "#B58A5B\t",
+          "images": [
+            "https://res.cloudinary.com/gdq6wwvf/image/upload/v1793203308/smp-fashion/ltraqpyfbl0ncslea1jj.jpg"
+          ],
+          "stock": 10,
+          "sizes": [
+            "35 to 45"
+          ]
+        },
+        {
+          "id": "var-1793202968905-1",
+          "colorName": "Taupe Grey",
+          "colorCode": "#93847F\t",
+          "images": [
+            "https://res.cloudinary.com/gdq6wwvf/image/upload/v1793203015/smp-fashion/vypxxdaol8yvoupojtdi.jpg"
+          ],
+          "stock": 10,
+          "sizes": [
+            "35 to 45"
+          ]
+        },
+        {
+          "id": "var-1793202969341-2",
+          "colorName": "Dark Chocolate Brown",
+          "colorCode": "#4A2929\t",
+          "images": [
+            "https://res.cloudinary.com/gdq6wwvf/image/upload/v1793203053/smp-fashion/fo60mqbpsvfcgn24lrmb.jpg"
+          ],
+          "stock": 10,
+          "sizes": [
+            "35 to 45"
+          ]
+        },
+        {
+          "id": "var-1793202969835-3",
+          "colorName": "Cream Beige",
+          "colorCode": "#D8C9AB\t",
+          "images": [
+            "https://res.cloudinary.com/gdq6wwvf/image/upload/v1793203096/smp-fashion/zgp3toxkxgi3qmfiac8k.jpg"
+          ],
+          "stock": 10,
+          "sizes": [
+            "35 to 45"
+          ]
+        }
+      ],
+      "brand": "Chanel",
+      "price": 425,
+      "comparePrice": null,
+      "discount": "",
+      "image": "https://res.cloudinary.com/gdq6wwvf/image/upload/v1793202945/smp-fashion/g4oteag0cztjmugmxvp3.jpg",
+      "imagePublicId": "smp-fashion/g4oteag0cztjmugmxvp3",
+      "description": "Step into comfort and elegance with these chic suede loafers, featuring a soft, plush fur lining to keep your feet warm and cozy. Designed with a classic loafer silhouette and a stunning interlocking logo-style metallic accent, these shoes bring timeless sophistication to your everyday wardrobe.",
+      "details": [
+        "100% Genuine Materials",
+        "Master Craftsmanship",
+        "Free Express UAE Delivery"
+      ],
+      "stock": 15,
+      "featured": true,
+      "badge": "",
+      "seoTitle": "CC Suede&ShearlingSlingback Loafers  | Luxury SMP Fashion UAE",
+      "seoDescription": "Shop CC Suede&ShearlingSlingback Loafers  at SMP Super Master Products.",
+      "seoKeywords": "CC Suede&ShearlingSlingback Loafers , luxury UAE, Hermes, designer fashion",
+      "slug": "cc-suede-shearlingslingback-loafers",
+      "createdAt": "2026-10-28T15:55:45.924Z",
+      "updatedAt": "2026-10-28T16:18:32.184Z"
+    },
+    {
+      "id": "prod-1793202094106",
+      "_id": "prod-1793202094106",
+      "title": "BABYLONE MULES IN SMOOTH LEATHER",
+      "category": "footwear",
+      "categoryName": "Footwear",
+      "gender": "women",
+      "color": "Chocolate Brown",
+      "colorCode": "#4B2927",
+      "sizes": [
+        "35 to 45"
+      ],
+      "variants": [
+        {
+          "id": "var-1793201521239-0",
+          "colorName": "Bronze Metallic",
+          "colorCode": "#986044\t",
+          "images": [
+            "https://res.cloudinary.com/gdq6wwvf/image/upload/v1793201619/smp-fashion/oinvmevb20iizubrife5.jpg"
+          ],
+          "stock": 10,
+          "sizes": [
+            "35 to 45"
+          ]
+        },
+        {
+          "id": "var-1793201658519-2",
+          "colorName": "White",
+          "colorCode": "#FFFFFF",
+          "images": [
+            "https://res.cloudinary.com/gdq6wwvf/image/upload/v1793201725/smp-fashion/shmxt6y479qmyrogvh3o.jpg"
+          ],
+          "stock": 10,
+          "sizes": [
+            "35 to 45"
+          ]
+        },
+        {
+          "id": "var-1793201764033-3",
+          "colorName": "Burnt Orange / Rust",
+          "colorCode": "#A84225\t",
+          "images": [
+            "https://res.cloudinary.com/gdq6wwvf/image/upload/v1793201816/smp-fashion/ei16lbla4uwhnvhcy28n.jpg"
+          ],
+          "stock": 10,
+          "sizes": [
+            "35 to 45"
+          ]
+        },
+        {
+          "id": "var-1793202332373-3",
+          "colorName": "Black",
+          "colorCode": "#111111",
+          "images": [
+            "https://res.cloudinary.com/gdq6wwvf/image/upload/v1793202357/smp-fashion/xcs3jvduwoims19cfp4n.jpg"
+          ],
+          "stock": 10,
+          "sizes": [
+            "35 to 45"
+          ]
+        }
+      ],
+      "brand": "Yvessaintlaurent",
+      "price": 375,
+      "comparePrice": null,
+      "discount": "",
+      "image": "https://res.cloudinary.com/gdq6wwvf/image/upload/v1793202093/smp-fashion/jg4qpdnwjbyr9nz93fkq.jpg",
+      "imagePublicId": "smp-fashion/jg4qpdnwjbyr9nz93fkq",
+      "description": "Step into timeless elegance with these chic pointed-toe mules, featuring beautiful pleated detailing and a luxurious gold-tone statement buckle. Designed with a sleek stiletto heel and an elegant slip-on style, these heels add a sophisticated touch to any outfit. ",
+      "details": [
+        "100% Genuine Materials",
+        "Master Craftsmanship",
+        "Free Express UAE Delivery"
+      ],
+      "stock": 15,
+      "featured": true,
+      "badge": "",
+      "seoTitle": "BABYLONE MULES IN SMOOTH LEATHER | Yvessaintlaurent UAE Luxury",
+      "seoDescription": "Step into timeless elegance with these chic pointed-toe mules, featuring beautiful pleated detailing and a luxurious gold-tone statement buckle. Designed w",
+      "seoKeywords": "BABYLONE MULES IN SMOOTH LEATHER, Yvessaintlaurent, luxury fashion UAE, buy Yvessaintlaurent Dubai, order via WhatsApp",
+      "slug": "babylone-mules-in-smooth-leather",
+      "createdAt": "2026-10-28T15:41:34.106Z",
+      "updatedAt": "2026-10-28T15:46:00.963Z"
     }
   ],
   "orders": [
@@ -249,62 +2500,283 @@
   ],
   "brands": [
     {
-      "id": "brand-1",
-      "name": "Richard Mille",
-      "slug": "richard-mille",
-      "logo": "/IMG_9307.PNG",
-      "description": "Ultra-high-end luxury Swiss watches and horological innovation"
+      "id": "brand-1793115282048",
+      "_id": "brand-1793115282048",
+      "name": "ALALIA",
+      "slug": "alalia",
+      "description": "",
+      "logo": "https://res.cloudinary.com/gdq6wwvf/image/upload/v1793115269/smp-fashion/tssqinl4svlg0r3yfk2j.png",
+      "createdAt": "2026-10-27T15:34:42.048Z"
     },
     {
-      "id": "brand-2",
+      "id": "brand-1793115296997",
+      "_id": "brand-1793115296997",
+      "name": "Aquazzura",
+      "slug": "aquazzura",
+      "description": "",
+      "logo": "https://res.cloudinary.com/gdq6wwvf/image/upload/v1793115294/smp-fashion/auaij9vn7pjgzjzgne23.png",
+      "createdAt": "2026-10-27T15:34:56.997Z"
+    },
+    {
+      "id": "brand-1793115312774",
+      "_id": "brand-1793115312774",
+      "name": "Audemars piguet",
+      "slug": "audemars-piguet",
+      "description": "",
+      "logo": "https://res.cloudinary.com/gdq6wwvf/image/upload/v1793115310/smp-fashion/hu1j3wyci2snr0w3lfbz.png",
+      "createdAt": "2026-10-27T15:35:12.775Z"
+    },
+    {
+      "id": "brand-1793115328630",
+      "_id": "brand-1793115328630",
       "name": "Bvlgari",
       "slug": "bvlgari",
-      "logo": "/IMG_9308.PNG",
-      "description": "Iconic Italian luxury master jeweler and grand complication horology"
+      "description": "",
+      "logo": "https://res.cloudinary.com/gdq6wwvf/image/upload/v1793115323/smp-fashion/hqipa71qwzuplppsdo5n.png",
+      "createdAt": "2026-10-27T15:35:28.630Z"
     },
     {
-      "id": "brand-3",
-      "name": "Omega",
-      "slug": "omega",
-      "logo": "/IMG_9309.PNG",
-      "description": "Prestigious Swiss precision timepieces and master chronometers"
+      "id": "brand-1793115363445",
+      "_id": "brand-1793115363445",
+      "name": "Cartiar",
+      "slug": "cartiar",
+      "description": "",
+      "logo": "https://res.cloudinary.com/gdq6wwvf/image/upload/v1793115345/smp-fashion/vtk17tn1nvugrlvws8sy.png",
+      "createdAt": "2026-10-27T15:36:03.445Z"
     },
     {
-      "id": "brand-4",
-      "name": "Chopard",
+      "id": "brand-1793115386362",
+      "_id": "brand-1793115386362",
+      "name": "Celine",
+      "slug": "celine",
+      "description": "",
+      "logo": "https://res.cloudinary.com/gdq6wwvf/image/upload/v1793115378/smp-fashion/hogw9gdngtu566ivyma8.png",
+      "createdAt": "2026-10-27T15:36:26.363Z"
+    },
+    {
+      "id": "brand-1793115412610",
+      "_id": "brand-1793115412610",
+      "name": "Chanel",
+      "slug": "chanel",
+      "description": "",
+      "logo": "https://res.cloudinary.com/gdq6wwvf/image/upload/v1793115408/smp-fashion/hff7j4lrned8ruatdgdp.png",
+      "createdAt": "2026-10-27T15:36:52.610Z"
+    },
+    {
+      "id": "brand-1793115430530",
+      "_id": "brand-1793115430530",
+      "name": "Chaumet",
+      "slug": "chaumet",
+      "description": "",
+      "logo": "https://res.cloudinary.com/gdq6wwvf/image/upload/v1793115427/smp-fashion/su990sah93gvdpsocfeg.png",
+      "createdAt": "2026-10-27T15:37:10.530Z"
+    },
+    {
+      "id": "brand-1793115447842",
+      "_id": "brand-1793115447842",
+      "name": "CHOPARD",
       "slug": "chopard",
-      "logo": "/IMG_9310.PNG",
-      "description": "Exquisite artisan Swiss luxury watches and high jewelry"
+      "description": "",
+      "logo": "https://res.cloudinary.com/gdq6wwvf/image/upload/v1793115445/smp-fashion/zprdnwbyzq5m19nf8rdm.png",
+      "createdAt": "2026-10-27T15:37:27.842Z"
     },
     {
-      "id": "brand-5",
-      "name": "Chaumet Paris",
-      "slug": "chaumet-paris",
-      "logo": "/IMG_9311.PNG",
-      "description": "Place Vendôme Parisian royal jeweler and high-end watchmaker"
+      "id": "brand-1793115464132",
+      "_id": "brand-1793115464132",
+      "name": "Dior",
+      "slug": "dior",
+      "description": "",
+      "logo": "https://res.cloudinary.com/gdq6wwvf/image/upload/v1793115460/smp-fashion/pdix5f8zinvbuppf10xn.png",
+      "createdAt": "2026-10-27T15:37:44.132Z"
     },
     {
-      "id": "brand-6",
+      "id": "brand-1793115479176",
+      "_id": "brand-1793115479176",
+      "name": "DOLCE & GABBANA",
+      "slug": "dolce-gabbana",
+      "description": "",
+      "logo": "https://res.cloudinary.com/gdq6wwvf/image/upload/v1793115476/smp-fashion/wekdzdi0reccccdp0uoo.png",
+      "createdAt": "2026-10-27T15:37:59.176Z"
+    },
+    {
+      "id": "brand-1793115497626",
+      "_id": "brand-1793115497626",
+      "name": "Gina",
+      "slug": "gina",
+      "description": "",
+      "logo": "https://res.cloudinary.com/gdq6wwvf/image/upload/v1793115494/smp-fashion/dbcxl40te6mlhak984p6.png",
+      "createdAt": "2026-10-27T15:38:17.626Z"
+    },
+    {
+      "id": "brand-1793115543866",
+      "_id": "brand-1793115543866",
       "name": "Graff",
       "slug": "graff",
-      "logo": "/IMG_9312.PNG",
-      "description": "Unrivaled high-jewelry maison and diamond-set master horology"
-    },
-    {
-      "id": "brand-7",
-      "name": "SMP Luxury",
-      "slug": "smp-luxury",
-      "logo": "/smp-logo.png",
-      "description": "SMP Atelier flagship handcrafted footwear and fine leather"
-    },
-    {
-      "id": "brand-1792860330192",
-      "_id": "brand-1792860330192",
-      "name": "bib",
-      "slug": "bib",
       "description": "",
-      "logo": "https://res.cloudinary.com/gdq6wwvf/image/upload/v1792860327/smp-fashion/n54p6eekskngppietbii.png",
-      "createdAt": "2026-10-24T16:45:30.192Z"
+      "logo": "https://res.cloudinary.com/gdq6wwvf/image/upload/v1793115540/smp-fashion/m6hk8kq91ja9pfgxysz2.png",
+      "createdAt": "2026-10-27T15:39:03.866Z"
+    },
+    {
+      "id": "brand-1793115558751",
+      "_id": "brand-1793115558751",
+      "name": "Gucci",
+      "slug": "gucci",
+      "description": "",
+      "logo": "https://res.cloudinary.com/gdq6wwvf/image/upload/v1793115556/smp-fashion/dypsc3bor1zhiwn1gi5r.png",
+      "createdAt": "2026-10-27T15:39:18.751Z"
+    },
+    {
+      "id": "brand-1793115578476",
+      "_id": "brand-1793115578476",
+      "name": "Hermes",
+      "slug": "hermes",
+      "description": "",
+      "logo": "https://res.cloudinary.com/gdq6wwvf/image/upload/v1793115573/smp-fashion/jopnrxvcm3rxc7fybel7.png",
+      "createdAt": "2026-10-27T15:39:38.476Z"
+    },
+    {
+      "id": "brand-1793115618440",
+      "_id": "brand-1793115618440",
+      "name": "Hermes",
+      "slug": "hermes",
+      "description": "",
+      "logo": "https://res.cloudinary.com/gdq6wwvf/image/upload/v1793115613/smp-fashion/eemczvip3pqvqvfgtrga.png",
+      "createdAt": "2026-10-27T15:40:18.440Z"
+    },
+    {
+      "id": "brand-1793115655929",
+      "_id": "brand-1793115655929",
+      "name": "Loropiana",
+      "slug": "loropiana",
+      "description": "",
+      "logo": "https://res.cloudinary.com/gdq6wwvf/image/upload/v1793115649/smp-fashion/dxempwllhdok7prwmuf9.png",
+      "createdAt": "2026-10-27T15:40:55.929Z"
+    },
+    {
+      "id": "brand-1793115697372",
+      "_id": "brand-1793115697372",
+      "name": "luise vuitton",
+      "slug": "luise-vuitton",
+      "description": "",
+      "logo": "https://res.cloudinary.com/gdq6wwvf/image/upload/v1793115683/smp-fashion/ogojkibfm4yh5btjopkx.png",
+      "createdAt": "2026-10-27T15:41:37.372Z"
+    },
+    {
+      "id": "brand-1793115722958",
+      "_id": "brand-1793115722958",
+      "name": "maison Margiela",
+      "slug": "maison-margiela",
+      "description": "",
+      "logo": "https://res.cloudinary.com/gdq6wwvf/image/upload/v1793115719/smp-fashion/c42visavv6erwjopnikk.png",
+      "createdAt": "2026-10-27T15:42:02.958Z"
+    },
+    {
+      "id": "brand-1793115763835",
+      "_id": "brand-1793115763835",
+      "name": "Miu Miu",
+      "slug": "miu-miu",
+      "description": "",
+      "logo": "https://res.cloudinary.com/gdq6wwvf/image/upload/v1793115761/smp-fashion/trki79rpj6so9lcebcr1.png",
+      "createdAt": "2026-10-27T15:42:43.835Z"
+    },
+    {
+      "id": "brand-1793115817921",
+      "_id": "brand-1793115817921",
+      "name": "Omega",
+      "slug": "omega",
+      "description": "",
+      "logo": "https://res.cloudinary.com/gdq6wwvf/image/upload/v1793115811/smp-fashion/bl4zdyqczintvbhmyabs.png",
+      "createdAt": "2026-10-27T15:43:37.921Z"
+    },
+    {
+      "id": "brand-1793115850701",
+      "_id": "brand-1793115850701",
+      "name": "Patek",
+      "slug": "patek",
+      "description": "",
+      "logo": "https://res.cloudinary.com/gdq6wwvf/image/upload/v1793115844/smp-fashion/fovwmvtfnionqxw1kyjy.png",
+      "createdAt": "2026-10-27T15:44:10.701Z"
+    },
+    {
+      "id": "brand-1793115877923",
+      "_id": "brand-1793115877923",
+      "name": "Prada",
+      "slug": "prada",
+      "description": "",
+      "logo": "https://res.cloudinary.com/gdq6wwvf/image/upload/v1793115871/smp-fashion/mevvczhnc1szdsee5a9r.png",
+      "createdAt": "2026-10-27T15:44:37.923Z"
+    },
+    {
+      "id": "brand-1793115907118",
+      "_id": "brand-1793115907118",
+      "name": "RENE CAOVILLA",
+      "slug": "rene-caovilla",
+      "description": "",
+      "logo": "https://res.cloudinary.com/gdq6wwvf/image/upload/v1793115898/smp-fashion/uh3owsmaxnzdwbtmghun.png",
+      "createdAt": "2026-10-27T15:45:07.118Z"
+    },
+    {
+      "id": "brand-1793115945034",
+      "_id": "brand-1793115945034",
+      "name": "Richard Milli",
+      "slug": "richard-milli",
+      "description": "",
+      "logo": "https://res.cloudinary.com/gdq6wwvf/image/upload/v1793115936/smp-fashion/eiuk1yxv7xnblaqfrxki.png",
+      "createdAt": "2026-10-27T15:45:45.034Z"
+    },
+    {
+      "id": "brand-1793115990603",
+      "_id": "brand-1793115990603",
+      "name": "Vacheron",
+      "slug": "vacheron",
+      "description": "",
+      "logo": "https://res.cloudinary.com/gdq6wwvf/image/upload/v1793115984/smp-fashion/reaoqhy2pcj2nhivqrt1.png",
+      "createdAt": "2026-10-27T15:46:30.603Z"
+    },
+    {
+      "id": "brand-1793116045656",
+      "_id": "brand-1793116045656",
+      "name": "Yvessaintlaurent",
+      "slug": "yvessaintlaurent",
+      "description": "",
+      "logo": "https://res.cloudinary.com/gdq6wwvf/image/upload/v1793116026/smp-fashion/jfuydtjxa4w7llq3bwjg.png",
+      "createdAt": "2026-10-27T15:47:25.656Z"
+    },
+    {
+      "id": "brand-1793116102903",
+      "_id": "brand-1793116102903",
+      "name": "Zegna",
+      "slug": "zegna",
+      "description": "",
+      "logo": "https://res.cloudinary.com/gdq6wwvf/image/upload/v1793116069/smp-fashion/lwi7iwlj5d55qqjzog55.png",
+      "createdAt": "2026-10-27T15:48:22.903Z"
+    },
+    {
+      "id": "brand-1793635688370",
+      "_id": "brand-1793635688370",
+      "name": "Christian Louboutin ",
+      "slug": "christian-louboutin",
+      "description": "",
+      "logo": "https://res.cloudinary.com/gdq6wwvf/image/upload/v1793635681/smp-fashion/lao8478ms8puvhdwpeuq.png",
+      "createdAt": "2026-11-02T16:08:08.370Z"
+    },
+    {
+      "id": "brand-1793889991954",
+      "_id": "brand-1793889991954",
+      "name": "Rolex",
+      "slug": "rolex",
+      "description": "",
+      "logo": "https://res.cloudinary.com/gdq6wwvf/image/upload/v1793889978/smp-fashion/hjxujargu0d9vgpfbicz.png",
+      "createdAt": "2026-11-05T14:46:31.954Z"
+    },
+    {
+      "id": "brand-1794060206772",
+      "_id": "brand-1794060206772",
+      "name": "Valentino ",
+      "slug": "valentino",
+      "description": "",
+      "logo": "",
+      "createdAt": "2026-11-07T14:03:26.772Z"
     }
   ]
 }

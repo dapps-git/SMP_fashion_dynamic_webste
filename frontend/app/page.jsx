@@ -544,11 +544,8 @@ Hello SMP, I would like to order these items from my shopping bag.`;
         method: 'POST',
         headers: { 'Content-Type': 'application/json' },
         body: JSON.stringify({
-          customerName,
-          customerPhone,
-          deliveryAddress,
-          emirate,
-          notes,
+          customerName: customerName.trim(),
+          customerPhone: customerPhone.trim(),
           items: orderItems,
           totalPrice: totalAmount
         })
@@ -574,36 +571,30 @@ ${itemsList}
 ━━━━━━━━━━━━━━━━━━━━━
 💰 *Total Order Amount:* AED ${totalAmount}
 
-📍 *Customer Delivery Address:*
-*Name:* ${customerName}
-*Phone:* ${customerPhone}
-*Address:* ${deliveryAddress}
-*Emirate:* ${emirate}
-*Special Instructions:* ${notes || 'None'}
+👤 *Customer Details:*
+*Name:* ${customerName.trim()}
+*Phone:* ${customerPhone.trim()}
 ━━━━━━━━━━━━━━━━━━━━━
 
-Please confirm my shopping bag order and arrange delivery. Thank you!`;
+Please confirm my shopping bag order. Thank you!`;
     } else {
       formattedMessage =
         `🛍️ *NEW ORDER - SMP Super Master Products*
 ━━━━━━━━━━━━━━━━━━━━━
 *Product:* ${orderModalProduct.title}
-*Category:* ${orderModalProduct.categoryName || orderModalProduct.category}${orderModalProduct.color ? `\n*Color:* ${orderModalProduct.color}` : ''}${orderSize ? `\n*Size:* ${orderSize}` : ''}
+*Brand:* ${orderModalProduct.brand || 'SMP Luxury'}${orderModalProduct.color ? `\n*Color:* ${orderModalProduct.color}` : ''}${orderSize ? `\n*Size:* ${orderSize}` : ''}
 *Quantity:* ${quantity}
 *Price:* AED ${orderModalProduct.price}
 *Total Amount:* AED ${totalAmount}
 
 📸 *Product Image:* ${orderModalProduct.image}
 
-📍 *Customer Shipping Details:*
-*Name:* ${customerName}
-*Phone:* ${customerPhone}
-*Address:* ${deliveryAddress}
-*Emirate:* ${emirate}
-*Special Instructions:* ${notes || 'None'}
+👤 *Customer Details:*
+*Name:* ${customerName.trim()}
+*Phone:* ${customerPhone.trim()}
 ━━━━━━━━━━━━━━━━━━━━━
 
-Please confirm my order and arrange delivery. Thank you!`;
+Please confirm my order. Thank you!`;
     }
 
     const whatsappUrl = `https://wa.me/${WHATSAPP_NUMBER}?text=${encodeURIComponent(formattedMessage)}`;
@@ -1770,7 +1761,7 @@ Please confirm my order and arrange delivery. Thank you!`;
                   </div>
 
                   {/* WhatsApp Mobile Number */}
-                  <div className="form-field">
+                  <div className="form-field" style={{ marginBottom: '16px' }}>
                     <label className="field-label">WhatsApp Mobile Number *</label>
                     <input
                       type="tel"
@@ -1779,51 +1770,6 @@ Please confirm my order and arrange delivery. Thank you!`;
                       onChange={(e) => setCustomerPhone(e.target.value)}
                       placeholder="+971 50 123 4567"
                       required
-                    />
-                  </div>
-
-                  {/* Emirate & City */}
-                  <div className="form-field">
-                    <label className="field-label">Emirate / City *</label>
-                    <select
-                      className="field-select"
-                      value={emirate}
-                      onChange={(e) => setEmirate(e.target.value)}
-                      required
-                    >
-                      <option value="Dubai">Dubai</option>
-                      <option value="Abu Dhabi">Abu Dhabi</option>
-                      <option value="Sharjah">Sharjah</option>
-                      <option value="Ajman">Ajman</option>
-                      <option value="Ras Al Khaimah">Ras Al Khaimah</option>
-                      <option value="Fujairah">Fujairah</option>
-                      <option value="Umm Al Quwain">Umm Al Quwain</option>
-                      <option value="Al Ain">Al Ain</option>
-                    </select>
-                  </div>
-
-                  {/* Full Delivery Address */}
-                  <div className="form-field">
-                    <label className="field-label">Delivery Address (Villa / Apartment / Street) *</label>
-                    <textarea
-                      rows={2}
-                      className="field-textarea"
-                      value={deliveryAddress}
-                      onChange={(e) => setDeliveryAddress(e.target.value)}
-                      placeholder="Villa 14, Al Safa 2, Jumeirah"
-                      required
-                    />
-                  </div>
-
-                  {/* Delivery Notes */}
-                  <div className="form-field">
-                    <label className="field-label">Special Delivery Instructions (Optional)</label>
-                    <input
-                      type="text"
-                      className="field-input"
-                      value={notes}
-                      onChange={(e) => setNotes(e.target.value)}
-                      placeholder="e.g. Call before arrival, leave with reception"
                     />
                   </div>
 

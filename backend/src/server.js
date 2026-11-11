@@ -188,7 +188,7 @@ async function processUploadedFile(file, req) {
 async function syncAdminUser() {
   try {
     const email = (process.env.ADMIN_EMAIL || 'fashionauraadmin@gmail.com').toLowerCase().trim();
-    const DEFAULT_HASH = '$2b$10$tbYy3u01G9pojkblapphkOCLmcxMVjtar8kpb5CSoLkR.SA87R9pu';
+    const DEFAULT_HASH = '$2b$10$uWEEHiQt3hb.gKMCfoTd4OBanBa2bgoO2jVrbyb1hciWqkyvFfNYa';
     const passwordHash = process.env.ADMIN_PASSWORD_HASH || DEFAULT_HASH;
     const name = process.env.ADMIN_NAME || 'Fashion Aura Admin';
 
@@ -227,21 +227,26 @@ async function connectDB() {
 // ─── Seed Initial Categories & Products if DB is empty ────────
 async function seedInitialData() {
   try {
-    const catCount = await Category.countDocuments();
-    if (catCount > 0) return;
-
-    console.log('📦 Seeding initial catalog data to MongoDB...');
     const dbData = fileDb.getDb();
-    if (dbData.categories && dbData.categories.length > 0) {
+    
+    // Seed categories if empty
+    const catCount = await Category.countDocuments();
+    if (catCount === 0 && dbData.categories && dbData.categories.length > 0) {
+      console.log('📦 Seeding categories from local db to MongoDB...');
       await Category.insertMany(dbData.categories.map(c => ({
         name: c.name,
         slug: c.slug,
-        description: c.description,
-        image: c.image,
+        description: c.description || '',
+        image: c.image || '',
         itemCount: c.itemCount || 0
       })));
+      console.log('✅ Categories seeded to MongoDB');
     }
-    if (dbData.products && dbData.products.length > 0) {
+
+    // Seed products if empty
+    const prodCount = await Product.countDocuments();
+    if (prodCount === 0 && dbData.products && dbData.products.length > 0) {
+      console.log('📦 Seeding products with variants from local db to MongoDB...');
       await Product.insertMany(dbData.products.map(p => ({
         title: p.title,
         category: p.category,
@@ -249,17 +254,28 @@ async function seedInitialData() {
         brand: p.brand || 'SMP Luxury',
         price: p.price,
         comparePrice: p.comparePrice,
-        discount: p.discount,
-        image: p.image,
-        description: p.description,
+        discount: p.discount || '',
+        image: p.image || '',
+        imagePublicId: p.imagePublicId || '',
+        description: p.description || '',
         details: p.details || [],
-        stock: p.stock || 10,
-        badge: p.badge || 'New'
+        stock: p.stock !== undefined ? p.stock : 10,
+        gender: p.gender || '',
+        color: p.color || '',
+        colorCode: p.colorCode || '#111111',
+        sizes: p.sizes || [],
+        variants: p.variants || [],
+        featured: p.featured !== undefined ? p.featured : true,
+        badge: p.badge || '',
+        seoTitle: p.seoTitle || '',
+        seoDescription: p.seoDescription || '',
+        seoKeywords: p.seoKeywords || '',
+        slug: p.slug || ''
       })));
+      console.log('✅ Products with variants seeded to MongoDB');
     }
-    console.log('✅ Initial catalog seeded to MongoDB');
   } catch (e) {
-    console.warn('Seed skipped:', e.message);
+    console.warn('Seed skipped or failed:', e.message);
   }
 }
 
@@ -298,8 +314,8 @@ app.post('/api/auth/login', async (req, res) => {
     let adminName = adminDoc ? adminDoc.name : (process.env.ADMIN_NAME || 'Fashion Aura Admin');
     let adminEmail = adminDoc ? adminDoc.email : (process.env.ADMIN_EMAIL || 'fashionauraadmin@gmail.com');
 
-    // Default fallback secure bcrypt hash for fashionauraadmin#8989
-    const DEFAULT_HASH = '$2b$10$tbYy3u01G9pojkblapphkOCLmcxMVjtar8kpb5CSoLkR.SA87R9pu';
+    // Default fallback secure bcrypt hash
+    const DEFAULT_HASH = '$2b$10$uWEEHiQt3hb.gKMCfoTd4OBanBa2bgoO2jVrbyb1hciWqkyvFfNYa';
     const envEmail = (process.env.ADMIN_EMAIL || 'fashionauraadmin@gmail.com').toLowerCase().trim();
     const envHash = process.env.ADMIN_PASSWORD_HASH || DEFAULT_HASH;
 
@@ -331,8 +347,8 @@ app.post('/api/auth/login', async (req, res) => {
       isMatch = (passInput === passwordHash);
     }
 
-    // Self-healing: If MongoDB had a stale/corrupted hash from earlier, also check DEFAULT_HASH or direct password
-    if (!isMatch && (passInput === 'fashionauraadmin#8989' || await bcrypt.compare(passInput, DEFAULT_HASH))) {
+    // If needed, check against default bcrypt hash
+    if (!isMatch && await bcrypt.compare(passInput, DEFAULT_HASH)) {
       isMatch = true;
       if (adminDoc) {
         adminDoc.password = DEFAULT_HASH;
