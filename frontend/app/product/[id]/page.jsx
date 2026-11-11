@@ -5,6 +5,7 @@ import { useParams, useRouter } from 'next/navigation';
 import Link from 'next/link';
 import {
   ArrowLeft,
+  ArrowRight,
   ShoppingBag,
   Search,
   Menu,
@@ -106,6 +107,7 @@ export default function ProductInnerPage() {
 
   const [product, setProduct] = useState(null);
   const [categories, setCategories] = useState([]);
+  const [allProducts, setAllProducts] = useState([]);
   const [loading, setLoading] = useState(true);
   const [selectedVariant, setSelectedVariant] = useState(null);
   const [activeImageIndex, setActiveImageIndex] = useState(0);
@@ -146,12 +148,36 @@ export default function ProductInnerPage() {
     return cart.reduce((sum, item) => sum + (item.price || 0) * (item.quantity || 1), 0);
   }, [cart]);
 
-  // Fetch product & categories
+  // Fetch product, categories & all products (for live search)
   useEffect(() => {
     if (!id) return;
     fetchProduct();
     fetchCategories();
+    fetchAllProducts();
   }, [id]);
+
+  const fetchAllProducts = async () => {
+    try {
+      const res = await fetch(`${API_BASE}/products`);
+      if (res.ok) {
+        const data = await res.json();
+        setAllProducts(Array.isArray(data) ? data : (data.products || []));
+      }
+    } catch (e) {}
+  };
+
+  const liveSearchResults = useMemo(() => {
+    const q = (searchQuery || '').trim().toLowerCase();
+    if (!q) return [];
+    return allProducts.filter((p) => {
+      const title = (p.title || '').toLowerCase();
+      const brand = (p.brand || '').toLowerCase();
+      const cat = (p.category || '').toLowerCase();
+      const desc = (p.description || '').toLowerCase();
+      const color = (p.color || '').toLowerCase();
+      return title.includes(q) || brand.includes(q) || cat.includes(q) || desc.includes(q) || color.includes(q);
+    });
+  }, [searchQuery, allProducts]);
 
   const fetchCategories = async () => {
     try {
@@ -487,23 +513,123 @@ Please confirm my order. Thank you!`;
         </div>
       </header>
 
-      {/* Floating Search Modal */}
+      {/* Full Screen White Background Live Search Modal */}
       {searchOpen && (
-        <div className="search-modal-backdrop" onClick={() => setSearchOpen(false)}>
-          <div className="search-modal-pill" onClick={(e) => e.stopPropagation()}>
-            <Search size={18} color="#66300F" />
-            <form onSubmit={handleSearchSubmit} style={{ flex: 1 }}>
-              <input
-                type="text"
-                placeholder="Search luxury heels, bags, watches..."
-                value={searchQuery}
-                onChange={(e) => setSearchQuery(e.target.value)}
-                autoFocus
-              />
-            </form>
-            <button onClick={() => setSearchOpen(false)} style={{ background: 'none', border: 'none', cursor: 'pointer' }}>
-              <X size={18} />
-            </button>
+        <div
+          id="searchModalOverlay"
+          className="search-modal-backdrop"
+          onClick={() => setSearchOpen(false)}
+          role="dialog"
+          aria-modal="true"
+          aria-label="Search products"
+        >
+          <div className="search-modal-inner" onClick={(e) => e.stopPropagation()}>
+            <div className="search-modal-bar-row">
+              <div className="search-modal-pill">
+                <Search size={19} className="search-modal-icon" />
+                <input
+                  id="searchModalInput"
+                  type="text"
+                  value={searchQuery}
+                  onChange={(e) => setSearchQuery(e.target.value)}
+                  placeholder="Search luxury heels, bags, watches..."
+                  className="search-modal-input"
+                  autoFocus
+                  onKeyDown={(e) => {
+                    if (e.key === 'Escape') setSearchOpen(false);
+                  }}
+                />
+                {searchQuery && (
+                  <button
+                    type="button"
+                    onClick={() => setSearchQuery('')}
+                    className="search-modal-clear-btn"
+                    aria-label="Clear search"
+                  >
+                    <X size={16} />
+                  </button>
+                )}
+              </div>
+              <button
+                type="button"
+                className="search-modal-close-text-btn"
+                onClick={() => setSearchOpen(false)}
+              >
+                Cancel
+              </button>
+            </div>
+
+            {/* Popular quick searches when query is empty */}
+            {!searchQuery.trim() && (
+              <div className="search-quick-tags-wrap">
+                <span className="search-quick-tags-label">Popular Searches</span>
+                <div className="search-quick-tags-list">
+                  {['Heels', 'Bags', 'Watches', 'Dior', 'Chanel', 'Valentino', 'Louboutin'].map((tag) => (
+                    <button
+                      key={tag}
+                      type="button"
+                      className="search-quick-tag"
+                      onClick={() => setSearchQuery(tag)}
+                    >
+                      {tag}
+                    </button>
+                  ))}
+                </div>
+              </div>
+            )}
+
+            {/* Live Search Results List on White Background */}
+            {searchQuery.trim() && (
+              <div className="search-results-section">
+                <div className="search-results-header">
+                  {liveSearchResults.length > 0
+                    ? `Found ${liveSearchResults.length} product${liveSearchResults.length > 1 ? 's' : ''} for "${searchQuery}"`
+                    : `No products found for "${searchQuery}"`}
+                </div>
+
+                {liveSearchResults.length > 0 ? (
+                  <div className="search-results-list">
+                    {liveSearchResults.map((item) => (
+                      <Link
+                        key={item.id}
+                        href={`/product/${item.id}`}
+                        onClick={() => {
+                          setSearchOpen(false);
+                          setSearchQuery('');
+                        }}
+                        className="search-result-item"
+                      >
+                        <img
+                          src={item.image}
+                          alt={item.title}
+                          className="search-result-img"
+                        />
+                        <div className="search-result-info">
+                          <div className="search-result-brand">{item.brand || 'SMP Luxury'}</div>
+                          <div className="search-result-title">{item.title}</div>
+                          <div className="search-result-price-row">
+                            <span className="search-result-price">AED {item.price}</span>
+                            {item.stock > 0 && (
+                              <span className="search-result-stock">In Stock</span>
+                            )}
+                          </div>
+                        </div>
+                        <ArrowRight size={16} color="#A45A28" />
+                      </Link>
+                    ))}
+                  </div>
+                ) : (
+                  <div className="search-no-results">
+                    <p style={{ fontSize: '15px', color: '#6B7280', marginBottom: '8px' }}>
+                      We couldn't find any products matching "<strong>{searchQuery}</strong>".
+                    </p>
+                    <p style={{ fontSize: '13px', color: '#9CA3AF' }}>
+                      Try searching with another keyword like <em>Dior</em>, <em>Chanel</em>, <em>Slingback</em>, or <em>Watch</em>.
+                    </p>
+                  </div>
+                )}
+              </div>
+            )}
           </div>
         </div>
       )}
@@ -545,8 +671,8 @@ Please confirm my order. Thank you!`;
         </>
       )}
 
-      {/* Back to Collections Bar (Exact match to reference top left) */}
-      <div className="wide-container" style={{ padding: '24px 24px 8px' }}>
+      {/* Back to Collections Bar */}
+      <div className="product-inner-container" style={{ paddingBottom: '0' }}>
         <button
           onClick={() => router.back()}
           className="product-back-btn"
@@ -556,8 +682,8 @@ Please confirm my order. Thank you!`;
         </button>
       </div>
 
-      {/* Main Product Showcase Section (Exact match to uploaded image) */}
-      <div className="wide-container" style={{ padding: '16px 24px 80px' }}>
+      {/* Main Product Showcase Section */}
+      <div className="product-inner-container">
         <div className="product-inner-grid">
           
           {/* LEFT: GALLERY WITH VERTICAL THUMBNAIL STRIP & EXPAND ICON */}
@@ -623,11 +749,11 @@ Please confirm my order. Thank you!`;
               </span>
             </div>
 
-            {/* Color Selection - All Available Colors in Single Horizontal Line (No image cards) */}
+            {/* Color Selection - Circle Swatch with Color Name Underneath */}
             {colorOptions && colorOptions.length > 0 && (
               <div className="product-color-section">
                 <label className="product-section-label">
-                  Color: <span style={{ fontWeight: '500', color: '#5A4A3E' }}>{activeColor || 'Default'}</span>
+                  Color:
                 </label>
 
                 <div className="product-colors-line">
@@ -638,19 +764,20 @@ Please confirm my order. Thank you!`;
                         key={opt.id}
                         type="button"
                         onClick={() => handleSelectVariant(opt)}
-                        className={`product-color-pill ${isSelected ? 'active' : ''}`}
+                        className={`product-color-chip ${isSelected ? 'active' : ''}`}
                         title={opt.colorName}
                       >
                         <span
-                          className="product-color-dot"
+                          className="product-color-circle"
                           style={{
                             backgroundColor: opt.colorCode || '#2D1E12'
                           }}
-                        />
-                        <span className="product-color-pill-text">{opt.colorName}</span>
-                        {isSelected && (
-                          <Check size={12} strokeWidth={3} className="product-color-check-icon" />
-                        )}
+                        >
+                          {isSelected && (
+                            <Check size={13} strokeWidth={3} className="product-color-check-icon" />
+                          )}
+                        </span>
+                        <span className="product-color-name-under">{opt.colorName}</span>
                       </button>
                     );
                   })}
@@ -823,7 +950,8 @@ Please confirm my order. Thank you!`;
                             AED {product.price}
                           </span>
                           {activeColor && (
-                            <span style={{ fontSize: '11px', color: '#66300F', background: '#F4EFE6', border: '1px solid #E8DFD0', padding: '1px 8px', borderRadius: '4px', fontWeight: '600' }}>
+                            <span style={{ fontSize: '11.5px', color: '#5A2A10', background: '#F4EFE6', border: '1px solid #E2D7C5', padding: '2px 8px', borderRadius: '4px', fontWeight: '700', display: 'inline-flex', alignItems: 'center', gap: '5px' }}>
+                              <span style={{ width: '8px', height: '8px', borderRadius: '50%', background: currentVariant?.colorCode || '#66300F', display: 'inline-block' }} />
                               Color: {activeColor}
                             </span>
                           )}

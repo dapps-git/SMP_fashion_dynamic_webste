@@ -658,6 +658,19 @@ Please confirm my order. Thank you!`;
     return true;
   });
 
+  const liveSearchResults = useMemo(() => {
+    const q = (searchQuery || '').trim().toLowerCase();
+    if (!q) return [];
+    return products.filter((p) => {
+      const title = (p.title || '').toLowerCase();
+      const brand = (p.brand || '').toLowerCase();
+      const cat = (p.category || '').toLowerCase();
+      const desc = (p.description || '').toLowerCase();
+      const color = (p.color || '').toLowerCase();
+      return title.includes(q) || brand.includes(q) || cat.includes(q) || desc.includes(q) || color.includes(q);
+    });
+  }, [searchQuery, products]);
+
   const activeFilterCount = (activeBrand !== 'all' ? 1 : 0) + (priceFilter !== 'all' ? 1 : 0);
 
   // Dynamic SEO JSON-LD structured data for Google rich snippets
@@ -837,7 +850,7 @@ Please confirm my order. Thank you!`;
         </div>
       </header>
 
-      {/* Floating Capsule Search Modal Overlay (Exact match to reference screenshot) */}
+      {/* Full Screen White Background Live Search Modal */}
       {searchOpen && (
         <div
           id="searchModalOverlay"
@@ -847,44 +860,113 @@ Please confirm my order. Thank you!`;
           aria-modal="true"
           aria-label="Search products"
         >
-          <div
-            className="search-modal-pill"
-            onClick={(e) => e.stopPropagation()}
-          >
-            <Search size={20} className="search-modal-icon" />
-            <input
-              id="searchModalInput"
-              type="text"
-              value={searchQuery}
-              onChange={(e) => setSearchQuery(e.target.value)}
-              placeholder="Search..."
-              className="search-modal-input"
-              autoFocus
-              onKeyDown={(e) => {
-                if (e.key === 'Escape') setSearchOpen(false);
-                if (e.key === 'Enter') {
-                  setSearchOpen(false);
-                  const el = document.getElementById('collections');
-                  if (el) el.scrollIntoView({ behavior: 'smooth' });
-                }
-              }}
-            />
-            <button
-              id="searchModalCloseBtn"
-              type="button"
-              onClick={() => {
-                if (searchQuery) {
-                  setSearchQuery('');
-                } else {
-                  setSearchOpen(false);
-                }
-              }}
-              className="search-modal-close"
-              aria-label={searchQuery ? "Clear search" : "Close search"}
-              title={searchQuery ? "Clear search" : "Close search"}
-            >
-              <X size={18} />
-            </button>
+          <div className="search-modal-inner" onClick={(e) => e.stopPropagation()}>
+            <div className="search-modal-bar-row">
+              <div className="search-modal-pill">
+                <Search size={19} className="search-modal-icon" />
+                <input
+                  id="searchModalInput"
+                  type="text"
+                  value={searchQuery}
+                  onChange={(e) => setSearchQuery(e.target.value)}
+                  placeholder="Search luxury heels, bags, watches..."
+                  className="search-modal-input"
+                  autoFocus
+                  onKeyDown={(e) => {
+                    if (e.key === 'Escape') setSearchOpen(false);
+                  }}
+                />
+                {searchQuery && (
+                  <button
+                    type="button"
+                    onClick={() => setSearchQuery('')}
+                    className="search-modal-clear-btn"
+                    aria-label="Clear search"
+                  >
+                    <X size={16} />
+                  </button>
+                )}
+              </div>
+              <button
+                type="button"
+                className="search-modal-close-text-btn"
+                onClick={() => setSearchOpen(false)}
+              >
+                Cancel
+              </button>
+            </div>
+
+            {/* Popular quick searches when query is empty */}
+            {!searchQuery.trim() && (
+              <div className="search-quick-tags-wrap">
+                <span className="search-quick-tags-label">Popular Searches</span>
+                <div className="search-quick-tags-list">
+                  {['Heels', 'Bags', 'Watches', 'Dior', 'Chanel', 'Valentino', 'Louboutin'].map((tag) => (
+                    <button
+                      key={tag}
+                      type="button"
+                      className="search-quick-tag"
+                      onClick={() => setSearchQuery(tag)}
+                    >
+                      {tag}
+                    </button>
+                  ))}
+                </div>
+              </div>
+            )}
+
+            {/* Live Search Results List on White Background */}
+            {searchQuery.trim() && (
+              <div className="search-results-section">
+                <div className="search-results-header">
+                  {liveSearchResults.length > 0
+                    ? `Found ${liveSearchResults.length} product${liveSearchResults.length > 1 ? 's' : ''} for "${searchQuery}"`
+                    : `No products found for "${searchQuery}"`}
+                </div>
+
+                {liveSearchResults.length > 0 ? (
+                  <div className="search-results-list">
+                    {liveSearchResults.map((item) => (
+                      <Link
+                        key={item.id}
+                        href={`/product/${item.id}`}
+                        onClick={() => {
+                          setSearchOpen(false);
+                          setSearchQuery('');
+                        }}
+                        className="search-result-item"
+                      >
+                        <img
+                          src={item.image}
+                          alt={item.title}
+                          className="search-result-img"
+                        />
+                        <div className="search-result-info">
+                          <div className="search-result-brand">{item.brand || 'SMP Luxury'}</div>
+                          <div className="search-result-title">{item.title}</div>
+                          <div className="search-result-price-row">
+                            <span className="search-result-price">AED {item.price}</span>
+                            {item.stock > 0 && (
+                              <span className="search-result-stock">In Stock</span>
+                            )}
+                          </div>
+                        </div>
+                        <ArrowRight size={16} color="#A45A28" />
+                      </Link>
+                    ))}
+                  </div>
+                ) : (
+                  <div className="search-no-results">
+                    <p style={{ fontSize: '15px', color: '#6B7280', marginBottom: '8px' }}>
+                      We couldn't find any products matching "<strong>{searchQuery}</strong>".
+                    </p>
+                    <p style={{ fontSize: '13px', color: '#9CA3AF' }}>
+                      Try searching with another keyword like <em>Dior</em>, <em>Chanel</em>, <em>Slingback</em>, or <em>Watch</em>.
+                    </p>
+                  </div>
+                )}
+              </div>
+            )}
           </div>
         </div>
       )}
