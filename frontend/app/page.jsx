@@ -30,7 +30,9 @@ import {
   Home as HomeIcon,
   Tag,
   ChevronDown,
-  Package
+  Package,
+  Lock,
+  Handshake
 } from 'lucide-react';
 
 const WHATSAPP_NUMBER = '971525973132'; // +971 52 597 3132
@@ -1022,15 +1024,6 @@ Please confirm my order. Thank you!`;
             Timeless pieces. Premium quality. Thoughtfully chosen to elevate your style and complete every moment. Direct delivery with inspection before payment.
           </p>
 
-          {/* Clean Trust Text without background or box, separated with | */}
-          <div className="hero-trust-strip-clean">
-            <span>100% Secure Shopping</span>
-            <span className="trust-pipe">|</span>
-            <span>Quality Check</span>
-            <span className="trust-pipe">|</span>
-            <span>Free Delivery 🇦🇪</span>
-          </div>
-
           <div className="hero-btn-row">
             <a
               href="#collections"
@@ -1049,6 +1042,47 @@ Please confirm my order. Thank you!`;
           </div>
         </div>
       </section>
+
+      {/* Luxury Trust Guarantee Bar (Positioned below Hero Banner) */}
+      <div className="wide-container" style={{ marginTop: '22px', marginBottom: '8px', position: 'relative', zIndex: 5 }}>
+        <div className="trust-guarantee-bar">
+          <div className="trust-guarantee-item">
+            <div className="trust-guarantee-icon-wrap">
+              <Lock size={19} strokeWidth={2} />
+            </div>
+            <div className="trust-guarantee-text">
+              <span className="trust-guarantee-title">100% Secure Shopping</span>
+            </div>
+          </div>
+
+          <div className="trust-guarantee-item">
+            <div className="trust-guarantee-icon-wrap">
+              <Handshake size={20} strokeWidth={1.8} />
+            </div>
+            <div className="trust-guarantee-text">
+              <span className="trust-guarantee-title">Direct Dealing</span>
+            </div>
+          </div>
+
+          <div className="trust-guarantee-item">
+            <div className="trust-guarantee-icon-wrap">
+              <ShieldCheck size={20} strokeWidth={1.8} />
+            </div>
+            <div className="trust-guarantee-text">
+              <span className="trust-guarantee-title">Quality Check Before Payment</span>
+            </div>
+          </div>
+
+          <div className="trust-guarantee-item">
+            <div className="trust-guarantee-icon-wrap">
+              <Truck size={20} strokeWidth={1.8} />
+            </div>
+            <div className="trust-guarantee-text">
+              <span className="trust-guarantee-title">Free Delivery</span>
+            </div>
+          </div>
+        </div>
+      </div>
 
 
       {/* ─────────────────────────────────────────────────────────────

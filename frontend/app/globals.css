@@ -3777,3 +3777,95 @@ input, select, textarea {
 .product-lightbox-close-btn:hover {
   background: rgba(255, 255, 255, 0.4);
 }
+
+/* ==========================================================================
+   LUXURY TRUST GUARANTEE BAR (Below Hero Banner)
+   ========================================================================== */
+.trust-guarantee-bar {
+  display: grid;
+  grid-template-columns: repeat(4, 1fr);
+  background: #FFFFFF;
+  border: 1px solid #ECE4D6;
+  border-radius: 14px;
+  box-shadow: 0 4px 20px rgba(102, 48, 15, 0.05);
+  overflow: hidden;
+}
+
+.trust-guarantee-item {
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  gap: 14px;
+  padding: 18px 20px;
+  border-right: 1px solid #ECE4D6;
+  transition: background 0.2s ease;
+}
+
+.trust-guarantee-item:last-child {
+  border-right: none;
+}
+
+.trust-guarantee-item:hover {
+  background: #FAF7F2;
+}
+
+.trust-guarantee-icon-wrap {
+  width: 44px;
+  height: 44px;
+  border-radius: 10px;
+  background: #FAF6EF;
+  border: 1px solid #EAE0D0;
+  color: #66300F;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  flex-shrink: 0;
+  transition: transform 0.2s ease, background 0.2s ease, color 0.2s ease;
+}
+
+.trust-guarantee-item:hover .trust-guarantee-icon-wrap {
+  transform: scale(1.06);
+  background: #66300F;
+  color: #FFFFFF;
+  border-color: #66300F;
+}
+
+.trust-guarantee-text {
+  display: flex;
+  flex-direction: column;
+}
+
+.trust-guarantee-title {
+  font-size: 13.5px;
+  font-weight: 700;
+  color: #2D1E12;
+  letter-spacing: 0.1px;
+  line-height: 1.35;
+}
+
+@media (max-width: 960px) {
+  .trust-guarantee-bar {
+    grid-template-columns: repeat(2, 1fr);
+  }
+  .trust-guarantee-item:nth-child(2) {
+    border-right: none;
+  }
+  .trust-guarantee-item:nth-child(1),
+  .trust-guarantee-item:nth-child(2) {
+    border-bottom: 1px solid #ECE4D6;
+  }
+}
+
+@media (max-width: 540px) {
+  .trust-guarantee-item {
+    padding: 14px 12px;
+    gap: 10px;
+  }
+  .trust-guarantee-icon-wrap {
+    width: 38px;
+    height: 38px;
+  }
+  .trust-guarantee-title {
+    font-size: 12px;
+  }
+}
