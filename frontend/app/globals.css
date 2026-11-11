@@ -3859,29 +3859,86 @@ input, select, textarea {
   line-height: 1.35;
 }
 
+/* Responsive: keep all 4 in ONE row across desktop, tablet, and mobile by reducing icon & text size */
 @media (max-width: 960px) {
   .trust-guarantee-bar {
-    grid-template-columns: repeat(2, 1fr);
+    grid-template-columns: repeat(4, 1fr);
   }
-  .trust-guarantee-item:nth-child(2) {
-    border-right: none;
+  .trust-guarantee-item {
+    padding: 12px 8px;
+    gap: 8px;
   }
-  .trust-guarantee-item:nth-child(1),
-  .trust-guarantee-item:nth-child(2) {
-    border-bottom: 1px solid #ECE4D6;
+  .trust-guarantee-icon-wrap {
+    width: 36px;
+    height: 36px;
+  }
+  .trust-guarantee-icon-wrap svg {
+    width: 17px;
+    height: 17px;
+  }
+  .trust-guarantee-title {
+    font-size: 11.5px;
+    line-height: 1.3;
   }
 }
 
-@media (max-width: 540px) {
+@media (max-width: 640px) {
+  .trust-guarantee-bar {
+    grid-template-columns: repeat(4, 1fr) !important;
+    border-radius: 10px;
+  }
   .trust-guarantee-item {
-    padding: 14px 12px;
-    gap: 10px;
+    padding: 10px 4px !important;
+    gap: 6px !important;
+    flex-direction: column !important;
+    text-align: center !important;
+    justify-content: flex-start !important;
+    align-items: center !important;
+    border-right: 1px solid #ECE4D6 !important;
+    border-bottom: none !important;
+  }
+  .trust-guarantee-item:last-child {
+    border-right: none !important;
   }
   .trust-guarantee-icon-wrap {
-    width: 38px;
-    height: 38px;
+    width: 28px !important;
+    height: 28px !important;
+    border-radius: 7px !important;
+  }
+  .trust-guarantee-icon-wrap svg {
+    width: 14px !important;
+    height: 14px !important;
+  }
+  .trust-guarantee-text {
+    align-items: center !important;
+    text-align: center !important;
   }
   .trust-guarantee-title {
-    font-size: 12px;
+    font-size: 9.5px !important;
+    font-weight: 700 !important;
+    line-height: 1.25 !important;
+    letter-spacing: -0.2px !important;
+    text-align: center !important;
+  }
+}
+
+@media (max-width: 380px) {
+  .trust-guarantee-item {
+    padding: 8px 2px !important;
+    gap: 4px !important;
+  }
+  .trust-guarantee-icon-wrap {
+    width: 26px !important;
+    height: 26px !important;
+    border-radius: 6px !important;
+  }
+  .trust-guarantee-icon-wrap svg {
+    width: 13px !important;
+    height: 13px !important;
+  }
+  .trust-guarantee-title {
+    font-size: 8.5px !important;
+    line-height: 1.2 !important;
+    letter-spacing: -0.3px !important;
   }
 }
