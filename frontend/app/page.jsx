@@ -1,6 +1,7 @@
 'use client';
 
 import React, { useState, useEffect, useMemo } from 'react';
+import Link from 'next/link';
 import {
   Eye,
   ShoppingCart,
@@ -152,8 +153,9 @@ function getProductColorOptions(product) {
 }
 
 // ─── Storefront Product Card Component with Instant Color Switching ───
-function StorefrontProductCard({ product, onQuickView, onBuyNow, onAddToCart }) {
+function StorefrontProductCard({ product, onBuyNow, onAddToCart }) {
   const colorOptions = useMemo(() => getProductColorOptions(product), [product]);
+  const productId = product._id || product.id;
 
   const [selectedOptionId, setSelectedOptionId] = useState(
     colorOptions.length > 0 ? colorOptions[0].id : 'primary'
@@ -189,11 +191,11 @@ function StorefrontProductCard({ product, onQuickView, onBuyNow, onAddToCart }) 
 
   return (
     <div className="editorial-card">
-      {/* Image Wrap */}
-      <div
+      {/* Image Wrap linking directly to product inner page */}
+      <Link
+        href={`/product/${productId}`}
         className="editorial-img-wrap"
-        onClick={() => onQuickView(product, activeOption)}
-        style={{ cursor: 'pointer' }}
+        style={{ textDecoration: 'none', display: 'flex' }}
       >
         <img
           src={displayImage}
@@ -201,7 +203,7 @@ function StorefrontProductCard({ product, onQuickView, onBuyNow, onAddToCart }) 
           className="editorial-img"
           loading="lazy"
         />
-      </div>
+      </Link>
 
       {/* Info Container */}
       <div className="editorial-info">
@@ -210,13 +212,14 @@ function StorefrontProductCard({ product, onQuickView, onBuyNow, onAddToCart }) 
         </div>
 
         <div className="editorial-title-row">
-          <h3
-            className="editorial-title"
-            onClick={() => onQuickView(product, activeOption)}
-            style={{ cursor: 'pointer' }}
-            title={product.title}
-          >
-            {product.title}
+          <h3 className="editorial-title">
+            <Link
+              href={`/product/${productId}`}
+              style={{ textDecoration: 'none', color: 'inherit' }}
+              title={product.title}
+            >
+              {product.title}
+            </Link>
           </h3>
         </div>
 
@@ -1287,7 +1290,6 @@ Please confirm my order and arrange delivery. Thank you!`;
                 <React.Fragment key={p.id}>
                   <StorefrontProductCard
                     product={p}
-                    onQuickView={handleOpenQuickView}
                     onBuyNow={handleOpenBuyNow}
                     onAddToCart={addToCart}
                   />
@@ -1369,8 +1371,8 @@ Please confirm my order and arrange delivery. Thank you!`;
         </div>
       </section>
 
-      {/* Quick View Full Details Modal */}
-      {viewProduct && (() => {
+      {/* Quick View Modal Disabled - Products navigate to dedicated inner page */}
+      {false && (() => {
         const colorOpts = getProductColorOptions(viewProduct);
         const activeVar = viewVariant
           ? (colorOpts.find((o) => o.id === viewVariant.id) || viewVariant)
