@@ -527,17 +527,31 @@ app.get('/api/products', async (req, res) => {
 
 app.get('/api/products/:id', async (req, res) => {
   try {
+    const paramId = req.params.id;
     if (mongoose.connection.readyState === 1) {
-      const prod = await Product.findById(req.params.id);
+      let prod = null;
+      if (mongoose.Types.ObjectId.isValid(paramId)) {
+        prod = await Product.findById(paramId);
+      }
+      if (!prod) {
+        prod = await Product.findOne({ id: paramId });
+      }
+      if (!prod) {
+        prod = await Product.findOne({ slug: paramId });
+      }
       if (prod) return res.json(prod);
     }
-    const prod = fileDb.getProductById(req.params.id);
+    const prod = fileDb.getProductById(paramId);
     if (!prod) return res.status(404).json({ error: 'Product not found' });
     res.json(prod);
   } catch (e) {
-    const prod = fileDb.getProductById(req.params.id);
-    if (!prod) return res.status(404).json({ error: 'Product not found' });
-    res.json(prod);
+    try {
+      const prod = fileDb.getProductById(req.params.id);
+      if (!prod) return res.status(404).json({ error: 'Product not found' });
+      res.json(prod);
+    } catch (_) {
+      res.status(404).json({ error: 'Product not found' });
+    }
   }
 });
 
@@ -783,7 +797,13 @@ app.put('/api/products/:id', authenticateToken, handleUpload, async (req, res) =
     }
 
     if (mongoose.connection.readyState === 1) {
-      const updated = await Product.findByIdAndUpdate(req.params.id, updateFields, { new: true });
+      let updated = null;
+      if (mongoose.Types.ObjectId.isValid(req.params.id)) {
+        updated = await Product.findByIdAndUpdate(req.params.id, updateFields, { new: true });
+      }
+      if (!updated) {
+        updated = await Product.findOneAndUpdate({ id: req.params.id }, updateFields, { new: true });
+      }
       if (updated) return res.json(updated);
     }
 
@@ -798,11 +818,19 @@ app.put('/api/products/:id', authenticateToken, handleUpload, async (req, res) =
 app.delete('/api/products/:id', authenticateToken, async (req, res) => {
   try {
     if (mongoose.connection.readyState === 1) {
-      const prod = await Product.findById(req.params.id);
+      let prod = null;
+      if (mongoose.Types.ObjectId.isValid(req.params.id)) {
+        prod = await Product.findById(req.params.id);
+      }
+      if (!prod) {
+        prod = await Product.findOne({ id: req.params.id });
+      }
       if (prod?.imagePublicId) {
         try { await cloudinary.uploader.destroy(prod.imagePublicId); } catch (_) {}
       }
-      await Product.findByIdAndDelete(req.params.id);
+      if (prod) {
+        await Product.deleteOne({ _id: prod._id });
+      }
     } else {
       fileDb.deleteProduct(req.params.id);
     }

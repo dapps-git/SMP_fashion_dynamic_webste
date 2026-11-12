@@ -189,30 +189,57 @@ export default function ProductInnerPage() {
     } catch (e) {}
   };
 
+  const applyProductData = (data) => {
+    setProduct(data);
+    const colorOpts = getProductColorOptions(data);
+    if (colorOpts.length > 0) {
+      setSelectedVariant(colorOpts[0]);
+      const firstSizes = (colorOpts[0].sizes && colorOpts[0].sizes.length > 0)
+        ? colorOpts[0].sizes
+        : (data.sizes || []);
+      if (firstSizes.length > 0) {
+        setSelectedSize(firstSizes[0]);
+      }
+    } else if (data.sizes && data.sizes.length > 0) {
+      setSelectedSize(data.sizes[0]);
+    }
+  };
+
   const fetchProduct = async () => {
     try {
       setLoading(true);
       const res = await fetch(`${API_BASE}/products/${id}`);
       if (res.ok) {
         const data = await res.json();
-        setProduct(data);
-        const colorOpts = getProductColorOptions(data);
-        if (colorOpts.length > 0) {
-          setSelectedVariant(colorOpts[0]);
-          const firstSizes = (colorOpts[0].sizes && colorOpts[0].sizes.length > 0)
-            ? colorOpts[0].sizes
-            : (data.sizes || []);
-          if (firstSizes.length > 0) {
-            setSelectedSize(firstSizes[0]);
-          }
-        } else if (data.sizes && data.sizes.length > 0) {
-          setSelectedSize(data.sizes[0]);
-        }
+        applyProductData(data);
       } else {
+        // Fallback: search in list of all products
+        const fallbackRes = await fetch(`${API_BASE}/products`);
+        if (fallbackRes.ok) {
+          const list = await fallbackRes.json();
+          const prods = Array.isArray(list) ? list : (list.products || []);
+          const match = prods.find((p) => p.id === id || p._id === id || p.slug === id);
+          if (match) {
+            applyProductData(match);
+            return;
+          }
+        }
         setProduct(null);
       }
     } catch (err) {
       console.warn('Live product fetch error:', err);
+      try {
+        const fallbackRes = await fetch(`${API_BASE}/products`);
+        if (fallbackRes.ok) {
+          const list = await fallbackRes.json();
+          const prods = Array.isArray(list) ? list : (list.products || []);
+          const match = prods.find((p) => p.id === id || p._id === id || p.slug === id);
+          if (match) {
+            applyProductData(match);
+            return;
+          }
+        }
+      } catch (_) {}
       setProduct(null);
     } finally {
       setLoading(false);
@@ -589,34 +616,37 @@ Please confirm my order. Thank you!`;
 
                 {liveSearchResults.length > 0 ? (
                   <div className="search-results-list">
-                    {liveSearchResults.map((item) => (
-                      <Link
-                        key={item.id}
-                        href={`/product/${item.id}`}
-                        onClick={() => {
-                          setSearchOpen(false);
-                          setSearchQuery('');
-                        }}
-                        className="search-result-item"
-                      >
-                        <img
-                          src={item.image}
-                          alt={item.title}
-                          className="search-result-img"
-                        />
-                        <div className="search-result-info">
-                          <div className="search-result-brand">{item.brand || 'SMP Luxury'}</div>
-                          <div className="search-result-title">{item.title}</div>
-                          <div className="search-result-price-row">
-                            <span className="search-result-price">AED {item.price}</span>
-                            {item.stock > 0 && (
-                              <span className="search-result-stock">In Stock</span>
-                            )}
+                    {liveSearchResults.map((item) => {
+                      const targetId = item.id || item._id;
+                      return (
+                        <Link
+                          key={targetId}
+                          href={`/product/${targetId}`}
+                          onClick={() => {
+                            setSearchOpen(false);
+                            setSearchQuery('');
+                          }}
+                          className="search-result-item"
+                        >
+                          <img
+                            src={item.image}
+                            alt={item.title}
+                            className="search-result-img"
+                          />
+                          <div className="search-result-info">
+                            <div className="search-result-brand">{item.brand || 'SMP Luxury'}</div>
+                            <div className="search-result-title">{item.title}</div>
+                            <div className="search-result-price-row">
+                              <span className="search-result-price">AED {item.price}</span>
+                              {item.stock > 0 && (
+                                <span className="search-result-stock">In Stock</span>
+                              )}
+                            </div>
                           </div>
-                        </div>
-                        <ArrowRight size={16} color="#A45A28" />
-                      </Link>
-                    ))}
+                          <ArrowRight size={16} color="#A45A28" />
+                        </Link>
+                      );
+                    })}
                   </div>
                 ) : (
                   <div className="search-no-results">

@@ -926,34 +926,37 @@ Please confirm my order. Thank you!`;
 
                 {liveSearchResults.length > 0 ? (
                   <div className="search-results-list">
-                    {liveSearchResults.map((item) => (
-                      <Link
-                        key={item.id}
-                        href={`/product/${item.id}`}
-                        onClick={() => {
-                          setSearchOpen(false);
-                          setSearchQuery('');
-                        }}
-                        className="search-result-item"
-                      >
-                        <img
-                          src={item.image}
-                          alt={item.title}
-                          className="search-result-img"
-                        />
-                        <div className="search-result-info">
-                          <div className="search-result-brand">{item.brand || 'SMP Luxury'}</div>
-                          <div className="search-result-title">{item.title}</div>
-                          <div className="search-result-price-row">
-                            <span className="search-result-price">AED {item.price}</span>
-                            {item.stock > 0 && (
-                              <span className="search-result-stock">In Stock</span>
-                            )}
+                    {liveSearchResults.map((item) => {
+                      const targetId = item.id || item._id;
+                      return (
+                        <Link
+                          key={targetId}
+                          href={`/product/${targetId}`}
+                          onClick={() => {
+                            setSearchOpen(false);
+                            setSearchQuery('');
+                          }}
+                          className="search-result-item"
+                        >
+                          <img
+                            src={item.image}
+                            alt={item.title}
+                            className="search-result-img"
+                          />
+                          <div className="search-result-info">
+                            <div className="search-result-brand">{item.brand || 'SMP Luxury'}</div>
+                            <div className="search-result-title">{item.title}</div>
+                            <div className="search-result-price-row">
+                              <span className="search-result-price">AED {item.price}</span>
+                              {item.stock > 0 && (
+                                <span className="search-result-stock">In Stock</span>
+                              )}
+                            </div>
                           </div>
-                        </div>
-                        <ArrowRight size={16} color="#A45A28" />
-                      </Link>
-                    ))}
+                          <ArrowRight size={16} color="#A45A28" />
+                        </Link>
+                      );
+                    })}
                   </div>
                 ) : (
                   <div className="search-no-results">
