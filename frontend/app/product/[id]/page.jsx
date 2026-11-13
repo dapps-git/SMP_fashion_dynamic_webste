@@ -129,6 +129,19 @@ export default function ProductInnerPage() {
   const [customerPhone, setCustomerPhone] = useState('');
   const [submittingOrder, setSubmittingOrder] = useState(false);
   const [orderSuccess, setOrderSuccess] = useState(false);
+  const [lastWhatsAppUrl, setLastWhatsAppUrl] = useState('');
+
+  const handleOpenBuyNowModal = () => {
+    setOrderSuccess(false);
+    setSubmittingOrder(false);
+    setOrderModalOpen(true);
+  };
+
+  const handleCloseOrderModal = () => {
+    setOrderModalOpen(false);
+    setOrderSuccess(false);
+    setSubmittingOrder(false);
+  };
 
   const colorOptions = useMemo(() => getProductColorOptions(product), [product]);
 
@@ -337,6 +350,12 @@ export default function ProductInnerPage() {
   const handleConfirmAndContinueWhatsApp = async (e) => {
     e.preventDefault();
     if (!product) return;
+
+    if (!customerName.trim() || !customerPhone.trim()) {
+      alert('Please enter your Name and WhatsApp Mobile Number.');
+      return;
+    }
+
     setSubmittingOrder(true);
 
     const totalAmount = product.price * quantity;
@@ -351,21 +370,6 @@ export default function ProductInnerPage() {
         size: selectedSize || ''
       }
     ];
-
-    try {
-      await fetch(`${API_BASE}/orders`, {
-        method: 'POST',
-        headers: { 'Content-Type': 'application/json' },
-        body: JSON.stringify({
-          customerName: customerName.trim(),
-          customerPhone: customerPhone.trim(),
-          items: orderItems,
-          totalPrice: totalAmount
-        })
-      });
-    } catch (err) {
-      console.warn('Backend order recording skipped:', err);
-    }
 
     const formattedMessage =
 `🛍️ *NEW ORDER - SMP Super Master Products*
@@ -386,11 +390,35 @@ export default function ProductInnerPage() {
 Please confirm my order. Thank you!`;
 
     const whatsappUrl = `https://wa.me/${WHATSAPP_NUMBER}?text=${encodeURIComponent(formattedMessage)}`;
-    setSubmittingOrder(false);
-    setOrderSuccess(true);
-    setTimeout(() => {
-      window.open(whatsappUrl, '_blank');
-    }, 400);
+    setLastWhatsAppUrl(whatsappUrl);
+
+    try {
+      await fetch(`${API_BASE}/orders`, {
+        method: 'POST',
+        headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify({
+          customerName: customerName.trim(),
+          customerPhone: customerPhone.trim(),
+          items: orderItems,
+          totalPrice: totalAmount
+        })
+      });
+    } catch (err) {
+      console.warn('Backend order recording skipped:', err);
+    } finally {
+      setSubmittingOrder(false);
+      setOrderSuccess(true);
+    }
+
+    // Reliably open WhatsApp without browser popup blocking
+    try {
+      const win = window.open(whatsappUrl, '_blank');
+      if (!win || win.closed || typeof win.closed === 'undefined') {
+        window.location.href = whatsappUrl;
+      }
+    } catch (err) {
+      window.location.href = whatsappUrl;
+    }
   };
 
   const handleSearchSubmit = (e) => {
@@ -877,7 +905,7 @@ Please confirm my order. Thank you!`;
             <div style={{ display: 'flex', gap: '12px' }}>
               <button
                 type="button"
-                onClick={() => setOrderModalOpen(true)}
+                onClick={handleOpenBuyNowModal}
                 className="product-buy-now-btn"
               >
                 Buy Now
@@ -916,7 +944,7 @@ Please confirm my order. Thank you!`;
 
       {/* Quick Order Modal (Exact match to designer screenshot, address removed) */}
       {orderModalOpen && (
-        <div className="modal-overlay" onClick={() => !submittingOrder && setOrderModalOpen(false)}>
+        <div className="modal-overlay" onClick={() => !submittingOrder && handleCloseOrderModal()}>
           <div className="modal-dialog" onClick={(e) => e.stopPropagation()} style={{ maxWidth: '460px', borderRadius: '12px', overflow: 'hidden' }}>
             <div className="modal-head" style={{ padding: '16px 22px', background: '#FAF7EF', borderBottom: '1px solid #ECE4D5' }}>
               <div>
@@ -927,7 +955,7 @@ Please confirm my order. Thank you!`;
                   Complete Your Order
                 </h3>
               </div>
-              <button onClick={() => setOrderModalOpen(false)} className="modal-close-btn" disabled={submittingOrder}>
+              <button onClick={handleCloseOrderModal} className="modal-close-btn" disabled={submittingOrder}>
                 <X size={20} />
               </button>
             </div>
@@ -942,10 +970,41 @@ Please confirm my order. Thank you!`;
                     Order Placed Successfully!
                   </h3>
                   <p style={{ fontSize: '13.5px', color: '#6B7280', marginBottom: '20px', lineHeight: '1.5' }}>
-                    WhatsApp is opening now to finalize your order details with our concierge.
+                    WhatsApp is opening now to finalize your order details with our concierge (+971 52 597 3132).
                   </p>
-                  <button onClick={() => setOrderModalOpen(false)} className="product-buy-now-btn">
-                    Done
+                  <a
+                    href={lastWhatsAppUrl || `https://wa.me/${WHATSAPP_NUMBER}`}
+                    target="_blank"
+                    rel="noopener noreferrer"
+                    className="product-buy-now-btn"
+                    style={{
+                      display: 'flex',
+                      alignItems: 'center',
+                      justifyContent: 'center',
+                      gap: '8px',
+                      textDecoration: 'none',
+                      marginBottom: '10px'
+                    }}
+                  >
+                    <MessageSquare size={17} />
+                    <span>Open WhatsApp Chat Directly</span>
+                  </a>
+                  <button
+                    type="button"
+                    onClick={handleCloseOrderModal}
+                    className="btn-modal-cart"
+                    style={{
+                      width: '100%',
+                      height: '42px',
+                      borderRadius: '8px',
+                      border: '1px solid #DCD5C6',
+                      background: 'transparent',
+                      color: '#66300F',
+                      fontWeight: '600',
+                      cursor: 'pointer'
+                    }}
+                  >
+                    Done / Close
                   </button>
                 </div>
               ) : (
@@ -1165,7 +1224,7 @@ Please confirm my order. Thank you!`;
                 <button
                   onClick={() => {
                     setCartDrawerOpen(false);
-                    setOrderModalOpen(true);
+                    handleOpenBuyNowModal();
                   }}
                   className="product-buy-now-btn"
                 >

@@ -363,6 +363,14 @@ export default function StorefrontPage() {
   const [notes, setNotes] = useState('');
   const [submittingOrder, setSubmittingOrder] = useState(false);
   const [orderSuccess, setOrderSuccess] = useState(false);
+  const [lastWhatsAppUrl, setLastWhatsAppUrl] = useState('');
+
+  const handleCloseOrderModal = () => {
+    setOrderModalProduct(null);
+    setOrderSuccess(false);
+    setSubmittingOrder(false);
+    setIsCartOrder(false);
+  };
 
   // Shopping Cart State
   const [cart, setCart] = useState([]);
@@ -490,6 +498,7 @@ Hello SMP, I would like to order these items from my shopping bag.`;
     setDeliveryAddress('');
     setEmirate('Dubai');
     setNotes('');
+    setSubmittingOrder(false);
     setOrderSuccess(false);
   };
 
@@ -505,6 +514,7 @@ Hello SMP, I would like to order these items from my shopping bag.`;
     setDeliveryAddress('');
     setEmirate('Dubai');
     setNotes('');
+    setSubmittingOrder(false);
     setOrderSuccess(false);
   };
 
@@ -512,6 +522,12 @@ Hello SMP, I would like to order these items from my shopping bag.`;
   const handleConfirmAndContinueWhatsApp = async (e) => {
     e.preventDefault();
     if (!orderModalProduct && !isCartOrder) return;
+
+    if (!customerName.trim() || !customerPhone.trim()) {
+      alert('Please enter your Name and WhatsApp Mobile Number.');
+      return;
+    }
+
     setSubmittingOrder(true);
 
     const orderItems = isCartOrder
@@ -540,7 +556,7 @@ Hello SMP, I would like to order these items from my shopping bag.`;
 
     const totalAmount = isCartOrder ? totalCartPrice : orderModalProduct.price * quantity;
 
-    // 1. Save order to backend so admin can view full customer details, address, price, quantity, and images
+    // 1. Save order to backend so admin can view full customer details, price, quantity, and images
     try {
       await fetch(`${API_BASE}/orders`, {
         method: 'POST',
@@ -600,6 +616,7 @@ Please confirm my order. Thank you!`;
     }
 
     const whatsappUrl = `https://wa.me/${WHATSAPP_NUMBER}?text=${encodeURIComponent(formattedMessage)}`;
+    setLastWhatsAppUrl(whatsappUrl);
 
     if (isCartOrder) {
       setCart([]);
@@ -609,10 +626,15 @@ Please confirm my order. Thank you!`;
     setSubmittingOrder(false);
     setOrderSuccess(true);
 
-    // Open WhatsApp in a new tab
-    setTimeout(() => {
-      window.open(whatsappUrl, '_blank');
-    }, 400);
+    // Reliably open WhatsApp without browser popup blocking
+    try {
+      const win = window.open(whatsappUrl, '_blank');
+      if (!win || win.closed || typeof win.closed === 'undefined') {
+        window.location.href = whatsappUrl;
+      }
+    } catch (err) {
+      window.location.href = whatsappUrl;
+    }
   };
 
   const filteredProducts = products.filter(p => {
@@ -1747,7 +1769,7 @@ Please confirm my order. Thank you!`;
 
       {/* Buy Now & Delivery Address Modal */}
       {orderModalProduct && (
-        <div className="modal-overlay" onClick={() => !submittingOrder && setOrderModalProduct(null)}>
+        <div className="modal-overlay" onClick={() => !submittingOrder && handleCloseOrderModal()}>
           <div className="modal-dialog" onClick={(e) => e.stopPropagation()}>
             <div className="modal-head">
               <div>
@@ -1757,7 +1779,7 @@ Please confirm my order. Thank you!`;
                 <h3 className="modal-title">Complete Your Order</h3>
               </div>
               <button
-                onClick={() => setOrderModalProduct(null)}
+                onClick={handleCloseOrderModal}
                 className="modal-close-btn"
                 disabled={submittingOrder}
               >
@@ -1775,14 +1797,42 @@ Please confirm my order. Thank you!`;
                     Order Saved &amp; WhatsApp Connected!
                   </h3>
                   <p style={{ fontSize: '14px', color: 'var(--color-text-muted)', marginBottom: '20px', lineHeight: '1.5' }}>
-                    Your order details have been recorded. WhatsApp will now open so our concierge can finalize your delivery slot.
+                    WhatsApp is opening now to finalize your order details with our concierge (+971 52 597 3132).
                   </p>
-                  <button
-                    onClick={() => setOrderModalProduct(null)}
+                  <a
+                    href={lastWhatsAppUrl || `https://wa.me/${WHATSAPP_NUMBER}`}
+                    target="_blank"
+                    rel="noopener noreferrer"
                     className="btn-buy-now"
-                    style={{ width: '100%' }}
+                    style={{
+                      display: 'flex',
+                      alignItems: 'center',
+                      justifyContent: 'center',
+                      gap: '8px',
+                      textDecoration: 'none',
+                      width: '100%',
+                      marginBottom: '10px'
+                    }}
                   >
-                    Done
+                    <MessageSquare size={17} />
+                    <span>Open WhatsApp Chat Directly</span>
+                  </a>
+                  <button
+                    type="button"
+                    onClick={handleCloseOrderModal}
+                    className="btn-modal-cart"
+                    style={{
+                      width: '100%',
+                      height: '42px',
+                      borderRadius: '8px',
+                      border: '1px solid #DCD5C6',
+                      background: 'transparent',
+                      color: '#66300F',
+                      fontWeight: '600',
+                      cursor: 'pointer'
+                    }}
+                  >
+                    Done / Close
                   </button>
                 </div>
               ) : (
