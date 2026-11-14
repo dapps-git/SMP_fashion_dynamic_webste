@@ -140,12 +140,16 @@ function getProductColorOptions(product) {
 
   // 2. Additional Color Variants
   variants.forEach((v, idx) => {
+    const rawImages = Array.isArray(v.images) ? v.images.filter(Boolean) : (v.image ? [v.image] : []);
+    const cleanImages = rawImages.filter(img => typeof img === 'string' && !img.startsWith('blob:'));
+    const finalImages = cleanImages.length > 0 ? cleanImages : (product.image && !product.image.startsWith('blob:') ? [product.image] : []);
+
     options.push({
       id: v.id || `var-${idx}`,
       isPrimary: false,
       colorName: v.colorName || `Color ${idx + 1}`,
       colorCode: resolveColorHex(v.colorName, v.colorCode),
-      images: Array.isArray(v.images) ? v.images.filter(Boolean) : (v.image ? [v.image] : []),
+      images: finalImages,
       stock: v.stock !== undefined && v.stock !== '' ? Number(v.stock) : (product.stock ?? 10),
       sizes: Array.isArray(v.sizes) ? v.sizes : (product.sizes || [])
     });
@@ -204,6 +208,11 @@ function StorefrontProductCard({ product, onBuyNow, onAddToCart }) {
           alt={`${product.title}${displayColor ? ` - ${displayColor}` : ''}`}
           className="editorial-img"
           loading="lazy"
+          onError={(e) => {
+            if (product?.image && e.currentTarget.src !== product.image) {
+              e.currentTarget.src = product.image;
+            }
+          }}
         />
       </Link>
 

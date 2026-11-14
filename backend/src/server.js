@@ -555,6 +555,51 @@ app.get('/api/products/:id', async (req, res) => {
   }
 });
 
+// ─── Sanitize Variant Images Helper (Removes Blobs & Uploads Base64) ───
+async function sanitizeVariantImages(variants, fallbackImage = '') {
+  if (!Array.isArray(variants)) return [];
+  return Promise.all(variants.map(async (v, i) => {
+    let rawImages = Array.isArray(v.images)
+      ? v.images.filter(Boolean)
+      : (v.image ? [v.image] : []);
+
+    // 1. Strip any dead blob: URLs
+    let cleanImages = rawImages.filter(img => typeof img === 'string' && !img.startsWith('blob:'));
+
+    // 2. Automatically upload base64 data URIs to Cloudinary if found
+    cleanImages = await Promise.all(cleanImages.map(async (img) => {
+      if (typeof img === 'string' && img.startsWith('data:image/')) {
+        try {
+          const uploadRes = await cloudinary.uploader.upload(img, {
+            folder: 'smp-fashion',
+            resource_type: 'auto',
+            transformation: [{ width: 1200, height: 1200, crop: 'limit', quality: 'auto:good' }]
+          });
+          return uploadRes.secure_url || uploadRes.url || img;
+        } catch (cErr) {
+          console.warn('Cloudinary upload of base64 variant image failed:', cErr.message);
+          return img;
+        }
+      }
+      return img;
+    }));
+
+    // 3. Fallback to product fallback image if variant has no images left
+    if (cleanImages.length === 0 && fallbackImage && !fallbackImage.startsWith('blob:')) {
+      cleanImages.push(fallbackImage);
+    }
+
+    return {
+      id: v.id || `var-${Date.now()}-${i}`,
+      colorName: v.colorName || '',
+      colorCode: v.colorCode || '#000000',
+      images: cleanImages,
+      stock: v.stock !== undefined && v.stock !== '' ? parseInt(v.stock, 10) : 10,
+      sizes: Array.isArray(v.sizes) ? v.sizes : (typeof v.sizes === 'string' ? v.sizes.split(',').map(s => s.trim()).filter(Boolean) : [])
+    };
+  }));
+}
+
 // Protected product mutations
 app.post('/api/products', authenticateToken, handleUpload, async (req, res) => {
   try {
@@ -619,18 +664,7 @@ app.post('/api/products', authenticateToken, handleUpload, async (req, res) => {
     } else if (Array.isArray(variants)) {
       parsedVariants = variants;
     }
-    if (Array.isArray(parsedVariants)) {
-      parsedVariants = parsedVariants.map((v, i) => ({
-        id: v.id || `var-${Date.now()}-${i}`,
-        colorName: v.colorName || '',
-        colorCode: v.colorCode || '#000000',
-        images: Array.isArray(v.images) ? v.images.filter(Boolean) : (v.image ? [v.image] : []),
-        stock: v.stock !== undefined && v.stock !== '' ? parseInt(v.stock, 10) : 10,
-        sizes: Array.isArray(v.sizes) ? v.sizes : (typeof v.sizes === 'string' ? v.sizes.split(',').map(s => s.trim()).filter(Boolean) : [])
-      }));
-    } else {
-      parsedVariants = [];
-    }
+    parsedVariants = await sanitizeVariantImages(parsedVariants, finalImage);
 
     if (!finalImage && parsedVariants.length > 0 && parsedVariants[0].images?.length > 0) {
       finalImage = parsedVariants[0].images[0];
@@ -778,18 +812,7 @@ app.put('/api/products/:id', authenticateToken, handleUpload, async (req, res) =
       } else if (Array.isArray(variants)) {
         parsedVariants = variants;
       }
-      if (Array.isArray(parsedVariants)) {
-        parsedVariants = parsedVariants.map((v, i) => ({
-          id: v.id || `var-${Date.now()}-${i}`,
-          colorName: v.colorName || '',
-          colorCode: v.colorCode || '#000000',
-          images: Array.isArray(v.images) ? v.images.filter(Boolean) : (v.image ? [v.image] : []),
-          stock: v.stock !== undefined && v.stock !== '' ? parseInt(v.stock, 10) : 10,
-          sizes: Array.isArray(v.sizes) ? v.sizes : (typeof v.sizes === 'string' ? v.sizes.split(',').map(s => s.trim()).filter(Boolean) : [])
-        }));
-      } else {
-        parsedVariants = [];
-      }
+      parsedVariants = await sanitizeVariantImages(parsedVariants, updateFields.image || finalImage);
       updateFields.variants = parsedVariants;
       if (!updateFields.image && parsedVariants.length > 0 && parsedVariants[0].images?.length > 0) {
         updateFields.image = parsedVariants[0].images[0];

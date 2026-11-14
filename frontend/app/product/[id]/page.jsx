@@ -86,12 +86,16 @@ function getProductColorOptions(product) {
   }
 
   variants.forEach((v, idx) => {
+    const rawImages = Array.isArray(v.images) ? v.images.filter(Boolean) : (v.image ? [v.image] : []);
+    const cleanImages = rawImages.filter(img => typeof img === 'string' && !img.startsWith('blob:'));
+    const finalImages = cleanImages.length > 0 ? cleanImages : (product.image && !product.image.startsWith('blob:') ? [product.image] : []);
+
     options.push({
       id: v.id || `var-${idx}`,
       isPrimary: false,
       colorName: v.colorName || `Color ${idx + 1}`,
       colorCode: resolveColorHex(v.colorName, v.colorCode),
-      images: Array.isArray(v.images) ? v.images.filter(Boolean) : (v.image ? [v.image] : []),
+      images: finalImages,
       stock: v.stock !== undefined && v.stock !== '' ? Number(v.stock) : (product.stock ?? 15),
       sizes: Array.isArray(v.sizes) ? v.sizes : (product.sizes || [])
     });
@@ -286,9 +290,11 @@ export default function ProductInnerPage() {
   };
 
   const currentVariant = selectedVariant || (colorOptions.length > 0 ? colorOptions[0] : null);
-  const variantImages = (currentVariant?.images && currentVariant.images.length > 0)
+  const rawVariantImages = (currentVariant?.images && currentVariant.images.length > 0)
     ? currentVariant.images
     : (product?.image ? [product.image] : []);
+  const safeVariantImages = rawVariantImages.filter(img => typeof img === 'string' && img.trim() && !img.startsWith('blob:'));
+  const variantImages = safeVariantImages.length > 0 ? safeVariantImages : (product?.image ? [product.image] : []);
   const activeImage = variantImages[activeImageIndex] || variantImages[0] || product?.image;
   const activeColor = currentVariant?.colorName || product?.color || '';
   const activeStock = currentVariant?.stock !== undefined ? currentVariant.stock : (product?.stock ?? 15);
@@ -758,7 +764,15 @@ Please confirm my order. Thank you!`;
                     className={`product-gallery-thumb-item ${activeImageIndex === idx ? 'active' : ''}`}
                     title={`View angle ${idx + 1}`}
                   >
-                    <img src={imgUrl} alt={`${product.title} angle ${idx + 1}`} />
+                    <img 
+                      src={imgUrl} 
+                      alt={`${product.title} angle ${idx + 1}`} 
+                      onError={(e) => {
+                        if (product?.image && e.currentTarget.src !== product.image) {
+                          e.currentTarget.src = product.image;
+                        }
+                      }}
+                    />
                   </button>
                 ))}
               </div>
@@ -769,6 +783,11 @@ Please confirm my order. Thank you!`;
               <img
                 src={activeImage}
                 alt={`${product.title} - ${activeColor}`}
+                onError={(e) => {
+                  if (product?.image && e.currentTarget.src !== product.image) {
+                    e.currentTarget.src = product.image;
+                  }
+                }}
               />
 
               {/* Top-Right Expand Button (as seen in screenshot) */}
@@ -937,7 +956,15 @@ Please confirm my order. Thank you!`;
             >
               <X size={20} />
             </button>
-            <img src={activeImage} alt={product.title} />
+            <img 
+              src={activeImage} 
+              alt={product.title} 
+              onError={(e) => {
+                if (product?.image && e.currentTarget.src !== product.image) {
+                  e.currentTarget.src = product.image;
+                }
+              }}
+            />
           </div>
         </div>
       )}

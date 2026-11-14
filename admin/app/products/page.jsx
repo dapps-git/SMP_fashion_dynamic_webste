@@ -358,26 +358,29 @@ export default function ProductsPage() {
 
             if (res.ok) {
               const data = await res.json();
-              if (data.url) {
+              if (data.url && !data.url.startsWith('blob:')) {
                 return { tempUrl, finalUrl: data.url };
               }
+            } else {
+              const errData = await res.json().catch(() => ({}));
+              console.warn('Upload API error:', errData);
             }
           } catch (netErr) {
             console.warn('Network upload attempt error:', netErr);
           }
 
-          // Fallback to data URL if network/server is unreachable
+          // Fallback to data URL only if network/server is unreachable
           const fallbackDataUrl = await new Promise((resolve) => {
             const reader = new FileReader();
             reader.onload = (e) => resolve(e.target?.result || '');
             reader.onerror = () => resolve('');
             reader.readAsDataURL(file);
           });
-          return { tempUrl, finalUrl: fallbackDataUrl || tempUrl };
+          return { tempUrl, finalUrl: fallbackDataUrl || '' };
         })
       );
 
-      // 3. Silently swap temporary preview URLs with permanent URLs
+      // 3. Swap temporary preview URLs with permanent URLs (or remove if failed)
       setFormData(prev => ({
         ...prev,
         variants: prev.variants.map((v, i) => {
@@ -386,16 +389,21 @@ export default function ProductsPage() {
           uploadResults.forEach(({ tempUrl, finalUrl }) => {
             const pos = currentList.indexOf(tempUrl);
             if (pos !== -1) {
-              currentList[pos] = finalUrl;
-            } else if (!currentList.includes(finalUrl)) {
+              if (finalUrl && !finalUrl.startsWith('blob:')) {
+                currentList[pos] = finalUrl;
+              } else {
+                currentList.splice(pos, 1); // Safely remove dead blob URL
+              }
+            } else if (finalUrl && !finalUrl.startsWith('blob:') && !currentList.includes(finalUrl)) {
               currentList.push(finalUrl);
             }
           });
-          return { ...v, images: currentList.filter(Boolean) };
+          return { ...v, images: currentList.filter(img => Boolean(img) && !img.startsWith('blob:')) };
         })
       }));
     } catch (err) {
       console.error('Variant upload error:', err);
+      alert('Error uploading variant image. Please try again.');
     } finally {
       setVariantUploading(prev => ({ ...prev, [index]: false }));
     }
@@ -480,6 +488,22 @@ export default function ProductsPage() {
       return;
     }
 
+    // Check if any variant image is still uploading
+    const isAnyUploading = Object.values(variantUploading).some(Boolean);
+    if (isAnyUploading) {
+      alert('Please wait, variant images are currently uploading to Cloudinary...');
+      return;
+    }
+
+    // Check if any variant has temporary blob URLs
+    const hasBlobUrls = (formData.variants || []).some(v => 
+      (v.images || []).some(img => typeof img === 'string' && img.startsWith('blob:'))
+    );
+    if (hasBlobUrls) {
+      alert('Some images are still uploading or failed to upload. Please wait a few seconds or re-upload them.');
+      return;
+    }
+
     setSubmitting(true);
 
     try {
@@ -487,7 +511,7 @@ export default function ProductsPage() {
         id: v.id || `var-${Date.now()}-${i}`,
         colorName: v.colorName?.trim() || `Color ${i + 1}`,
         colorCode: v.colorCode || '#000000',
-        images: (v.images || []).filter(Boolean),
+        images: (v.images || []).filter(img => Boolean(img) && !img.startsWith('blob:')),
         stock: v.stock !== undefined && v.stock !== '' ? parseInt(v.stock, 10) : 10,
         sizes: typeof v.sizes === 'string' ? v.sizes.split(',').map(s => s.trim()).filter(Boolean) : (v.sizes || [])
       }));
@@ -1801,9 +1825,11 @@ export default function ProductsPage() {
                 <button 
                   type="submit" 
                   className="btn btn-primary"
-                  disabled={submitting}
+                  disabled={submitting || Object.values(variantUploading).some(Boolean)}
                 >
-                  {submitting ? 'Saving...' : (editingProduct ? 'Save Changes' : 'Create Product')}
+                  {Object.values(variantUploading).some(Boolean)
+                    ? 'Uploading Images... Please wait'
+                    : (submitting ? 'Saving...' : (editingProduct ? 'Save Changes' : 'Create Product'))}
                 </button>
               </div>
             </form>
