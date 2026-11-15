@@ -17,7 +17,8 @@ import {
   Package,
   Sparkles,
   ExternalLink,
-  Palette
+  Palette,
+  Loader2
 } from 'lucide-react';
 
 // Blazing-fast client-side image optimizer (shrinks 5-10MB mobile photos to ~100KB WebP in < 40ms)
@@ -116,6 +117,7 @@ export default function ProductsPage() {
   const [editingProduct, setEditingProduct] = useState(null);
   const [submitting, setSubmitting] = useState(false);
   const [imagePreview, setImagePreview] = useState('');
+  const [mainImageUploading, setMainImageUploading] = useState(false);
   const fileInputRef = useRef(null);
   const [variantUrlInputs, setVariantUrlInputs] = useState({});
   const [variantUploading, setVariantUploading] = useState({});
@@ -222,6 +224,7 @@ export default function ProductsPage() {
       slug: ''
     });
     setImagePreview('');
+    setMainImageUploading(false);
     setVariantUrlInputs({});
     setVariantUploading({});
     setModalOpen(true);
@@ -229,6 +232,7 @@ export default function ProductsPage() {
 
   const openEditModal = (prod) => {
     setEditingProduct(prod);
+    setMainImageUploading(false);
     const existingVariants = Array.isArray(prod.variants) && prod.variants.length > 0
       ? prod.variants.map((v, idx) => ({
           id: v.id || `var-${Date.now()}-${idx}`,
@@ -432,11 +436,18 @@ export default function ProductsPage() {
           return { ...v, images: currentList.filter(img => Boolean(img) && !img.startsWith('blob:')) };
         })
       }));
+
+      const hasFailed = uploadResults.some(r => !r.finalUrl || r.finalUrl.startsWith('blob:'));
+      if (hasFailed) {
+        alert('Some image(s) could not be uploaded to Cloudinary. Please check connection and try again.');
+      }
     } catch (err) {
       console.error('Variant upload error:', err);
       alert('Error uploading variant image. Please try again.');
     } finally {
       setVariantUploading(prev => ({ ...prev, [index]: false }));
+      const inputEl = document.getElementById(`var-file-upload-${index}`);
+      if (inputEl) inputEl.value = '';
     }
   };
 
@@ -485,10 +496,51 @@ export default function ProductsPage() {
 
   const handleFileChange = async (e) => {
     const file = e.target.files?.[0];
-    if (file) {
-      setImagePreview(URL.createObjectURL(file));
-      const optimized = await compressImageBeforeUpload(file);
-      setFormData(prev => ({ ...prev, imageFile: optimized }));
+    if (!file) return;
+
+    // 1. Instant optimistic local preview so user sees the picture right away
+    const tempUrl = URL.createObjectURL(file);
+    setImagePreview(tempUrl);
+    setMainImageUploading(true);
+
+    try {
+      // 2. Convert directly to WebP in browser immediately during upload
+      const optimizedWebpFile = await compressImageBeforeUpload(file);
+
+      // 3. Upload immediately to Cloudinary via /api/upload
+      const uploadData = new FormData();
+      uploadData.append('file', optimizedWebpFile);
+      uploadData.append('image', optimizedWebpFile);
+
+      const res = await authFetch(`${API_BASE}/upload`, {
+        method: 'POST',
+        body: uploadData
+      });
+
+      if (res.ok) {
+        const data = await res.json();
+        if (data.url) {
+          // Permanently store Cloudinary WebP URL
+          setImagePreview(data.url);
+          setFormData(prev => ({
+            ...prev,
+            imageUrl: data.url,
+            imageFile: null
+          }));
+        } else {
+          throw new Error('Upload succeeded but no URL was returned');
+        }
+      } else {
+        const err = await res.json().catch(() => ({}));
+        throw new Error(err.error || 'Upload to Cloudinary failed');
+      }
+    } catch (uploadErr) {
+      console.error('Main image upload error:', uploadErr);
+      alert('Failed to upload image to Cloudinary: ' + uploadErr.message);
+      setImagePreview(formData.imageUrl || '');
+    } finally {
+      setMainImageUploading(false);
+      if (fileInputRef.current) fileInputRef.current.value = '';
     }
   };
 
@@ -516,6 +568,12 @@ export default function ProductsPage() {
 
     if (duplicate) {
       alert(`A product named "${cleanTitle}" already exists in your store catalog. Please choose a unique product name.`);
+      return;
+    }
+
+    // Check if main showcase image or variant images are currently uploading
+    if (mainImageUploading) {
+      alert('Please wait, main showcase image is currently converting and uploading to Cloudinary...');
       return;
     }
 
@@ -1199,10 +1257,20 @@ export default function ProductsPage() {
                       type="button" 
                       onClick={() => fileInputRef.current?.click()}
                       className="btn btn-secondary"
+                      disabled={mainImageUploading}
                       style={{ fontSize: '13px' }}
                     >
-                      <Upload size={15} />
-                      <span>Upload from Device</span>
+                      {mainImageUploading ? (
+                        <>
+                          <Loader2 size={15} className="spinner" />
+                          <span>Converting to WebP & Uploading...</span>
+                        </>
+                      ) : (
+                        <>
+                          <Upload size={15} />
+                          <span>Upload from Device</span>
+                        </>
+                      )}
                     </button>
                     <input 
                       type="file" 
@@ -1228,14 +1296,21 @@ export default function ProductsPage() {
                   {/* Image Preview Box */}
                   {imagePreview && (
                     <div style={{ marginTop: '12px', display: 'flex', alignItems: 'center', gap: '14px', padding: '12px', background: '#FFFFFF', borderRadius: '8px', border: '1px solid #E8E2D2' }}>
-                      <img 
-                        src={imagePreview} 
-                        alt="Preview" 
-                        style={{ width: '64px', height: '64px', objectFit: 'cover', borderRadius: '6px', border: '1px solid #C18A5B' }} 
-                      />
+                      <div style={{ position: 'relative', width: '64px', height: '64px', flexShrink: 0 }}>
+                        <img 
+                          src={imagePreview} 
+                          alt="Preview" 
+                          style={{ width: '64px', height: '64px', objectFit: 'cover', borderRadius: '6px', border: '1px solid #C18A5B' }} 
+                        />
+                        {mainImageUploading && (
+                          <div style={{ position: 'absolute', inset: 0, background: 'rgba(255,255,255,0.7)', display: 'flex', alignItems: 'center', justifyContent: 'center', borderRadius: '6px' }}>
+                            <Loader2 size={20} className="spinner" style={{ color: '#66300F' }} />
+                          </div>
+                        )}
+                      </div>
                       <div style={{ flex: 1, fontSize: '12px', color: '#66300F' }}>
                         <div style={{ fontWeight: '700', fontSize: '13px', display: 'flex', alignItems: 'center', gap: '8px' }}>
-                          <span>First Image Selected</span>
+                          <span>{mainImageUploading ? 'Converting to WebP & Uploading...' : 'First Showcase Image (WebP)'}</span>
                           {formData.color && (
                             <span style={{ display: 'inline-flex', alignItems: 'center', gap: '5px', background: '#FAF7EF', border: '1px solid #E2D9C8', padding: '2px 8px', borderRadius: '12px', fontSize: '11px', color: '#66300F' }}>
                               <span style={{ width: '10px', height: '10px', borderRadius: '50%', backgroundColor: formData.colorCode || '#111111', display: 'inline-block', border: '1px solid rgba(0,0,0,0.2)' }} />
@@ -1244,7 +1319,7 @@ export default function ProductsPage() {
                           )}
                         </div>
                         <div style={{ color: 'var(--color-text-muted)', marginTop: '2px' }}>
-                          High-resolution first image across catalog, WhatsApp preview &amp; cart
+                          {mainImageUploading ? 'Converting image into WebP format and syncing with Cloudinary...' : (formData.imageUrl?.includes('cloudinary') ? '✓ Stored in Cloudinary as WebP format' : 'High-resolution showcase image')}
                         </div>
                       </div>
                     </div>
@@ -1615,8 +1690,17 @@ export default function ProductsPage() {
                                 disabled={variantUploading[idx]}
                                 style={{ fontSize: '12px', padding: '6px 12px' }}
                               >
-                                <Upload size={14} />
-                                <span>{variantUploading[idx] ? 'Uploading...' : 'Upload Photos'}</span>
+                                {variantUploading[idx] ? (
+                                  <>
+                                    <Loader2 size={14} className="spinner" />
+                                    <span>Converting & Uploading WebP...</span>
+                                  </>
+                                ) : (
+                                  <>
+                                    <Upload size={14} />
+                                    <span>Upload Photos</span>
+                                  </>
+                                )}
                               </button>
 
                               <div style={{ display: 'flex', flex: 1, minWidth: '220px', gap: '6px' }}>
