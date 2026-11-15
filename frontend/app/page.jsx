@@ -63,7 +63,7 @@ const playAddToCartSound = () => {
       ctx.resume();
     }
     const now = ctx.currentTime;
-    
+
     // Primary Tone (D5 -> A5)
     const osc1 = ctx.createOscillator();
     const gain1 = ctx.createGain();
@@ -116,9 +116,9 @@ function resolveColorHex(name = '', code = '') {
 function getProductColorOptions(product) {
   if (!product) return [];
   const variants = Array.isArray(product.variants) ? product.variants : [];
-  
+
   // Check if primary image is already explicitly one of the variant images
-  const isImageInVariants = product.image && variants.some((v) => 
+  const isImageInVariants = product.image && variants.some((v) =>
     v.images && v.images.length > 0 && (v.images[0] === product.image || v.images.includes(product.image))
   );
 
@@ -274,7 +274,7 @@ export default function StorefrontPage() {
     { id: 'cat-2', name: 'Watches', slug: 'watches' },
     { id: 'cat-3', name: 'Bags', slug: 'bags' }
   ]);
-  
+
   const [searchQuery, setSearchQuery] = useState('');
   const [searchOpen, setSearchOpen] = useState(false);
   const [priceFilter, setPriceFilter] = useState('all');
@@ -401,7 +401,7 @@ export default function StorefrontPage() {
       if (saved) {
         setCart(JSON.parse(saved));
       }
-    } catch (e) {}
+    } catch (e) { }
   }, []);
 
   // Update cart in state & localStorage
@@ -409,7 +409,7 @@ export default function StorefrontPage() {
     setCart(newCart);
     try {
       localStorage.setItem('smp_cart', JSON.stringify(newCart));
-    } catch (e) {}
+    } catch (e) { }
   };
 
   const addToCart = (product, qty = 1, sizeChoice, variantChoice) => {
@@ -420,7 +420,7 @@ export default function StorefrontPage() {
     const chosenImage = chosen?.images?.[0] || product.image;
     const chosenSize = sizeChoice !== undefined ? sizeChoice : (
       chosen?.sizes && chosen.sizes.length > 0 ? chosen.sizes[0] :
-      (product.sizes && product.sizes.length > 0 ? (selectedSize || product.sizes[0]) : '')
+        (product.sizes && product.sizes.length > 0 ? (selectedSize || product.sizes[0]) : '')
     );
 
     const variantKeyPart = chosen ? chosen.id : (chosenColor ? chosenColor.replace(/\s+/g, '-') : 'default');
@@ -499,7 +499,7 @@ Hello SMP, I would like to order these items from my shopping bag.`;
     const resolvedImage = chosen?.images?.[0] || product.image;
     const resolvedSize = sizeChoice !== undefined ? sizeChoice : (
       chosen?.sizes && chosen.sizes.length > 0 ? chosen.sizes[0] :
-      (product.sizes && product.sizes.length > 0 ? (selectedSize || product.sizes[0]) : '')
+        (product.sizes && product.sizes.length > 0 ? (selectedSize || product.sizes[0]) : '')
     );
 
     setOrderModalProduct({
@@ -549,27 +549,27 @@ Hello SMP, I would like to order these items from my shopping bag.`;
 
     const orderItems = isCartOrder
       ? cart.map(item => ({
-          productId: item.id,
-          variantId: item.variantId || null,
-          title: item.title,
-          price: item.price,
-          quantity: item.quantity,
-          image: item.image,
-          color: item.color || '',
-          size: item.size || ''
-        }))
+        productId: item.id,
+        variantId: item.variantId || null,
+        title: item.title,
+        price: item.price,
+        quantity: item.quantity,
+        image: item.image,
+        color: item.color || '',
+        size: item.size || ''
+      }))
       : [
-          {
-            productId: orderModalProduct.id,
-            variantId: orderModalProduct.variantId || null,
-            title: orderModalProduct.title,
-            price: orderModalProduct.price,
-            quantity: quantity,
-            image: orderModalProduct.image,
-            color: orderModalProduct.color || '',
-            size: orderSize || ''
-          }
-        ];
+        {
+          productId: orderModalProduct.id,
+          variantId: orderModalProduct.variantId || null,
+          title: orderModalProduct.title,
+          price: orderModalProduct.price,
+          quantity: quantity,
+          image: orderModalProduct.image,
+          color: orderModalProduct.color || '',
+          size: orderSize || ''
+        }
+      ];
 
     const totalAmount = isCartOrder ? totalCartPrice : orderModalProduct.price * quantity;
 
@@ -592,7 +592,7 @@ Hello SMP, I would like to order these items from my shopping bag.`;
     // 2. Prepare WhatsApp message
     let formattedMessage = '';
     if (isCartOrder) {
-      const itemsList = cart.map((item, idx) => 
+      const itemsList = cart.map((item, idx) =>
         `${idx + 1}. *${item.title}* (${item.brand || 'SMP Luxury'})${item.color ? `\n   Color: ${item.color}` : ''}${item.size ? `\n   Size: ${item.size}` : ''}\n   Qty: ${item.quantity} × AED ${item.price} = AED ${item.quantity * item.price}\n   Image: ${item.image}`
       ).join('\n\n');
 
@@ -856,9 +856,9 @@ Please confirm my order. Thank you!`;
 
           <nav className="header-nav">
             <a href="#" className="nav-item">Home</a>
-            <a 
-              href="#collections" 
-              onClick={() => { setActiveCategory('all'); setActiveGender('all'); }} 
+            <a
+              href="#collections"
+              onClick={() => { setActiveCategory('all'); setActiveGender('all'); }}
               className={`nav-item ${activeCategory === 'all' ? 'active-nav' : ''}`}
             >
               All Collections
@@ -1473,8 +1473,8 @@ Please confirm my order. Thank you!`;
                               const validBrands = brandsList.filter(b => b.logo || b.src);
                               const displayBrands = validBrands.length > 0 ? validBrands : INITIAL_FALLBACK_BRANDS;
                               return [...displayBrands, ...displayBrands, ...displayBrands, ...displayBrands].map((brand, bIdx) => (
-                                <div 
-                                  key={`brand-train-${bIdx}`} 
+                                <div
+                                  key={`brand-train-${bIdx}`}
                                   className="brand-train-item"
                                   onClick={() => {
                                     setActiveBrand(brand.name);
@@ -1515,16 +1515,16 @@ Please confirm my order. Thank you!`;
 
               {/* Luxury Pagination Controls with 18 Items Per Page */}
               {totalPages > 1 && (
-                <div 
-                  className="collection-pagination" 
-                  style={{ 
-                    marginTop: '44px', 
+                <div
+                  className="collection-pagination"
+                  style={{
+                    marginTop: '44px',
                     paddingTop: '28px',
                     borderTop: '1px solid #ECE6D8',
-                    display: 'flex', 
-                    flexDirection: 'column', 
-                    alignItems: 'center', 
-                    gap: '16px' 
+                    display: 'flex',
+                    flexDirection: 'column',
+                    alignItems: 'center',
+                    gap: '16px'
                   }}
                 >
                   <div style={{ fontSize: '13px', color: '#786F66', letterSpacing: '0.02em' }}>
@@ -2253,8 +2253,8 @@ Please confirm my order. Thank you!`;
             const validBrands = brandsList.filter(b => b.logo || b.src);
             const displayBrands = validBrands.length > 0 ? validBrands : INITIAL_FALLBACK_BRANDS;
             return [...displayBrands, ...displayBrands, ...displayBrands, ...displayBrands].map((brand, idx) => (
-              <div 
-                key={`brand-bot-${idx}`} 
+              <div
+                key={`brand-bot-${idx}`}
                 className="brand-train-item"
                 onClick={() => {
                   setActiveBrand(brand.name);

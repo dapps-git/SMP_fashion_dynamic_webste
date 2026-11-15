@@ -189,7 +189,11 @@ export default function ProductsPage() {
       const res = await fetch(url);
       if (res.ok) {
         const data = await res.json();
-        setProducts(data);
+        const normalized = (Array.isArray(data) ? data : []).map(p => ({
+          ...p,
+          id: p.id || p._id?.toString() || ''
+        }));
+        setProducts(normalized);
       }
     } catch (err) {
       console.error('Failed to load products:', err);
@@ -240,7 +244,9 @@ export default function ProductsPage() {
   };
 
   const openEditModal = (prod) => {
-    setEditingProduct(prod);
+    const targetId = prod.id || prod._id?.toString() || '';
+    const normalizedProd = { ...prod, id: targetId };
+    setEditingProduct(normalizedProd);
     setMainImageUploading(false);
     const existingVariants = Array.isArray(prod.variants) && prod.variants.length > 0
       ? prod.variants.map((v, idx) => ({
@@ -640,10 +646,11 @@ export default function ProductsPage() {
         formPayload.append('imageUrl', sanitizedVariants[0].images[0]);
       }
 
-      const url = editingProduct 
-        ? `${API_BASE}/products/${editingProduct.id}`
+      const targetId = editingProduct ? (editingProduct.id || editingProduct._id) : null;
+      const url = targetId 
+        ? `${API_BASE}/products/${targetId}`
         : `${API_BASE}/products`;
-      const method = editingProduct ? 'PUT' : 'POST';
+      const method = targetId ? 'PUT' : 'POST';
 
       const token = getAuthToken();
       if (!token) {
@@ -661,7 +668,7 @@ export default function ProductsPage() {
         setModalOpen(false);
         fetchProducts();
       } else {
-        const errorData = await res.json();
+        const errorData = await res.json().catch(() => ({}));
         alert(errorData.error || 'Failed to save product');
       }
     } catch (err) {
@@ -672,17 +679,26 @@ export default function ProductsPage() {
     }
   };
 
-  const handleDelete = async (id) => {
+  const handleDelete = async (prodOrId) => {
+    const id = typeof prodOrId === 'object' ? (prodOrId.id || prodOrId._id) : prodOrId;
+    if (!id || id === 'undefined') {
+      alert('Error: Cannot delete product because Product ID is missing.');
+      return;
+    }
     if (!confirm('Are you sure you want to delete this product?')) return;
     try {
       const res = await authFetch(`${API_BASE}/products/${id}`, {
         method: 'DELETE'
       });
       if (res.ok) {
-        setProducts(products.filter(p => p.id !== id));
+        setProducts(prev => prev.filter(p => (p.id !== id && p._id !== id)));
+      } else {
+        const errData = await res.json().catch(() => ({}));
+        alert(errData.error || 'Failed to delete product from database.');
       }
     } catch (err) {
       console.error('Error deleting product:', err);
+      alert('Network error while deleting product.');
     }
   };
 
@@ -825,8 +841,10 @@ export default function ProductsPage() {
             </thead>
             <tbody>
               {paginatedProducts.length > 0 ? (
-                paginatedProducts.map((p) => (
-                  <tr key={p.id}>
+                paginatedProducts.map((p) => {
+                  const safeId = p.id || p._id || '';
+                  return (
+                  <tr key={safeId || p.title}>
                     <td>
                       <div style={{ display: 'flex', alignItems: 'center', gap: '14px' }}>
                         <img 
@@ -850,7 +868,7 @@ export default function ProductsPage() {
                           </div>
                           <div style={{ display: 'flex', alignItems: 'center', gap: '6px', flexWrap: 'wrap', marginTop: '2px' }}>
                             <span style={{ fontSize: '11px', color: 'var(--color-text-muted)' }}>
-                              ID: {p.id}
+                              ID: {safeId.slice(-6)}
                             </span>
                             {p.variants && p.variants.length > 0 ? (
                               <span style={{ display: 'inline-flex', alignItems: 'center', gap: '5px', background: '#F8F4EC', border: '1px solid #E8DEC8', padding: '2px 8px', borderRadius: '4px' }}>
@@ -952,7 +970,7 @@ export default function ProductsPage() {
                           <Edit3 size={14} />
                         </button>
                         <button 
-                          onClick={() => handleDelete(p.id)} 
+                          onClick={() => handleDelete(p)} 
                           className="btn btn-danger"
                           style={{ padding: '6px 10px', fontSize: '12px' }}
                           title="Delete Product"
@@ -962,7 +980,8 @@ export default function ProductsPage() {
                       </div>
                     </td>
                   </tr>
-                ))
+                );
+              })
               ) : (
                 <tr>
                   <td colSpan="5" style={{ textAlign: 'center', padding: '40px', color: 'var(--color-text-muted)' }}>

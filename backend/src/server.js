@@ -539,7 +539,12 @@ app.get('/api/products', async (req, res) => {
         ];
       }
       const products = await Product.find(query).sort({ createdAt: -1 });
-      return res.json(products);
+      const normalizedProducts = products.map(p => {
+        const obj = p.toObject ? p.toObject() : { ...p };
+        obj.id = obj.id || (obj._id ? obj._id.toString() : '');
+        return obj;
+      });
+      return res.json(normalizedProducts);
     }
     return res.json(fileDb.getProducts(category, search, gender, brand));
   } catch (e) { 
@@ -561,7 +566,11 @@ app.get('/api/products/:id', async (req, res) => {
       if (!prod) {
         prod = await Product.findOne({ slug: paramId });
       }
-      if (prod) return res.json(prod);
+      if (prod) {
+        const obj = prod.toObject ? prod.toObject() : { ...prod };
+        obj.id = obj.id || (obj._id ? obj._id.toString() : '');
+        return res.json(obj);
+      }
     }
     const prod = fileDb.getProductById(paramId);
     if (!prod) return res.status(404).json({ error: 'Product not found' });
@@ -747,6 +756,11 @@ app.post('/api/products', authenticateToken, handleUpload, async (req, res) => {
 
 app.put('/api/products/:id', authenticateToken, handleUpload, async (req, res) => {
   try {
+    const paramId = req.params.id;
+    if (!paramId || paramId === 'undefined') {
+      return res.status(400).json({ error: 'Valid product ID required for update' });
+    }
+
     const { title, category, brand, price, comparePrice, stock, description, badge, details, imageUrl, seoTitle, seoDescription, seoKeywords, slug, gender, color, colorCode, sizes, variants } = req.body;
 
     const cleanTitle = title !== undefined ? String(title).trim() : undefined;
@@ -758,8 +772,11 @@ app.put('/api/products/:id', authenticateToken, handleUpload, async (req, res) =
       const titleRegex = new RegExp(`^${cleanTitle.replace(/[.*+?^${}()|[\]\\]/g, '\\$&')}$`, 'i');
       if (mongoose.connection.readyState === 1) {
         const existingProduct = await Product.findOne({
-          _id: { $ne: req.params.id },
-          title: { $regex: titleRegex }
+          $and: [
+            { title: { $regex: titleRegex } },
+            { _id: { $ne: mongoose.isValidObjectId(paramId) ? paramId : null } },
+            { id: { $ne: paramId } }
+          ]
         });
         if (existingProduct) {
           return res.status(400).json({ error: `Another product with the name "${cleanTitle}" already exists. Product names must be unique.` });
@@ -767,7 +784,7 @@ app.put('/api/products/:id', authenticateToken, handleUpload, async (req, res) =
       } else {
         const allProds = fileDb.getProducts();
         const existingProduct = allProds.find(p =>
-          (p._id !== req.params.id && p.id !== req.params.id) &&
+          (p._id !== paramId && p.id !== paramId) &&
           p.title && p.title.trim().toLowerCase() === cleanTitle.toLowerCase()
         );
         if (existingProduct) {
@@ -846,46 +863,58 @@ app.put('/api/products/:id', authenticateToken, handleUpload, async (req, res) =
 
     if (mongoose.connection.readyState === 1) {
       let updated = null;
-      if (mongoose.Types.ObjectId.isValid(req.params.id)) {
-        updated = await Product.findByIdAndUpdate(req.params.id, updateFields, { new: true });
+      if (mongoose.Types.ObjectId.isValid(paramId)) {
+        updated = await Product.findByIdAndUpdate(paramId, updateFields, { new: true });
       }
       if (!updated) {
-        updated = await Product.findOneAndUpdate({ id: req.params.id }, updateFields, { new: true });
+        updated = await Product.findOneAndUpdate({ id: paramId }, updateFields, { new: true });
       }
-      if (updated) return res.json(updated);
+      if (updated) {
+        const obj = updated.toObject ? updated.toObject() : { ...updated };
+        obj.id = obj.id || (obj._id ? obj._id.toString() : '');
+        return res.json(obj);
+      }
+      return res.status(404).json({ error: 'Product not found for update' });
     }
 
-    const updated = fileDb.updateProduct(req.params.id, updateFields);
+    const updated = fileDb.updateProduct(paramId, updateFields);
     res.json(updated);
   } catch (e) { 
-    const updated = fileDb.updateProduct(req.params.id, req.body);
-    res.json(updated);
+    console.error('Update product error:', e);
+    res.status(500).json({ error: e.message || 'Failed to update product' });
   }
 });
 
 app.delete('/api/products/:id', authenticateToken, async (req, res) => {
   try {
+    const paramId = req.params.id;
+    if (!paramId || paramId === 'undefined') {
+      return res.status(400).json({ error: 'Valid product ID required for deletion' });
+    }
+
     if (mongoose.connection.readyState === 1) {
       let prod = null;
-      if (mongoose.Types.ObjectId.isValid(req.params.id)) {
-        prod = await Product.findById(req.params.id);
+      if (mongoose.Types.ObjectId.isValid(paramId)) {
+        prod = await Product.findById(paramId);
       }
       if (!prod) {
-        prod = await Product.findOne({ id: req.params.id });
+        prod = await Product.findOne({ id: paramId });
+      }
+      if (!prod) {
+        return res.status(404).json({ error: 'Product not found for deletion' });
       }
       if (prod?.imagePublicId) {
         try { await cloudinary.uploader.destroy(prod.imagePublicId); } catch (_) {}
       }
-      if (prod) {
-        await Product.deleteOne({ _id: prod._id });
-      }
+      await Product.deleteOne({ _id: prod._id });
+      return res.json({ success: true, deletedId: paramId });
     } else {
-      fileDb.deleteProduct(req.params.id);
+      fileDb.deleteProduct(paramId);
+      return res.json({ success: true, deletedId: paramId });
     }
-    res.json({ success: true });
   } catch (e) {
-    fileDb.deleteProduct(req.params.id);
-    res.json({ success: true });
+    console.error('Delete product error:', e);
+    res.status(500).json({ error: e.message || 'Failed to delete product' });
   }
 });
 

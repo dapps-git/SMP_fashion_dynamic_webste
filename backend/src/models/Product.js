@@ -35,6 +35,22 @@ const ProductSchema = new mongoose.Schema({
   seoDescription: { type: String, default: '' },
   seoKeywords: { type: String, default: '' },
   slug: { type: String, default: '' }
-}, { timestamps: true });
+}, { 
+  timestamps: true,
+  toJSON: {
+    virtuals: true,
+    transform: (doc, ret) => {
+      ret.id = ret.id || ret._id?.toString();
+      return ret;
+    }
+  },
+  toObject: {
+    virtuals: true,
+    transform: (doc, ret) => {
+      ret.id = ret.id || ret._id?.toString();
+      return ret;
+    }
+  }
+});
 
 module.exports = mongoose.model('Product', ProductSchema);
