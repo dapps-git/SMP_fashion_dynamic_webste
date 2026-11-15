@@ -18,7 +18,9 @@ import {
   Sparkles,
   ExternalLink,
   Palette,
-  Loader2
+  Loader2,
+  ChevronLeft,
+  ChevronRight
 } from 'lucide-react';
 
 // Blazing-fast client-side image optimizer (shrinks 5-10MB mobile photos to ~100KB WebP in < 40ms)
@@ -122,6 +124,13 @@ export default function ProductsPage() {
   const [variantUrlInputs, setVariantUrlInputs] = useState({});
   const [variantUploading, setVariantUploading] = useState({});
   const [customSizeInput, setCustomSizeInput] = useState('');
+  const [currentPage, setCurrentPage] = useState(1);
+  const PRODUCTS_PER_PAGE = 18;
+
+  // Reset to page 1 on filter or search
+  useEffect(() => {
+    setCurrentPage(1);
+  }, [selectedCategory, selectedGender, selectedBrand, search]);
 
   // Form fields
   const [formData, setFormData] = useState({
@@ -704,6 +713,22 @@ export default function ProductsPage() {
     return p.title.toLowerCase().includes(q) || (p.brand && p.brand.toLowerCase().includes(q));
   });
 
+  const totalPages = Math.max(1, Math.ceil(filteredProducts.length / PRODUCTS_PER_PAGE));
+  const startIndex = (currentPage - 1) * PRODUCTS_PER_PAGE;
+  const paginatedProducts = filteredProducts.slice(startIndex, startIndex + PRODUCTS_PER_PAGE);
+
+  const handlePageChange = (newPage) => {
+    if (newPage < 1 || newPage > totalPages || newPage === currentPage) return;
+    setCurrentPage(newPage);
+    const tableEl = document.querySelector('.table-container');
+    if (tableEl) {
+      const y = tableEl.getBoundingClientRect().top + window.pageYOffset - 80;
+      window.scrollTo({ top: y, behavior: 'smooth' });
+    } else {
+      window.scrollTo({ top: 0, behavior: 'smooth' });
+    }
+  };
+
   return (
     <AdminLayout title="Product Management">
       {/* Header Bar */}
@@ -799,8 +824,8 @@ export default function ProductsPage() {
               </tr>
             </thead>
             <tbody>
-              {filteredProducts.length > 0 ? (
-                filteredProducts.map((p) => (
+              {paginatedProducts.length > 0 ? (
+                paginatedProducts.map((p) => (
                   <tr key={p.id}>
                     <td>
                       <div style={{ display: 'flex', alignItems: 'center', gap: '14px' }}>
@@ -948,6 +973,84 @@ export default function ProductsPage() {
             </tbody>
           </table>
         </div>
+
+        {/* Admin Table Pagination (18 items per page) */}
+        {totalPages > 1 && (
+          <div style={{
+            display: 'flex',
+            alignItems: 'center',
+            justifyContent: 'space-between',
+            padding: '16px 20px',
+            borderTop: '1px solid var(--color-border)',
+            background: '#FAF7EF',
+            flexWrap: 'wrap',
+            gap: '12px'
+          }}>
+            <div style={{ fontSize: '13px', color: 'var(--color-text-muted)' }}>
+              Showing <strong>{startIndex + 1}–{Math.min(startIndex + PRODUCTS_PER_PAGE, filteredProducts.length)}</strong> of <strong>{filteredProducts.length}</strong> products
+            </div>
+
+            <div style={{ display: 'flex', alignItems: 'center', gap: '8px' }}>
+              <button
+                type="button"
+                onClick={() => handlePageChange(currentPage - 1)}
+                disabled={currentPage === 1}
+                className="btn btn-secondary"
+                style={{
+                  fontSize: '12px',
+                  padding: '6px 14px',
+                  opacity: currentPage === 1 ? 0.5 : 1,
+                  cursor: currentPage === 1 ? 'not-allowed' : 'pointer'
+                }}
+              >
+                <ChevronLeft size={14} />
+                <span>Previous</span>
+              </button>
+
+              <div style={{ display: 'flex', gap: '4px' }}>
+                {Array.from({ length: totalPages }, (_, i) => i + 1).map((pageNum) => {
+                  const isActive = pageNum === currentPage;
+                  return (
+                    <button
+                      key={`admin-page-${pageNum}`}
+                      type="button"
+                      onClick={() => handlePageChange(pageNum)}
+                      style={{
+                        width: '32px',
+                        height: '32px',
+                        borderRadius: '6px',
+                        border: isActive ? '1px solid #66300F' : '1px solid var(--color-border)',
+                        background: isActive ? '#66300F' : '#FFFFFF',
+                        color: isActive ? '#FFFFFF' : '#1F1B18',
+                        fontWeight: isActive ? '700' : '500',
+                        fontSize: '13px',
+                        cursor: 'pointer'
+                      }}
+                    >
+                      {pageNum}
+                    </button>
+                  );
+                })}
+              </div>
+
+              <button
+                type="button"
+                onClick={() => handlePageChange(currentPage + 1)}
+                disabled={currentPage === totalPages}
+                className="btn btn-secondary"
+                style={{
+                  fontSize: '12px',
+                  padding: '6px 14px',
+                  opacity: currentPage === totalPages ? 0.5 : 1,
+                  cursor: currentPage === totalPages ? 'not-allowed' : 'pointer'
+                }}
+              >
+                <span>Next</span>
+                <ChevronRight size={14} />
+              </button>
+            </div>
+          </div>
+        )}
       </div>
 
       {/* Add / Edit Product Modal (Rendered via Portal: Immune to Parent Clipping) */}

@@ -20,6 +20,7 @@ import {
   Sparkles,
   Award,
   ChevronRight,
+  ChevronLeft,
   ExternalLink,
   SlidersHorizontal,
   Menu,
@@ -281,6 +282,13 @@ export default function StorefrontPage() {
   const [showBrandFilter, setShowBrandFilter] = useState(false);
   const [loading, setLoading] = useState(true);
   const [mobileMenuOpen, setMobileMenuOpen] = useState(false);
+  const [currentPage, setCurrentPage] = useState(1);
+  const PRODUCTS_PER_PAGE = 18;
+
+  // Automatically reset to Page 1 when any filter or search changes
+  useEffect(() => {
+    setCurrentPage(1);
+  }, [activeCategory, activeGender, activeBrand, searchQuery, priceFilter]);
 
   // Dynamically compute all categories from API and loaded products
   const displayCategories = React.useMemo(() => {
@@ -688,6 +696,25 @@ Please confirm my order. Thank you!`;
     if (priceFilter === 'above-600') return p.price > 600;
     return true;
   });
+
+  // 18 Products per page pagination
+  const totalPages = Math.max(1, Math.ceil(filteredProducts.length / PRODUCTS_PER_PAGE));
+  const startIndex = (currentPage - 1) * PRODUCTS_PER_PAGE;
+  const paginatedProducts = filteredProducts.slice(startIndex, startIndex + PRODUCTS_PER_PAGE);
+
+  const handlePageChange = (newPage) => {
+    if (newPage < 1 || newPage > totalPages || newPage === currentPage) return;
+    setCurrentPage(newPage);
+    // Smoothly scroll to the top of the collections section (never stay at bottom)
+    const collectionsEl = document.getElementById('collections');
+    if (collectionsEl) {
+      const yOffset = -20;
+      const y = collectionsEl.getBoundingClientRect().top + window.pageYOffset + yOffset;
+      window.scrollTo({ top: y, behavior: 'smooth' });
+    } else {
+      window.scrollTo({ top: 0, behavior: 'smooth' });
+    }
+  };
 
   const liveSearchResults = useMemo(() => {
     const q = (searchQuery || '').trim().toLowerCase();
@@ -1426,63 +1453,170 @@ Please confirm my order. Thank you!`;
               ))}
             </div>
           ) : filteredProducts.length > 0 ? (
-            <div className="products-grid-6col">
-              {filteredProducts.map((p, pIdx) => (
-                <React.Fragment key={p.id}>
-                  <StorefrontProductCard
-                    product={p}
-                    onBuyNow={handleOpenBuyNow}
-                    onAddToCart={addToCart}
-                  />
+            <>
+              <div className="products-grid-6col">
+                {paginatedProducts.map((p, pIdx) => (
+                  <React.Fragment key={p.id}>
+                    <StorefrontProductCard
+                      product={p}
+                      onBuyNow={handleOpenBuyNow}
+                      onAddToCart={addToCart}
+                    />
 
-                  {/* Brand Logos Train Marquee after 4 Products (Dynamic) */}
-                  {pIdx === 3 && (
-                    <div className="collection-brand-train-wrapper">
-                      <div className="brand-train-section" aria-label="Luxury Brands">
-                        <div className="brand-train-track brand-train-forward">
-                          {(() => {
-                            const validBrands = brandsList.filter(b => b.logo || b.src);
-                            const displayBrands = validBrands.length > 0 ? validBrands : INITIAL_FALLBACK_BRANDS;
-                            return [...displayBrands, ...displayBrands, ...displayBrands, ...displayBrands].map((brand, bIdx) => (
-                              <div 
-                                key={`brand-train-${bIdx}`} 
-                                className="brand-train-item"
-                                onClick={() => {
-                                  setActiveBrand(brand.name);
-                                  const el = document.getElementById('collections');
-                                  if (el) el.scrollIntoView({ behavior: 'smooth' });
-                                }}
-                                title={`Filter by ${brand.name}`}
-                                style={{ cursor: 'pointer' }}
-                              >
-                                <img
-                                  src={brand.logo || brand.src}
-                                  alt={brand.name}
-                                  className="brand-train-logo"
-                                  loading="lazy"
-                                />
-                              </div>
-                            ));
-                          })()}
+                    {/* Brand Logos Train Marquee after 4 Products (on Page 1) */}
+                    {currentPage === 1 && pIdx === 3 && (
+                      <div className="collection-brand-train-wrapper">
+                        <div className="brand-train-section" aria-label="Luxury Brands">
+                          <div className="brand-train-track brand-train-forward">
+                            {(() => {
+                              const validBrands = brandsList.filter(b => b.logo || b.src);
+                              const displayBrands = validBrands.length > 0 ? validBrands : INITIAL_FALLBACK_BRANDS;
+                              return [...displayBrands, ...displayBrands, ...displayBrands, ...displayBrands].map((brand, bIdx) => (
+                                <div 
+                                  key={`brand-train-${bIdx}`} 
+                                  className="brand-train-item"
+                                  onClick={() => {
+                                    setActiveBrand(brand.name);
+                                    const el = document.getElementById('collections');
+                                    if (el) el.scrollIntoView({ behavior: 'smooth' });
+                                  }}
+                                  title={`Filter by ${brand.name}`}
+                                  style={{ cursor: 'pointer' }}
+                                >
+                                  <img
+                                    src={brand.logo || brand.src}
+                                    alt={brand.name}
+                                    className="brand-train-logo"
+                                    loading="lazy"
+                                  />
+                                </div>
+                              ));
+                            })()}
+                          </div>
                         </div>
                       </div>
-                    </div>
-                  )}
+                    )}
 
-                  {/* 4-Step Order Process Infographic Banner after 10 Products */}
-                  {pIdx === 9 && (
-                    <div className="collection-order-process-banner">
-                      <img
-                        src="/order-process-banner.png"
-                        alt="SMP Order Process - Search Products, Order Through WhatsApp, Inspect Before Payment, Happy Delivery"
-                        className="collection-order-process-img"
-                        loading="lazy"
-                      />
+                    {/* 4-Step Order Process Infographic Banner after 10 Products (on Page 1) */}
+                    {currentPage === 1 && pIdx === 9 && (
+                      <div className="collection-order-process-banner">
+                        <img
+                          src="/order-process-banner.png"
+                          alt="SMP Order Process - Search Products, Order Through WhatsApp, Inspect Before Payment, Happy Delivery"
+                          className="collection-order-process-img"
+                          loading="lazy"
+                        />
+                      </div>
+                    )}
+                  </React.Fragment>
+                ))}
+              </div>
+
+              {/* Luxury Pagination Controls with 18 Items Per Page */}
+              {totalPages > 1 && (
+                <div 
+                  className="collection-pagination" 
+                  style={{ 
+                    marginTop: '44px', 
+                    paddingTop: '28px',
+                    borderTop: '1px solid #ECE6D8',
+                    display: 'flex', 
+                    flexDirection: 'column', 
+                    alignItems: 'center', 
+                    gap: '16px' 
+                  }}
+                >
+                  <div style={{ fontSize: '13px', color: '#786F66', letterSpacing: '0.02em' }}>
+                    Showing <strong>{startIndex + 1}–{Math.min(startIndex + PRODUCTS_PER_PAGE, filteredProducts.length)}</strong> of <strong>{filteredProducts.length}</strong> luxury pieces
+                  </div>
+
+                  <nav aria-label="Catalog pagination" style={{ display: 'flex', alignItems: 'center', gap: '8px', flexWrap: 'wrap', justifyContent: 'center' }}>
+                    <button
+                      type="button"
+                      onClick={() => handlePageChange(currentPage - 1)}
+                      disabled={currentPage === 1}
+                      aria-label="Previous page"
+                      style={{
+                        padding: '10px 18px',
+                        borderRadius: '30px',
+                        border: '1px solid #D6CEBE',
+                        background: currentPage === 1 ? '#F7F5F0' : '#FFFFFF',
+                        color: currentPage === 1 ? '#B8B0A4' : '#4A2027',
+                        fontWeight: '600',
+                        fontSize: '13px',
+                        cursor: currentPage === 1 ? 'not-allowed' : 'pointer',
+                        display: 'inline-flex',
+                        alignItems: 'center',
+                        gap: '6px',
+                        transition: 'all 0.2s ease',
+                        boxShadow: currentPage === 1 ? 'none' : '0 2px 6px rgba(0,0,0,0.04)'
+                      }}
+                    >
+                      <ChevronLeft size={16} />
+                      <span>Previous</span>
+                    </button>
+
+                    <div style={{ display: 'flex', gap: '6px', alignItems: 'center' }}>
+                      {Array.from({ length: totalPages }, (_, i) => i + 1).map((pageNum) => {
+                        const isActive = pageNum === currentPage;
+                        return (
+                          <button
+                            key={`catalog-page-${pageNum}`}
+                            type="button"
+                            onClick={() => handlePageChange(pageNum)}
+                            aria-current={isActive ? 'page' : undefined}
+                            aria-label={`Page ${pageNum}`}
+                            style={{
+                              width: '40px',
+                              height: '40px',
+                              borderRadius: '50%',
+                              border: isActive ? '2px solid #66300F' : '1px solid #E8E2D2',
+                              background: isActive ? '#66300F' : '#FFFFFF',
+                              color: isActive ? '#FFFFFF' : '#4A2027',
+                              fontWeight: isActive ? '700' : '600',
+                              fontSize: '14px',
+                              cursor: 'pointer',
+                              display: 'inline-flex',
+                              alignItems: 'center',
+                              justifyContent: 'center',
+                              transition: 'all 0.2s ease',
+                              boxShadow: isActive ? '0 4px 10px rgba(102,48,15,0.25)' : 'none'
+                            }}
+                          >
+                            {pageNum}
+                          </button>
+                        );
+                      })}
                     </div>
-                  )}
-                </React.Fragment>
-              ))}
-            </div>
+
+                    <button
+                      type="button"
+                      onClick={() => handlePageChange(currentPage + 1)}
+                      disabled={currentPage === totalPages}
+                      aria-label="Next page"
+                      style={{
+                        padding: '10px 20px',
+                        borderRadius: '30px',
+                        border: '1px solid #66300F',
+                        background: currentPage === totalPages ? '#F7F5F0' : '#66300F',
+                        color: currentPage === totalPages ? '#B8B0A4' : '#FFFFFF',
+                        fontWeight: '600',
+                        fontSize: '13px',
+                        cursor: currentPage === totalPages ? 'not-allowed' : 'pointer',
+                        display: 'inline-flex',
+                        alignItems: 'center',
+                        gap: '6px',
+                        transition: 'all 0.2s ease',
+                        boxShadow: currentPage === totalPages ? 'none' : '0 4px 12px rgba(102,48,15,0.2)'
+                      }}
+                    >
+                      <span>Next</span>
+                      <ChevronRight size={16} />
+                    </button>
+                  </nav>
+                </div>
+              )}
+            </>
           ) : (
             <div style={{ textAlign: 'center', padding: '60px 20px', color: '#786F66' }}>
               <Package size={44} color="#D1C7B7" style={{ margin: '0 auto 16px' }} />
