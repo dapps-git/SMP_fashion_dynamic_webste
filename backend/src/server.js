@@ -112,14 +112,23 @@ try {
 }
 app.use('/uploads', express.static(localUploadsDir));
 
-// Helper: processes uploaded file with Cloudinary optimization or safe fallbacks
+// Helper to guarantee WebP extension and format on Cloudinary URLs
+function toWebpCloudinaryUrl(url) {
+  if (!url || typeof url !== 'string') return url;
+  if (url.includes('res.cloudinary.com')) {
+    return url.replace(/\.(jpe?g|png|gif|bmp|tiff|heic)(\?.*)?$/i, '.webp$2');
+  }
+  return url;
+}
+
+// Helper: processes uploaded file with Cloudinary WebP optimization or safe fallbacks
 async function processUploadedFile(file, req) {
   if (!file) return null;
   const uniqueId = `${Date.now()}-${Math.round(Math.random() * 1e9)}`;
   let finalUrl = '';
   let publicId = uniqueId;
 
-  // 1. Try uploading to Cloudinary (direct binary stream or path)
+  // 1. Try uploading to Cloudinary (direct binary stream or path) converted directly to WebP
   try {
     if (file.buffer) {
       const { Readable } = require('stream');
@@ -127,8 +136,9 @@ async function processUploadedFile(file, req) {
         const cStream = cloudinary.uploader.upload_stream(
           {
             folder: 'smp-fashion',
-            resource_type: 'auto',
-            transformation: [{ width: 1200, height: 1200, crop: 'limit', quality: 'auto:good' }]
+            resource_type: 'image',
+            format: 'webp',
+            transformation: [{ width: 1600, height: 1600, crop: 'limit', quality: 'auto:good' }]
           },
           (error, result) => {
             if (error) return reject(error);
@@ -140,19 +150,20 @@ async function processUploadedFile(file, req) {
 
       if (streamRes && (streamRes.secure_url || streamRes.url)) {
         return {
-          url: streamRes.secure_url || streamRes.url,
+          url: toWebpCloudinaryUrl(streamRes.secure_url || streamRes.url),
           publicId: streamRes.public_id || uniqueId
         };
       }
     } else if (file.path) {
       const uploadRes = await cloudinary.uploader.upload(file.path, {
         folder: 'smp-fashion',
-        resource_type: 'auto',
-        transformation: [{ width: 1200, height: 1200, crop: 'limit', quality: 'auto:good' }]
+        resource_type: 'image',
+        format: 'webp',
+        transformation: [{ width: 1600, height: 1600, crop: 'limit', quality: 'auto:good' }]
       });
       if (uploadRes && (uploadRes.secure_url || uploadRes.url)) {
         return {
-          url: uploadRes.secure_url || uploadRes.url,
+          url: toWebpCloudinaryUrl(uploadRes.secure_url || uploadRes.url),
           publicId: uploadRes.public_id || uniqueId
         };
       }
@@ -163,7 +174,7 @@ async function processUploadedFile(file, req) {
 
   // 2. Safe local file system fallback
   try {
-    const ext = path.extname(file.originalname || '') || '.jpg';
+    const ext = path.extname(file.originalname || '') || '.webp';
     const filename = `${uniqueId}${ext}`;
     const targetDir = fs.existsSync(localUploadsDir) ? localUploadsDir : os.tmpdir();
     const filePath = path.join(targetDir, filename);
@@ -411,11 +422,12 @@ app.post('/api/categories', authenticateToken, async (req, res) => {
     const { name, description, image } = req.body;
     if (!name) return res.status(400).json({ error: 'Category name required' });
     const slug = name.toLowerCase().replace(/[^a-z0-9]+/g, '-').replace(/(^-|-$)/g, '');
+    const cleanImage = toWebpCloudinaryUrl(image || '');
     if (mongoose.connection.readyState === 1) {
-      const cat = await Category.create({ name, slug, description: description || '', image: image || '', itemCount: 0 });
+      const cat = await Category.create({ name, slug, description: description || '', image: cleanImage, itemCount: 0 });
       return res.status(201).json(cat);
     }
-    const cat = fileDb.createCategory({ name, description, image });
+    const cat = fileDb.createCategory({ name, description, image: cleanImage });
     res.status(201).json(cat);
   } catch (e) {
     const cat = fileDb.createCategory(req.body);
@@ -565,7 +577,7 @@ app.get('/api/products/:id', async (req, res) => {
   }
 });
 
-// ─── Sanitize Variant Images Helper (Removes Blobs & Uploads Base64) ───
+// ─── Sanitize Variant Images Helper (Removes Blobs & Uploads Base64 as WebP) ───
 async function sanitizeVariantImages(variants, fallbackImage = '') {
   if (!Array.isArray(variants)) return [];
   return Promise.all(variants.map(async (v, i) => {
@@ -576,27 +588,29 @@ async function sanitizeVariantImages(variants, fallbackImage = '') {
     // 1. Strip any dead blob: URLs
     let cleanImages = rawImages.filter(img => typeof img === 'string' && !img.startsWith('blob:'));
 
-    // 2. Automatically upload base64 data URIs to Cloudinary if found
+    // 2. Automatically upload base64 data URIs to Cloudinary as WebP if found
     cleanImages = await Promise.all(cleanImages.map(async (img) => {
       if (typeof img === 'string' && img.startsWith('data:image/')) {
         try {
           const uploadRes = await cloudinary.uploader.upload(img, {
             folder: 'smp-fashion',
-            resource_type: 'auto',
-            transformation: [{ width: 1200, height: 1200, crop: 'limit', quality: 'auto:good' }]
+            resource_type: 'image',
+            format: 'webp',
+            transformation: [{ width: 1600, height: 1600, crop: 'limit', quality: 'auto:good' }]
           });
-          return uploadRes.secure_url || uploadRes.url || img;
+          const rawUrl = uploadRes.secure_url || uploadRes.url || img;
+          return toWebpCloudinaryUrl(rawUrl);
         } catch (cErr) {
           console.warn('Cloudinary upload of base64 variant image failed:', cErr.message);
           return img;
         }
       }
-      return img;
+      return toWebpCloudinaryUrl(img);
     }));
 
     // 3. Fallback to product fallback image if variant has no images left
     if (cleanImages.length === 0 && fallbackImage && !fallbackImage.startsWith('blob:')) {
-      cleanImages.push(fallbackImage);
+      cleanImages.push(toWebpCloudinaryUrl(fallbackImage));
     }
 
     return {
@@ -679,6 +693,7 @@ app.post('/api/products', authenticateToken, handleUpload, async (req, res) => {
     if (!finalImage && parsedVariants.length > 0 && parsedVariants[0].images?.length > 0) {
       finalImage = parsedVariants[0].images[0];
     }
+    finalImage = toWebpCloudinaryUrl(finalImage);
 
     const generatedSlug = slug || title.toLowerCase().replace(/[^a-z0-9]+/g, '-').replace(/(^-|-$)/g, '');
     const generatedSeoTitle = seoTitle || `${title} | Luxury SMP Fashion UAE`;
@@ -799,7 +814,7 @@ app.put('/api/products/:id', authenticateToken, handleUpload, async (req, res) =
     if (cNum !== undefined) updateFields.comparePrice = cNum;
     if (discountStr !== undefined) updateFields.discount = discountStr;
     if (finalImage) {
-      updateFields.image = finalImage;
+      updateFields.image = toWebpCloudinaryUrl(finalImage);
       if (imagePublicId) updateFields.imagePublicId = imagePublicId;
     }
     if (description !== undefined) updateFields.description = description;
@@ -825,7 +840,7 @@ app.put('/api/products/:id', authenticateToken, handleUpload, async (req, res) =
       parsedVariants = await sanitizeVariantImages(parsedVariants, updateFields.image || finalImage);
       updateFields.variants = parsedVariants;
       if (!updateFields.image && parsedVariants.length > 0 && parsedVariants[0].images?.length > 0) {
-        updateFields.image = parsedVariants[0].images[0];
+        updateFields.image = toWebpCloudinaryUrl(parsedVariants[0].images[0]);
       }
     }
 
