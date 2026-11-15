@@ -48,8 +48,8 @@ app.use((req, res, next) => {
   next();
 });
 app.use(cors({ origin: true, credentials: true }));
-app.use(express.json());
-app.use(express.urlencoded({ extended: true }));
+app.use(express.json({ limit: '50mb' }));
+app.use(express.urlencoded({ limit: '50mb', extended: true }));
 
 // ─── JWT Authentication Middleware ───────────────────────────
 const authenticateToken = (req, res, next) => {
@@ -77,10 +77,14 @@ cloudinary.config({
 // Memory Storage: 100% safe on restricted / read-only production filesystems (cPanel Passenger, Vercel, Docker)
 const memoryStorage = multer.memoryStorage();
 
-// Robust Multer instance saving to memory buffer with high limit
+// Robust Multer instance saving to memory buffer with high 50MB file and field limits
 const upload = multer({
   storage: memoryStorage,
-  limits: { fileSize: 25 * 1024 * 1024 }
+  limits: { 
+    fileSize: 50 * 1024 * 1024,
+    fieldSize: 50 * 1024 * 1024,
+    fields: 100
+  }
 });
 
 // Safe Upload Middleware with error catching so Multer errors never crash Express with 500
@@ -88,6 +92,12 @@ const handleUpload = (req, res, next) => {
   upload.any()(req, res, (err) => {
     if (err) {
       console.error('⚠️ Multer upload parsing error:', err);
+      if (err.code === 'LIMIT_FIELD_VALUE') {
+        return res.status(400).json({ error: 'Upload field value too long. Please ensure images are compressed.' });
+      }
+      if (err.code === 'LIMIT_FILE_SIZE') {
+        return res.status(400).json({ error: 'Image file too large. Maximum file size is 50MB.' });
+      }
       return res.status(400).json({ error: err.message || 'File upload parsing failed' });
     }
     next();
