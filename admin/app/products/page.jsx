@@ -125,7 +125,7 @@ export default function ProductsPage() {
   const [variantUploading, setVariantUploading] = useState({});
   const [customSizeInput, setCustomSizeInput] = useState('');
   const [currentPage, setCurrentPage] = useState(1);
-  const PRODUCTS_PER_PAGE = 18;
+  const PRODUCTS_PER_PAGE = 20;
 
   // Reset to page 1 on filter or search
   useEffect(() => {

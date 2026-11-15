@@ -283,7 +283,7 @@ export default function StorefrontPage() {
   const [loading, setLoading] = useState(true);
   const [mobileMenuOpen, setMobileMenuOpen] = useState(false);
   const [currentPage, setCurrentPage] = useState(1);
-  const PRODUCTS_PER_PAGE = 18;
+  const PRODUCTS_PER_PAGE = 20;
 
   // Automatically reset to Page 1 when any filter or search changes
   useEffect(() => {
@@ -697,7 +697,7 @@ Please confirm my order. Thank you!`;
     return true;
   });
 
-  // 18 Products per page pagination
+  // 20 Products per page pagination
   const totalPages = Math.max(1, Math.ceil(filteredProducts.length / PRODUCTS_PER_PAGE));
   const startIndex = (currentPage - 1) * PRODUCTS_PER_PAGE;
   const paginatedProducts = filteredProducts.slice(startIndex, startIndex + PRODUCTS_PER_PAGE);
@@ -708,9 +708,10 @@ Please confirm my order. Thank you!`;
     // Smoothly scroll to the top of the collections section (never stay at bottom)
     const collectionsEl = document.getElementById('collections');
     if (collectionsEl) {
-      const yOffset = -20;
-      const y = collectionsEl.getBoundingClientRect().top + window.pageYOffset + yOffset;
-      window.scrollTo({ top: y, behavior: 'smooth' });
+      const navHeader = document.querySelector('.site-header');
+      const headerHeight = navHeader ? navHeader.offsetHeight : 70;
+      const y = collectionsEl.getBoundingClientRect().top + window.pageYOffset - headerHeight - 16;
+      window.scrollTo({ top: Math.max(0, y), behavior: 'smooth' });
     } else {
       window.scrollTo({ top: 0, behavior: 'smooth' });
     }
