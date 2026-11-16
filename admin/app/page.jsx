@@ -192,12 +192,12 @@ export default function DashboardPage() {
         gap: '16px',
         marginBottom: '32px'
       }}>
-        <div style={{ display: 'flex', alignItems: 'center', gap: '12px' }}>
+        <div style={{ display: 'flex', alignItems: 'center', gap: '10px', flexWrap: 'wrap' }}>
           <div style={{ width: '8px', height: '8px', borderRadius: '50%', background: '#15803D' }}></div>
           <span style={{ fontSize: '14px', fontWeight: '600', color: '#66300F' }}>Quick Management:</span>
           <span style={{ fontSize: '13px', color: '#6B6258' }}>Manage inventory and customer WhatsApp inquiries</span>
         </div>
-        <div style={{ display: 'flex', alignItems: 'center', gap: '12px' }}>
+        <div style={{ display: 'flex', alignItems: 'center', gap: '10px', flexWrap: 'wrap' }}>
           <Link href="/products" className="btn btn-primary" style={{ fontSize: '13px', padding: '8px 14px' }}>
             <Plus size={15} />
             <span>Add New Product</span>
@@ -228,6 +228,9 @@ export default function DashboardPage() {
           </Link>
         </div>
 
+        <div className="table-scroll-hint" style={{ display: 'none', padding: '7px 12px', background: '#FAF7EF', border: '1px solid var(--color-border)', borderBottom: 'none', borderRadius: '8px 8px 0 0', fontSize: '11px', color: '#A45A28', fontWeight: '600' }}>
+          👉 Swipe horizontally to view recent order details
+        </div>
         <div className="table-container">
           <table className="admin-table">
             <thead>

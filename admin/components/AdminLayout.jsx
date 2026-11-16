@@ -109,18 +109,36 @@ export default function AdminLayout({ children, title = 'Dashboard' }) {
 
   return (
     <div className="admin-shell">
+      {/* Mobile Drawer Backdrop */}
+      <div 
+        className={`sidebar-backdrop ${mobileMenuOpen ? 'open' : ''}`}
+        onClick={() => setMobileMenuOpen(false)}
+        aria-hidden="true"
+      />
+
       {/* Sidebar */}
       <aside className={`sidebar ${mobileMenuOpen ? 'mobile-open' : ''}`}>
         <div className="sidebar-brand">
-          <img 
-            src="/smp-logo.png" 
-            alt="SMP Logo" 
-            style={{ width: '42px', height: '42px', objectFit: 'contain', background: '#fff', borderRadius: '8px', padding: '2px' }} 
-          />
-          <div className="brand-text">
-            <h2>SMP ATELIER</h2>
-            <p>Super Master Products</p>
+          <div style={{ display: 'flex', alignItems: 'center', gap: '12px' }}>
+            <img 
+              src="/smp-logo.png" 
+              alt="SMP Logo" 
+              style={{ width: '42px', height: '42px', objectFit: 'contain', background: '#fff', borderRadius: '8px', padding: '2px' }} 
+            />
+            <div className="brand-text">
+              <h2>SMP ATELIER</h2>
+              <p>Super Master Products</p>
+            </div>
           </div>
+          <button 
+            type="button"
+            className="mobile-sidebar-close" 
+            onClick={() => setMobileMenuOpen(false)}
+            title="Close navigation"
+            aria-label="Close navigation"
+          >
+            <X size={20} />
+          </button>
         </div>
 
         <nav className="sidebar-nav">
@@ -153,6 +171,7 @@ export default function AdminLayout({ children, title = 'Dashboard' }) {
             rel="noopener noreferrer" 
             className="nav-link"
             style={{ color: 'var(--color-accent-light)' }}
+            onClick={() => setMobileMenuOpen(false)}
           >
             <ExternalLink size={18} />
             <span>View Storefront</span>
@@ -184,41 +203,43 @@ export default function AdminLayout({ children, title = 'Dashboard' }) {
       {/* Main Wrapper */}
       <div className="main-wrapper">
         <header className="top-bar">
-          <div style={{ display: 'flex', alignItems: 'center', gap: '16px' }}>
+          <div className="top-bar-left">
             <button 
+              type="button"
               className="mobile-toggle"
               onClick={() => setMobileMenuOpen(!mobileMenuOpen)}
-              style={{ display: 'none', background: 'none', border: 'none', cursor: 'pointer' }}
+              aria-label="Toggle navigation menu"
             >
               <Menu size={22} />
             </button>
-            <div>
-              <h1 style={{ fontSize: '20px', fontWeight: '700', color: 'var(--color-text-main)' }}>{title}</h1>
-              <p style={{ fontSize: '12px', color: 'var(--color-text-muted)' }}>
-                Overview &bull; {new Date().toLocaleDateString('en-AE', { weekday: 'long', year: 'numeric', month: 'short', day: 'numeric' })}
+            <div className="top-bar-title-wrap">
+              <h1 className="top-bar-title">{title}</h1>
+              <p className="top-bar-subtitle">
+                Overview &bull; {new Date().toLocaleDateString('en-AE', { weekday: 'short', month: 'short', day: 'numeric' })}
               </p>
             </div>
           </div>
 
-          <div style={{ display: 'flex', alignItems: 'center', gap: '14px' }}>
+          <div className="top-bar-actions">
             <a 
               href="http://localhost:3000" 
               target="_blank" 
               rel="noopener noreferrer" 
-              className="btn btn-secondary"
-              style={{ fontSize: '13px', padding: '8px 14px' }}
+              className="btn btn-secondary top-bar-btn"
+              title="Open Live Website"
             >
               <ExternalLink size={15} />
-              <span>Live Website</span>
+              <span className="btn-label-desktop">Live Website</span>
             </a>
-            <div style={{ width: '1px', height: '24px', background: 'var(--color-border)' }}></div>
+            <div className="top-bar-divider"></div>
             <button 
               onClick={handleLogout} 
-              className="btn btn-secondary" 
-              style={{ fontSize: '13px', padding: '8px 14px', color: 'var(--color-danger)' }}
+              className="btn btn-secondary top-bar-btn" 
+              style={{ color: 'var(--color-danger)' }}
+              title="Sign Out"
             >
               <LogOut size={15} />
-              <span>Sign Out</span>
+              <span className="btn-label-desktop">Sign Out</span>
             </button>
           </div>
         </header>

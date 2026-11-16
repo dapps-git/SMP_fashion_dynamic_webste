@@ -142,6 +142,9 @@ export default function OrdersPage() {
 
       {/* Orders Table */}
       <div className="card" style={{ padding: '0', overflow: 'hidden' }}>
+        <div className="table-scroll-hint" style={{ display: 'none', padding: '7px 12px', background: '#FAF7EF', borderBottom: '1px solid var(--color-border)', fontSize: '11px', color: '#A45A28', fontWeight: '600' }}>
+          👉 Swipe horizontally to view customer shipping, products &amp; actions
+        </div>
         <div className="table-container" style={{ border: 'none' }}>
           <table className="admin-table">
             <thead>

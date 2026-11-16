@@ -95,11 +95,7 @@ export default function CategoriesPage() {
       </div>
 
       {/* Categories Grid */}
-      <div style={{
-        display: 'grid',
-        gridTemplateColumns: 'repeat(auto-fill, minmax(280px, 1fr))',
-        gap: '20px'
-      }}>
+      <div className="categories-grid">
         {categories.map((cat) => (
           <div key={cat.id} className="card" style={{ padding: '0', overflow: 'hidden', display: 'flex', flexDirection: 'column' }}>
             <div style={{ position: 'relative', height: '160px', width: '100%', background: '#F1ECE0' }}>

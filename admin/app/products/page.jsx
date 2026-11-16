@@ -4,6 +4,7 @@ import { useState, useEffect, useRef } from 'react';
 import AdminLayout from '../../components/AdminLayout';
 import AdminModal from '../../components/AdminModal';
 import { authFetch, getAuthHeaders, getAuthToken, API_BASE } from '../../lib/api';
+import { getColorNameFromHex } from '../../lib/colorNames';
 import { 
   Plus, 
   Search, 
@@ -314,6 +315,51 @@ export default function ProductsPage() {
     setFormData(prev => ({
       ...prev,
       variants: prev.variants.map((v, i) => i === index ? { ...v, [field]: value } : v)
+    }));
+  };
+
+  // Auto-fill color name when selecting color picker or entering hex code
+  const handlePrimaryColorChange = (newHex) => {
+    const autoName = getColorNameFromHex(newHex);
+    setFormData(prev => ({
+      ...prev,
+      colorCode: newHex,
+      color: autoName || prev.color
+    }));
+  };
+
+  const handlePrimaryHexInput = (newHex) => {
+    const clean = newHex.trim();
+    const autoName = clean.length >= 4 && clean.startsWith('#') ? getColorNameFromHex(clean) : '';
+    setFormData(prev => ({
+      ...prev,
+      colorCode: newHex,
+      color: autoName || prev.color
+    }));
+  };
+
+  const handleVariantColorChange = (index, newHex) => {
+    const autoName = getColorNameFromHex(newHex);
+    setFormData(prev => ({
+      ...prev,
+      variants: (prev.variants || []).map((v, i) => i === index ? {
+        ...v,
+        colorCode: newHex,
+        colorName: autoName || v.colorName
+      } : v)
+    }));
+  };
+
+  const handleVariantHexInput = (index, newHex) => {
+    const clean = newHex.trim();
+    const autoName = clean.length >= 4 && clean.startsWith('#') ? getColorNameFromHex(clean) : '';
+    setFormData(prev => ({
+      ...prev,
+      variants: (prev.variants || []).map((v, i) => i === index ? {
+        ...v,
+        colorCode: newHex,
+        colorName: autoName || v.colorName
+      } : v)
     }));
   };
 
@@ -764,9 +810,9 @@ export default function ProductsPage() {
         </button>
       </div>
 
-      {/* Filter and Search Bar */}
-      <div style={{ display: 'flex', alignItems: 'center', gap: '14px', flexWrap: 'wrap', marginBottom: '24px' }}>
-        <div style={{ position: 'relative', flex: '1', minWidth: '240px' }}>
+      {/* Responsive Filter and Search Bar */}
+      <div className="product-filter-bar">
+        <div className="product-search-box">
           <Search size={16} style={{ position: 'absolute', left: '12px', top: '50%', transform: 'translateY(-50%)', color: 'var(--color-text-muted)' }} />
           <input 
             type="text" 
@@ -774,60 +820,100 @@ export default function ProductsPage() {
             value={search}
             onChange={(e) => setSearch(e.target.value)}
             className="form-input" 
-            style={{ paddingLeft: '38px' }}
+            style={{ paddingLeft: '38px', height: '42px' }}
           />
         </div>
 
-        <div style={{ display: 'flex', alignItems: 'center', gap: '8px' }}>
-          <Filter size={16} color="var(--color-text-muted)" />
-          <select 
-            value={selectedCategory} 
-            onChange={(e) => { setSelectedCategory(e.target.value); setSelectedGender('all'); }}
-            className="form-select"
-            style={{ width: 'auto' }}
-          >
-            <option value="all">All Categories</option>
-            {categories.map(cat => (
-              <option key={cat.id} value={cat.slug}>{cat.name}</option>
-            ))}
-          </select>
+        <div className="product-filters-row">
+          <div className="filter-select-wrapper">
+            <select 
+              value={selectedCategory} 
+              onChange={(e) => { setSelectedCategory(e.target.value); setSelectedGender('all'); }}
+              className="form-select"
+              style={{ height: '42px', minWidth: '135px' }}
+            >
+              <option value="all">📁 All Categories ({categories.length})</option>
+              {categories.map(cat => (
+                <option key={cat.id} value={cat.slug}>{cat.name}</option>
+              ))}
+            </select>
+          </div>
 
-          {/* Brand Filter */}
-          <select 
-            value={selectedBrand} 
-            onChange={(e) => setSelectedBrand(e.target.value)}
-            className="form-select"
-            style={{ 
-              width: 'auto', 
-              fontWeight: selectedBrand !== 'all' ? '600' : 'normal', 
-              borderColor: selectedBrand !== 'all' ? '#A45A28' : undefined,
-              background: selectedBrand !== 'all' ? '#FAF7EF' : undefined
-            }}
-          >
-            <option value="all">All Brands</option>
-            {brands.map((b, idx) => (
-              <option key={b.id || b._id || idx} value={b.name}>{b.name}</option>
-            ))}
-          </select>
+          {/* Brand Filter - Prominently visible on both mobile and desktop */}
+          <div className="filter-select-wrapper">
+            <select 
+              value={selectedBrand} 
+              onChange={(e) => setSelectedBrand(e.target.value)}
+              className="form-select"
+              style={{ 
+                height: '42px',
+                minWidth: '140px', 
+                fontWeight: selectedBrand !== 'all' ? '700' : 'normal', 
+                borderColor: selectedBrand !== 'all' ? '#A45A28' : undefined,
+                background: selectedBrand !== 'all' ? '#FAF7EF' : undefined,
+                color: selectedBrand !== 'all' ? '#66300F' : undefined
+              }}
+            >
+              <option value="all">✨ All Brands ({brands.length})</option>
+              {brands.map((b, idx) => (
+                <option key={b.id || b._id || idx} value={b.name}>{b.name}</option>
+              ))}
+            </select>
+          </div>
 
           {selectedCategory === 'watches' && (
-            <select 
-              value={selectedGender} 
-              onChange={(e) => setSelectedGender(e.target.value)}
-              className="form-select"
-              style={{ width: 'auto', background: '#F8F4EC', borderColor: '#C8B29B', color: '#66300F', fontWeight: '600' }}
+            <div className="filter-select-wrapper">
+              <select 
+                value={selectedGender} 
+                onChange={(e) => setSelectedGender(e.target.value)}
+                className="form-select"
+                style={{ height: '42px', minWidth: '130px', background: '#F8F4EC', borderColor: '#C8B29B', color: '#66300F', fontWeight: '600' }}
+              >
+                <option value="all">All Watches</option>
+                <option value="men">Men&apos;s Watches</option>
+                <option value="women">Women&apos;s Watches</option>
+                <option value="unisex">Unisex Watches</option>
+              </select>
+            </div>
+          )}
+
+          {(selectedBrand !== 'all' || selectedCategory !== 'all' || selectedGender !== 'all' || search) && (
+            <button
+              type="button"
+              onClick={() => { setSelectedBrand('all'); setSelectedCategory('all'); setSelectedGender('all'); setSearch(''); }}
+              className="btn btn-secondary"
+              style={{ height: '42px', padding: '0 12px', fontSize: '12px', color: '#DC2626', borderColor: '#FCA5A5' }}
+              title="Reset all filters"
             >
-              <option value="all">All Watches</option>
-              <option value="men">Men&apos;s Watches</option>
-              <option value="women">Women&apos;s Watches</option>
-              <option value="unisex">Unisex Watches</option>
-            </select>
+              Reset
+            </button>
           )}
         </div>
       </div>
 
+      {/* Active Filter Badges */}
+      {selectedBrand !== 'all' && (
+        <div style={{ display: 'flex', alignItems: 'center', gap: '8px', marginBottom: '14px', flexWrap: 'wrap' }}>
+          <span style={{ fontSize: '12px', color: 'var(--color-text-muted)' }}>Filtered by brand:</span>
+          <span style={{ display: 'inline-flex', alignItems: 'center', gap: '6px', background: '#F5EFE6', color: '#66300F', border: '1px solid #D9CBBA', padding: '3px 10px', borderRadius: '16px', fontSize: '12px', fontWeight: '700' }}>
+            <span>{selectedBrand}</span>
+            <button
+              type="button"
+              onClick={() => setSelectedBrand('all')}
+              style={{ background: 'none', border: 'none', cursor: 'pointer', color: '#DC2626', fontWeight: '900', padding: 0 }}
+              title="Clear brand filter"
+            >
+              ✕
+            </button>
+          </span>
+        </div>
+      )}
+
       {/* Products Table */}
       <div className="card" style={{ padding: '0', overflow: 'hidden' }}>
+        <div className="table-scroll-hint" style={{ display: 'none', padding: '7px 12px', background: '#FAF7EF', borderBottom: '1px solid var(--color-border)', fontSize: '11px', color: '#A45A28', fontWeight: '600' }}>
+          👉 Swipe horizontally to view all product details &amp; actions
+        </div>
         <div className="table-container" style={{ border: 'none' }}>
           <table className="admin-table">
             <thead>
@@ -1081,8 +1167,8 @@ export default function ProductsPage() {
       >
         <form onSubmit={handleSubmit}>
               <div className="modal-body">
-                {/* Title & Brand */}
-                <div style={{ display: 'grid', gridTemplateColumns: '2fr 1fr', gap: '14px' }}>
+                {/* Title & Brand (Responsive Grid) */}
+                <div className="responsive-grid-2">
                   <div className="form-group">
                     <label className="form-label">Product Title *</label>
                     <input 
@@ -1119,8 +1205,8 @@ export default function ProductsPage() {
                   </div>
                 </div>
 
-                {/* Category, Gender, Pricing & Stock */}
-                <div style={{ display: 'grid', gridTemplateColumns: 'repeat(4, 1fr)', gap: '14px' }}>
+                {/* Category, Gender, Pricing & Stock (Responsive Grid) */}
+                <div className="responsive-grid-4">
                   <div className="form-group">
                     <label className="form-label">Category *</label>
                     <select 
@@ -1449,11 +1535,16 @@ export default function ProductsPage() {
 
                   {/* First Image Color Configuration */}
                   <div style={{ marginTop: '14px', paddingTop: '14px', borderTop: '1px dashed #E5DEC9' }}>
-                    <div style={{ display: 'grid', gridTemplateColumns: '1.2fr 1.2fr', gap: '14px', marginBottom: '10px' }}>
+                    <div className="responsive-grid-half" style={{ marginBottom: '10px' }}>
                       <div className="form-group" style={{ marginBottom: 0 }}>
-                        <label className="form-label" style={{ fontSize: '12px', marginBottom: '4px' }}>
-                          First Image Color Name
-                        </label>
+                        <div style={{ display: 'flex', alignItems: 'center', justifyContent: 'space-between', marginBottom: '4px' }}>
+                          <label className="form-label" style={{ fontSize: '12px', marginBottom: 0 }}>
+                            First Image Color Name
+                          </label>
+                          <span style={{ fontSize: '11px', color: '#A45A28', fontWeight: '600' }}>
+                            ✨ Auto-fills on color pick
+                          </span>
+                        </div>
                         <input 
                           type="text" 
                           className="form-input" 
@@ -1471,7 +1562,7 @@ export default function ProductsPage() {
                           <input
                             type="color"
                             value={formData.colorCode || '#111111'}
-                            onChange={(e) => setFormData({ ...formData, colorCode: e.target.value })}
+                            onChange={(e) => handlePrimaryColorChange(e.target.value)}
                             style={{
                               width: '42px',
                               height: '38px',
@@ -1481,13 +1572,13 @@ export default function ProductsPage() {
                               padding: '2px',
                               background: '#FFFFFF'
                             }}
-                            title="Pick color for first image"
+                            title="Pick color (auto-detects color name)"
                           />
                           <input
                             type="text"
                             className="form-input"
                             value={formData.colorCode || '#111111'}
-                            onChange={(e) => setFormData({ ...formData, colorCode: e.target.value })}
+                            onChange={(e) => handlePrimaryHexInput(e.target.value)}
                             placeholder="#111111"
                             style={{ flex: 1, fontFamily: 'monospace' }}
                           />
@@ -1513,13 +1604,7 @@ export default function ProductsPage() {
                         <button
                           key={preset.name}
                           type="button"
-                          onClick={() => {
-                            setFormData({
-                              ...formData,
-                              colorCode: preset.hex,
-                              color: formData.color || preset.name
-                            });
-                          }}
+                          onClick={() => handlePrimaryColorChange(preset.hex)}
                           style={{
                             display: 'inline-flex',
                             alignItems: 'center',
@@ -1651,11 +1736,16 @@ export default function ProductsPage() {
                           </div>
 
                           {/* Row 1: Color Name, Color Picker, Hex Code, Presets */}
-                          <div style={{ display: 'grid', gridTemplateColumns: '1.2fr 1.2fr', gap: '14px', marginBottom: '12px' }}>
+                          <div className="responsive-grid-half" style={{ marginBottom: '12px' }}>
                             <div className="form-group" style={{ marginBottom: 0 }}>
-                              <label className="form-label" style={{ fontSize: '12px', marginBottom: '4px' }}>
-                                Color Name *
-                              </label>
+                              <div style={{ display: 'flex', alignItems: 'center', justifyContent: 'space-between', marginBottom: '4px' }}>
+                                <label className="form-label" style={{ fontSize: '12px', marginBottom: 0 }}>
+                                  Color Name *
+                                </label>
+                                <span style={{ fontSize: '11px', color: '#A45A28', fontWeight: '600' }}>
+                                  ✨ Auto-fills on color pick
+                                </span>
+                              </div>
                               <input
                                 type="text"
                                 className="form-input"
@@ -1674,7 +1764,7 @@ export default function ProductsPage() {
                                 <input
                                   type="color"
                                   value={v.colorCode || '#000000'}
-                                  onChange={(e) => updateVariant(idx, 'colorCode', e.target.value)}
+                                  onChange={(e) => handleVariantColorChange(idx, e.target.value)}
                                   style={{
                                     width: '42px',
                                     height: '38px',
@@ -1684,13 +1774,13 @@ export default function ProductsPage() {
                                     padding: '2px',
                                     background: '#FFFFFF'
                                   }}
-                                  title="Choose color from palette"
+                                  title="Choose color (auto-detects color name)"
                                 />
                                 <input
                                   type="text"
                                   className="form-input"
                                   value={v.colorCode}
-                                  onChange={(e) => updateVariant(idx, 'colorCode', e.target.value)}
+                                  onChange={(e) => handleVariantHexInput(idx, e.target.value)}
                                   placeholder="#800020"
                                   style={{ flex: 1, fontFamily: 'monospace' }}
                                 />
@@ -1716,21 +1806,19 @@ export default function ProductsPage() {
                               <button
                                 key={preset.name}
                                 type="button"
-                                onClick={() => {
-                                  updateVariant(idx, 'colorCode', preset.hex);
-                                  if (!v.colorName) updateVariant(idx, 'colorName', preset.name);
-                                }}
+                                onClick={() => handleVariantColorChange(idx, preset.hex)}
                                 style={{
                                   display: 'inline-flex',
                                   alignItems: 'center',
                                   gap: '4px',
                                   padding: '3px 8px',
                                   borderRadius: '4px',
-                                  border: '1px solid #D8CEBD',
-                                  background: '#FAF7EF',
+                                  border: (v.colorCode || '').toLowerCase() === preset.hex.toLowerCase() ? '1.5px solid #66300F' : '1px solid #D8CEBD',
+                                  background: (v.colorCode || '').toLowerCase() === preset.hex.toLowerCase() ? '#FAF7EF' : '#FFFFFF',
                                   fontSize: '11px',
                                   color: '#4A3B32',
-                                  cursor: 'pointer'
+                                  cursor: 'pointer',
+                                  fontWeight: (v.colorCode || '').toLowerCase() === preset.hex.toLowerCase() ? '700' : 'normal'
                                 }}
                               >
                                 <span
@@ -1749,7 +1837,7 @@ export default function ProductsPage() {
                           </div>
 
                           {/* Row 2: Stock and Sizes */}
-                          <div style={{ display: 'grid', gridTemplateColumns: '1fr 2fr', gap: '14px', marginBottom: '14px' }}>
+                          <div className="responsive-grid-2" style={{ marginBottom: '14px' }}>
                             <div className="form-group" style={{ marginBottom: 0 }}>
                               <label className="form-label" style={{ fontSize: '12px', marginBottom: '4px' }}>
                                 Variant Stock Quantity
@@ -1970,7 +2058,7 @@ export default function ProductsPage() {
                   </div>
 
                   {/* SEO Title & URL Slug */}
-                  <div style={{ display: 'grid', gridTemplateColumns: '1fr 1fr', gap: '12px', marginBottom: '12px' }}>
+                  <div className="responsive-grid-half" style={{ marginBottom: '12px' }}>
                     <div className="form-group" style={{ marginBottom: 0 }}>
                       <div style={{ display: 'flex', justifyContent: 'space-between' }}>
                         <label className="form-label" style={{ fontSize: '11px' }}>SEO Meta Title</label>
