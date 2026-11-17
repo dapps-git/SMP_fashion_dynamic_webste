@@ -222,7 +222,7 @@ export default function AdminLayout({ children, title = 'Dashboard' }) {
 
           <div className="top-bar-actions">
             <a 
-              href="http://localhost:3000" 
+              href="http://localhost:3002" 
               target="_blank" 
               rel="noopener noreferrer" 
               className="btn btn-secondary top-bar-btn"

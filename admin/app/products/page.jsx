@@ -217,9 +217,10 @@ export default function ProductsPage() {
 
   const openAddModal = () => {
     setEditingProduct(null);
+    const initialCat = selectedCategory !== 'all' ? selectedCategory : (categories[0]?.slug || 'bags');
     setFormData({
       title: '',
-      category: categories[0]?.slug || 'bags',
+      category: initialCat,
       gender: '',
       color: '',
       colorCode: '#111111',
@@ -1175,7 +1176,17 @@ export default function ProductsPage() {
                       type="text" 
                       className="form-input" 
                       value={formData.title} 
-                      onChange={(e) => setFormData({ ...formData, title: e.target.value })}
+                      onChange={(e) => {
+                        const val = e.target.value;
+                        const tLower = val.toLowerCase();
+                        let nextCat = formData.category;
+                        if (!editingProduct) {
+                          if (tLower.includes('gmt') || tLower.includes('submariner') || tLower.includes('watch') || tLower.includes('daytona')) nextCat = 'watches';
+                          else if (tLower.includes('boot') || tLower.includes('heel') || tLower.includes('sandal') || tLower.includes('mule') || tLower.includes('slide') || tLower.includes('pump') || tLower.includes('shoe')) nextCat = 'footwear';
+                          else if (tLower.includes('bag') || tLower.includes('tote') || tLower.includes('peekaboo') || tLower.includes('hobo') || tLower.includes('capucines')) nextCat = 'bags';
+                        }
+                        setFormData({ ...formData, title: val, category: nextCat });
+                      }}
                       placeholder="e.g. Burgundy Leather Top Handle Bag"
                       required 
                     />
@@ -1192,7 +1203,16 @@ export default function ProductsPage() {
                       type="text" 
                       className="form-input" 
                       value={formData.brand} 
-                      onChange={(e) => setFormData({ ...formData, brand: e.target.value })}
+                      onChange={(e) => {
+                        const val = e.target.value;
+                        const bLower = val.toLowerCase();
+                        let nextCat = formData.category;
+                        if (!editingProduct) {
+                          if (bLower.includes('rolex') || bLower.includes('relox') || bLower.includes('richard') || bLower.includes('patek') || bLower.includes('audemars') || bLower.includes('cartier') || bLower.includes('omega') || bLower.includes('chopard') || bLower.includes('chaumet')) nextCat = 'watches';
+                          else if (bLower.includes('aquazzura') || bLower.includes('louboutin') || bLower.includes('rene caovilla')) nextCat = 'footwear';
+                        }
+                        setFormData({ ...formData, brand: val, category: nextCat });
+                      }}
                       placeholder="e.g. Richard Mille, Rolex, SMP Luxury" 
                       list="brand-suggestions"
                       required
