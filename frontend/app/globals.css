@@ -1,4 +1,4 @@
-@import url('https://fonts.googleapis.com/css2?family=Great+Vibes&family=Montserrat:ital,wght@0,300;0,400;0,500;0,600;0,700;0,800;1,400;1,500&family=Playfair+Display:ital,wght@0,400;0,500;0,600;0,700;1,400&display=swap');
+@import url('https://fonts.googleapis.com/css2?family=Poppins:ital,wght@0,300;0,400;0,500;0,600;0,700;0,800;1,400;1,500&display=swap');
 
 :root {
   --color-dark-brown: #66300F;
@@ -6,6 +6,7 @@
   --color-light-brown: #C18A5B;
   --color-sand: #E8D5C4;
   --color-black: #000000;
+  --color-dark-header: #1A1D20;
   --color-bg: #FFFFFF;
   --color-bg-alt: #FAFAFA;
   --color-card: #FFFFFF;
@@ -20,8 +21,9 @@
   --color-whatsapp-dark: #1EBE5D;
   --color-whatsapp-deep: #128C7E;
 
-  --font-serif: 'Playfair Display', Georgia, serif;
-  --font-sans: 'Montserrat', -apple-system, BlinkMacSystemFont, sans-serif;
+  --font-serif: 'Poppins', -apple-system, BlinkMacSystemFont, sans-serif;
+  --font-sans: 'Poppins', -apple-system, BlinkMacSystemFont, sans-serif;
+  --font-poppins: 'Poppins', -apple-system, BlinkMacSystemFont, sans-serif;
 
   --radius-sm: 6px;
   --radius-md: 10px;
@@ -29,10 +31,10 @@
   --radius-xl: 24px;
   --radius-full: 9999px;
 
-  --shadow-sm: 0 2px 6px rgba(102, 48, 15, 0.04);
-  --shadow-md: 0 8px 24px rgba(102, 48, 15, 0.08);
-  --shadow-lg: 0 16px 40px rgba(102, 48, 15, 0.12);
-  --shadow-luxury: 0 24px 60px rgba(102, 48, 15, 0.14);
+  --shadow-sm: 0 2px 6px rgba(0, 0, 0, 0.04);
+  --shadow-md: 0 8px 24px rgba(0, 0, 0, 0.08);
+  --shadow-lg: 0 16px 40px rgba(0, 0, 0, 0.12);
+  --shadow-luxury: 0 24px 60px rgba(0, 0, 0, 0.14);
 }
 
 * {
@@ -46,7 +48,7 @@ html {
 }
 
 body {
-  font-family: var(--font-sans);
+  font-family: 'Poppins', -apple-system, BlinkMacSystemFont, sans-serif;
   background-color: #FFFFFF;
   color: var(--color-text-main);
   overflow-x: hidden;
@@ -1462,10 +1464,12 @@ input, select, textarea {
 }
 
 .modal-title {
-  font-family: var(--font-serif);
-  font-size: 17px;
-  font-weight: 700;
-  color: var(--color-dark-brown);
+  font-family: 'Poppins', sans-serif;
+  font-size: 16px;
+  font-weight: 400;
+  text-transform: uppercase;
+  letter-spacing: 1.5px;
+  color: #1A1817;
 }
 
 .modal-close-btn {
@@ -1498,22 +1502,28 @@ input, select, textarea {
 .field-label {
   display: block;
   font-size: 11.5px;
-  font-weight: 600;
-  color: #503827;
-  margin-bottom: 4px;
-  letter-spacing: 0.2px;
+  font-weight: 400;
+  color: #444444;
+  margin-bottom: 5px;
+  letter-spacing: 0.4px;
+  text-transform: uppercase;
 }
 
 .field-input, .field-select, .field-textarea {
   width: 100%;
-  padding: 8px 12px;
+  padding: 9px 12px;
   border: 1px solid #DCD5C6;
-  border-radius: 6px;
+  border-radius: 2px;
   font-size: 13px;
-  color: var(--color-text-main);
+  color: #1A1817;
   background: #ffffff;
   transition: all 0.2s ease;
-  font-family: inherit;
+  font-family: 'Poppins', sans-serif;
+  outline: none;
+}
+
+.field-input:focus {
+  border-color: #111111;
 }
 
 .field-input:focus, .field-select:focus, .field-textarea:focus {
@@ -3961,26 +3971,28 @@ input, select, textarea {
 /* Main CTA Button */
 .product-buy-now-btn {
   width: 100%;
-  height: 52px;
-  background: #66300F;
+  height: 46px;
+  background: #111111;
   color: #FFFFFF;
-  border: none;
-  border-radius: 8px;
-  font-size: 16px;
-  font-weight: 700;
+  border: 1px solid #111111;
+  border-radius: 2px;
+  font-family: 'Poppins', sans-serif;
+  font-size: 14px;
+  font-weight: 400;
+  letter-spacing: 0.5px;
   cursor: pointer;
   display: flex;
   align-items: center;
   justify-content: center;
   gap: 10px;
-  box-shadow: 0 6px 20px rgba(102, 48, 15, 0.25);
   transition: all 0.2s ease;
 }
 
 .product-buy-now-btn:hover {
-  background: #50250B;
-  transform: translateY(-2px);
-  box-shadow: 0 8px 25px rgba(102, 48, 15, 0.35);
+  background: #2C2C2C;
+  border-color: #2C2C2C;
+  transform: translateY(-1px);
+  box-shadow: 0 4px 14px rgba(0, 0, 0, 0.15);
 }
 
 .product-buy-now-btn:active {
@@ -4186,3 +4198,811 @@ input, select, textarea {
     letter-spacing: -0.3px !important;
   }
 }
+
+/* ─── Milina Brand Luxury Design System (Offwhite Cream Brown Theme) ─── */
+.milina-header {
+  position: sticky;
+  top: 0;
+  z-index: 1000;
+  background: #FAF8F5;
+  border-bottom: 1px solid #ECE6DC;
+  width: 100%;
+}
+
+.milina-header-container {
+  max-width: 1280px;
+  margin: 0 auto;
+  padding: 10px 18px;
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+}
+
+.milina-logo-link {
+  text-decoration: none;
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+}
+
+.milina-logo-img {
+  height: 48px;
+  width: auto;
+  object-fit: contain;
+}
+
+.milina-icon-btn {
+  background: transparent;
+  border: none;
+  cursor: pointer;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  padding: 6px;
+  color: #66300F;
+  transition: color 0.15s ease;
+}
+
+.milina-icon-btn:hover {
+  color: #A45A28;
+}
+
+.milina-cart-badge {
+  position: absolute;
+  top: -2px;
+  right: -4px;
+  background: #66300F;
+  color: #FFFFFF;
+  font-size: 10px;
+  font-weight: 700;
+  width: 17px;
+  height: 17px;
+  border-radius: 50%;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+}
+
+/* 2-Column Mobile Product Grid (Perfect 50% split with minmax(0, 1fr) preventing blowout) */
+.milina-product-grid {
+  display: grid;
+  grid-template-columns: repeat(2, minmax(0, 1fr));
+  gap: 12px 10px;
+  width: 100%;
+  max-width: 100%;
+  box-sizing: border-box;
+}
+
+@media (min-width: 768px) {
+  .milina-product-grid {
+    grid-template-columns: repeat(3, minmax(0, 1fr));
+    gap: 20px 16px;
+  }
+}
+
+@media (min-width: 1024px) {
+  .milina-product-grid {
+    grid-template-columns: repeat(4, minmax(0, 1fr));
+    gap: 24px 20px;
+  }
+}
+
+.milina-product-card {
+  text-decoration: none;
+  display: flex;
+  flex-direction: column;
+  background: #FFFFFF;
+  border-radius: 4px;
+  border: 1px solid #ECE6DC;
+  padding: 6px;
+  min-width: 0;
+  width: 100%;
+  max-width: 100%;
+  overflow: hidden;
+  box-sizing: border-box;
+  transition: transform 0.2s ease, box-shadow 0.2s ease, border-color 0.2s ease;
+}
+
+.milina-product-card:hover {
+  transform: translateY(-2px);
+  border-color: #C18A5B;
+  box-shadow: 0 6px 18px rgba(102, 48, 15, 0.08);
+}
+
+/* 1:1 Strict Square Container - Works across Safari iOS and all browsers with zero blowout */
+.milina-product-img-wrap {
+  position: relative;
+  width: 100%;
+  padding-top: 100%;
+  background: #FAF8F5;
+  border-radius: 2px;
+  overflow: hidden;
+  flex-shrink: 0;
+}
+
+.milina-product-img {
+  position: absolute;
+  top: 0;
+  left: 0;
+  width: 100%;
+  height: 100%;
+  object-fit: cover;
+  transition: transform 0.3s ease;
+}
+
+.milina-product-card:hover .milina-product-img {
+  transform: scale(1.04);
+}
+
+/* Brand Tag on Product Card (White BG, Brown text, 0 border radius, lightweight font) */
+.milina-brand-tag {
+  position: absolute;
+  top: 6px;
+  left: 6px;
+  background: #FFFFFF;
+  color: #66300F;
+  border: 1px solid #E2D9CC;
+  font-family: 'Poppins', sans-serif;
+  font-size: 9px;
+  font-weight: 400;
+  padding: 2px 6px;
+  border-radius: 0;
+  text-transform: uppercase;
+  letter-spacing: 0.8px;
+  box-shadow: 0 1px 3px rgba(0, 0, 0, 0.05);
+  z-index: 2;
+}
+
+.milina-product-info {
+  padding: 8px 2px 2px;
+  display: flex;
+  flex-direction: column;
+  gap: 2px;
+  min-width: 0;
+  width: 100%;
+  overflow: hidden;
+}
+
+/* Product Title: All Capital Letters, Single Line with Ellipsis (.. at end), Reduced Font Weight */
+.milina-product-title {
+  font-family: 'Poppins', sans-serif;
+  font-size: 11.5px;
+  font-weight: 400;
+  color: #1A1817;
+  text-transform: uppercase;
+  letter-spacing: 0.4px;
+  line-height: 1.35;
+  margin: 0;
+  white-space: nowrap;
+  overflow: hidden;
+  text-overflow: ellipsis;
+  display: block;
+  min-width: 0;
+  width: 100%;
+}
+
+/* Product Price: Black Font, All Capital Letters, Reduced Font Weight */
+.milina-product-price {
+  font-family: 'Poppins', sans-serif;
+  font-size: 13px;
+  font-weight: 400;
+  color: #1A1817;
+  text-transform: uppercase;
+  letter-spacing: 0.4px;
+  margin-top: 2px;
+  white-space: nowrap;
+  overflow: hidden;
+  text-overflow: ellipsis;
+}
+
+/* Drawers */
+.milina-drawer-backdrop {
+  position: fixed;
+  inset: 0;
+  background: rgba(44, 20, 14, 0.6);
+  backdrop-filter: blur(4px);
+  z-index: 2000;
+}
+
+.milina-mobile-drawer {
+  position: fixed;
+  top: 0;
+  left: 0;
+  bottom: 0;
+  width: 300px;
+  max-width: 85vw;
+  background: #FAF8F5;
+  z-index: 2001;
+  display: flex;
+  flex-direction: column;
+  box-shadow: 4px 0 24px rgba(0,0,0,0.25);
+  animation: slideInLeft 0.25s cubic-bezier(0.16, 1, 0.3, 1);
+}
+
+.milina-cart-drawer {
+  position: fixed;
+  top: 0;
+  right: 0;
+  bottom: 0;
+  width: 380px;
+  max-width: 90vw;
+  background: #FFFFFF;
+  z-index: 2001;
+  display: flex;
+  flex-direction: column;
+  box-shadow: -4px 0 24px rgba(0,0,0,0.25);
+  animation: slideInRight 0.25s cubic-bezier(0.16, 1, 0.3, 1);
+}
+
+@keyframes slideInLeft {
+  from { transform: translateX(-100%); }
+  to { transform: translateX(0); }
+}
+
+@keyframes slideInRight {
+  from { transform: translateX(100%); }
+  to { transform: translateX(0); }
+}
+
+.milina-drawer-header {
+  padding: 16px 18px;
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  border-bottom: 1px solid #ECE7DE;
+  background: #FAF8F5;
+}
+
+.milina-drawer-links {
+  display: flex;
+  flex-direction: column;
+  padding: 14px 10px;
+  flex: 1;
+  overflow-y: auto;
+}
+
+.milina-drawer-link {
+  padding: 12px 14px;
+  font-size: 14px;
+  font-weight: 500;
+  color: #4A2027;
+  text-decoration: none;
+  border-radius: 8px;
+  transition: all 0.15s ease;
+}
+
+.milina-drawer-link:hover {
+  background: #FAF7EF;
+  color: #66300F;
+}
+
+.milina-drawer-footer {
+  padding: 16px;
+  border-top: 1px solid #ECE7DE;
+  background: #FAF8F5;
+}
+
+.milina-whatsapp-float {
+  position: fixed;
+  bottom: 22px;
+  right: 22px;
+  width: 52px;
+  height: 52px;
+  background: #25D366;
+  border-radius: 50%;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  box-shadow: 0 4px 16px rgba(37, 211, 102, 0.4);
+  z-index: 990;
+  text-decoration: none;
+  transition: transform 0.2s ease;
+}
+
+.milina-whatsapp-float:hover {
+  transform: scale(1.08);
+}
+
+/* ─── Milina Product Detail Page (Screenshot 5 & 6) ─── */
+.milina-pdp-container {
+  max-width: 1180px;
+  margin: 0 auto;
+  padding: 18px 16px 40px;
+}
+
+.milina-pdp-grid {
+  display: grid;
+  grid-template-columns: 1fr;
+  gap: 28px;
+}
+
+@media (min-width: 900px) {
+  .milina-pdp-grid {
+    grid-template-columns: 1.1fr 1fr;
+    gap: 48px;
+    align-items: start;
+  }
+}
+
+.milina-pdp-gallery {
+  display: flex;
+  flex-direction: column;
+  gap: 12px;
+}
+
+.milina-pdp-main-img-box {
+  position: relative;
+  width: 100%;
+  aspect-ratio: 1 / 1;
+  background: #FAF8F5;
+  border-radius: 6px;
+  border: 1px solid #ECE6DC;
+  overflow: hidden;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+}
+
+.milina-pdp-main-img {
+  width: 100%;
+  height: 100%;
+  object-fit: cover;
+}
+
+.milina-pdp-zoom-btn {
+  position: absolute;
+  top: 14px;
+  left: 14px;
+  width: 36px;
+  height: 36px;
+  border-radius: 50%;
+  background: rgba(255, 255, 255, 0.9);
+  border: 1px solid #D6CEBE;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  color: #66300F;
+  cursor: pointer;
+  box-shadow: 0 2px 6px rgba(0,0,0,0.1);
+  z-index: 5;
+}
+
+.milina-pdp-gallery-counter {
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  gap: 16px;
+  padding: 6px 0;
+  font-size: 13px;
+  color: #786F66;
+  font-weight: 500;
+}
+
+.milina-pdp-arrow-btn {
+  background: transparent;
+  border: none;
+  cursor: pointer;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  color: #66300F;
+  padding: 4px;
+}
+
+.milina-pdp-arrow-btn:disabled {
+  opacity: 0.3;
+  cursor: not-allowed;
+}
+
+.milina-pdp-details {
+  display: flex;
+  flex-direction: column;
+  gap: 16px;
+}
+
+.milina-pdp-brand {
+  font-size: 12px;
+  font-weight: 700;
+  color: #A45A28;
+  text-transform: uppercase;
+  letter-spacing: 1px;
+}
+
+.milina-pdp-title {
+  font-size: 24px;
+  font-weight: 700;
+  color: #1C1917;
+  line-height: 1.25;
+  letter-spacing: -0.3px;
+  margin: 0;
+}
+
+.milina-pdp-price {
+  font-size: 20px;
+  font-weight: 800;
+  color: #66300F;
+}
+
+.milina-pdp-section-label {
+  font-family: 'Poppins', sans-serif;
+  font-size: 11.5px;
+  font-weight: 400;
+  color: #555555;
+  text-transform: uppercase;
+  letter-spacing: 0.8px;
+  margin-bottom: 8px;
+  display: block;
+}
+
+/* Circular Color Swatches (Screenshot 5) */
+.milina-color-swatches {
+  display: flex;
+  align-items: center;
+  gap: 10px;
+  flex-wrap: wrap;
+}
+
+.milina-color-swatch-btn {
+  width: 36px;
+  height: 36px;
+  border-radius: 50%;
+  padding: 3px;
+  background: transparent;
+  border: 1.5px solid transparent;
+  cursor: pointer;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  transition: all 0.15s ease;
+}
+
+.milina-color-swatch-btn.active {
+  border-color: #66300F;
+}
+
+.milina-color-swatch-inner {
+  width: 100%;
+  height: 100%;
+  border-radius: 50%;
+  border: 1px solid rgba(0,0,0,0.15);
+  display: block;
+}
+
+/* Shoe Size Pills (Screenshot 6) */
+.milina-size-pills {
+  display: flex;
+  align-items: center;
+  gap: 8px;
+  flex-wrap: wrap;
+}
+
+.milina-size-pill-btn {
+  min-width: 44px;
+  height: 36px;
+  padding: 0 14px;
+  border-radius: 20px;
+  border: 1px solid #D6CEBE;
+  background: #FFFFFF;
+  color: #4A2027;
+  font-size: 13px;
+  font-weight: 500;
+  cursor: pointer;
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  transition: all 0.15s ease;
+}
+
+.milina-size-pill-btn.active {
+  background: #66300F;
+  color: #FFFFFF;
+  border-color: #66300F;
+  font-weight: 700;
+}
+
+/* Option Pills (Screenshot 6) */
+.milina-option-pill-btn {
+  padding: 8px 16px;
+  border-radius: 20px;
+  border: 1px solid #D6CEBE;
+  background: #FFFFFF;
+  color: #4A2027;
+  font-size: 12.5px;
+  font-weight: 500;
+  cursor: pointer;
+  transition: all 0.15s ease;
+}
+
+.milina-option-pill-btn.active {
+  background: #66300F;
+  color: #FFFFFF;
+  border-color: #66300F;
+  font-weight: 600;
+}
+
+/* Quantity Box (Screenshot 6) */
+.milina-quantity-box {
+  display: inline-flex;
+  align-items: center;
+  border: 1px solid #D6CEBE;
+  border-radius: 6px;
+  height: 40px;
+  width: 120px;
+  background: #FFFFFF;
+}
+
+.milina-qty-btn {
+  width: 36px;
+  height: 100%;
+  border: none;
+  background: transparent;
+  color: #66300F;
+  font-size: 16px;
+  font-weight: 600;
+  cursor: pointer;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+}
+
+.milina-qty-val {
+  flex: 1;
+  text-align: center;
+  font-size: 14px;
+  font-weight: 600;
+  color: #1C1917;
+}
+
+/* Action Buttons (Exact match to designer screenshot media_1794899029002_dda18871.png) */
+.milina-btn-add-cart {
+  width: 100%;
+  height: 44px;
+  background: #FFFFFF;
+  color: #111111;
+  border: 1px solid #111111;
+  border-radius: 2px;
+  font-family: 'Poppins', sans-serif;
+  font-size: 13.5px;
+  font-weight: 400;
+  cursor: pointer;
+  letter-spacing: 0.4px;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  transition: all 0.18s ease;
+}
+
+.milina-btn-add-cart:hover {
+  background: #F7F7F7;
+  border-color: #000000;
+}
+
+.milina-btn-buy-now {
+  width: 100%;
+  height: 44px;
+  background: #111111;
+  color: #FFFFFF;
+  border: 1px solid #111111;
+  border-radius: 2px;
+  font-family: 'Poppins', sans-serif;
+  font-size: 13.5px;
+  font-weight: 400;
+  cursor: pointer;
+  letter-spacing: 0.4px;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  transition: all 0.18s ease;
+}
+
+.milina-btn-buy-now:hover {
+  background: #2C2C2C;
+  border-color: #2C2C2C;
+}
+
+.milina-share-link {
+  display: inline-flex;
+  align-items: center;
+  gap: 8px;
+  font-size: 13px;
+  color: #786F66;
+  cursor: pointer;
+  background: none;
+  border: none;
+  padding: 4px 0;
+}
+
+/* ─── Milina Brand Carousels & Product Layout (Screenshots 2 & 3 in Warm Brown Theme) ─── */
+.milina-brand-section {
+  padding: 28px 16px 36px;
+  max-width: 1280px;
+  margin: 0 auto;
+  width: 100%;
+}
+
+.milina-section-banner {
+  background: #66300F;
+  color: #FFFFFF;
+  padding: 12px 24px;
+  font-family: 'Poppins', sans-serif;
+  font-size: 15px;
+  font-weight: 700;
+  text-align: center;
+  text-transform: uppercase;
+  letter-spacing: 1.5px;
+  border-radius: 6px;
+  margin-bottom: 24px;
+  box-shadow: 0 4px 14px rgba(102, 48, 15, 0.16);
+}
+
+.milina-category-row {
+  margin-bottom: 34px;
+}
+
+.milina-category-row-head {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  margin-bottom: 14px;
+}
+
+.milina-category-row-title {
+  font-family: 'Poppins', sans-serif;
+  font-size: 20px;
+  font-weight: 300;
+  color: #1A1817;
+  text-transform: uppercase;
+  letter-spacing: 2px;
+  margin: 0;
+}
+
+.milina-carousel-nav {
+  display: flex;
+  align-items: center;
+  gap: 8px;
+  font-size: 12.5px;
+  color: #786F66;
+  font-weight: 600;
+}
+
+.milina-carousel-scroll {
+  display: flex;
+  gap: 14px;
+  overflow-x: auto;
+  scroll-behavior: smooth;
+  -webkit-overflow-scrolling: touch;
+  padding-bottom: 8px;
+  scrollbar-width: none;
+}
+
+.milina-carousel-scroll::-webkit-scrollbar {
+  display: none;
+}
+
+.milina-brand-slide-card {
+  flex: 0 0 170px;
+  text-decoration: none;
+  display: flex;
+  flex-direction: column;
+  background: #FFFFFF;
+  border-radius: 8px;
+  border: 1px solid #ECE6DC;
+  overflow: hidden;
+  padding: 6px;
+  transition: transform 0.2s ease, box-shadow 0.2s ease, border-color 0.2s ease;
+}
+
+@media (min-width: 768px) {
+  .milina-brand-slide-card {
+    flex: 0 0 210px;
+  }
+}
+
+.milina-brand-slide-card:hover {
+  transform: translateY(-3px);
+  border-color: #C18A5B;
+  box-shadow: 0 6px 18px rgba(102, 48, 15, 0.1);
+}
+
+.milina-brand-slide-img-box {
+  width: 100%;
+  aspect-ratio: 1 / 1;
+  background: #FAF8F5;
+  border-radius: 6px;
+  overflow: hidden;
+  position: relative;
+  border: 1px solid #F4EFEB;
+}
+
+.milina-brand-slide-img {
+  width: 100%;
+  height: 100%;
+  object-fit: cover;
+  transition: transform 0.3s ease;
+}
+
+.milina-brand-slide-card:hover .milina-brand-slide-img {
+  transform: scale(1.04);
+}
+
+/* Category & Brand Slide Titles: Black Font, Full Capital Letters, Reduced Font Weight */
+.milina-brand-slide-title {
+  font-family: 'Poppins', sans-serif;
+  font-size: 12.5px;
+  font-weight: 400;
+  color: #1A1817;
+  text-transform: uppercase;
+  letter-spacing: 0.5px;
+  margin-top: 8px;
+  margin-bottom: 2px;
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  padding: 0 4px;
+}
+
+/* Category Shortcut Cards (Screenshot 3) */
+.milina-category-shortcuts-grid {
+  display: grid;
+  grid-template-columns: repeat(2, 1fr);
+  gap: 14px;
+}
+
+@media (min-width: 768px) {
+  .milina-category-shortcuts-grid {
+    grid-template-columns: repeat(3, 1fr);
+    gap: 20px;
+  }
+}
+
+/* ─── New Arrivals Section (Warm Theme) ─── */
+.milina-new-arrivals-section {
+  max-width: 1280px;
+  width: 100%;
+  margin: 0 auto;
+  padding: 16px 14px 48px;
+  box-sizing: border-box;
+  overflow-x: hidden;
+}
+
+.milina-new-arrivals-head {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  margin-bottom: 18px;
+}
+
+.milina-new-arrivals-title {
+  font-family: 'Poppins', sans-serif;
+  font-size: 20px;
+  font-weight: 300;
+  color: #1A1817;
+  text-transform: uppercase;
+  letter-spacing: 2px;
+  margin: 0;
+}
+
+/* View All Link: Reduced size, Lightweight, Uppercase, Single clean border */
+.milina-view-all-link {
+  font-family: 'Poppins', sans-serif;
+  font-size: 11px;
+  font-weight: 400;
+  color: #1A1817;
+  text-transform: uppercase;
+  letter-spacing: 1.5px;
+  text-decoration: none;
+  border-bottom: 1px solid #1A1817;
+  padding-bottom: 2px;
+  transition: all 0.15s ease;
+  white-space: nowrap;
+}
+
+.milina-view-all-link:hover {
+  color: #66300F;
+  border-color: #66300F;
+}
+
+
+
+
+

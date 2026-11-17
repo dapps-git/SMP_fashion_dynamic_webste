@@ -1,42 +1,41 @@
 'use client';
 
-import React, { useState, useEffect, useMemo } from 'react';
+import React, { useState, useEffect, useMemo, useRef } from 'react';
 import Link from 'next/link';
 import {
-  Eye,
-  ShoppingCart,
+  Search,
+  Menu,
+  X,
+  ShoppingBag,
+  ChevronRight,
+  ChevronLeft,
+  ArrowRight,
   MessageSquare,
   ShieldCheck,
   Truck,
-  CheckCircle,
-  Search,
-  ArrowRight,
-  Star,
-  X,
+  Lock,
+  Handshake,
   Phone,
-  MapPin,
-  User,
-  Clock,
-  Sparkles,
-  Award,
-  ChevronRight,
-  ChevronLeft,
-  ExternalLink,
-  SlidersHorizontal,
-  Menu,
-  ShoppingBag,
-  Trash2,
   Plus,
   Minus,
-  Home as HomeIcon,
-  Tag,
-  ChevronDown,
-  Package,
-  Lock,
-  Handshake
+  Trash2,
+  CheckCircle
 } from 'lucide-react';
 
 const WHATSAPP_NUMBER = '971525973132'; // +971 52 597 3132
+
+// Authentic Official WhatsApp Vector Icon (Standard crisp SVG)
+const WhatsAppIcon = ({ size = 22, color = '#FFFFFF' }) => (
+  <svg
+    width={size}
+    height={size}
+    viewBox="0 0 24 24"
+    fill="currentColor"
+    style={{ display: 'inline-block', verticalAlign: 'middle', flexShrink: 0, color }}
+  >
+    <path d="M12.04 2C6.58 2 2.13 6.45 2.13 11.91c0 1.75.46 3.45 1.32 4.95L2.05 22l5.25-1.38c1.45.79 3.08 1.21 4.74 1.21 5.46 0 9.91-4.45 9.91-9.91 0-2.65-1.03-5.14-2.9-7.01A9.816 9.816 0 0 0 12.04 2zm.01 18.16c-1.48 0-2.93-.4-4.2-1.15l-.3-.18-3.12.82.83-3.04-.2-.32a7.99 7.99 0 0 1-1.26-4.38c0-4.54 3.7-8.24 8.25-8.24 2.2 0 4.26.86 5.82 2.42a8.18 8.18 0 0 1 2.41 5.83c0 4.54-3.7 8.24-8.23 8.24zm4.52-5.77c-.25-.12-1.46-.72-1.68-.81-.23-.08-.39-.12-.56.13-.16.25-.64.81-.78.98-.15.17-.29.19-.54.06-.25-.12-1.05-.38-2-1.23-.74-.66-1.24-1.47-1.38-1.72-.15-.25-.02-.38.11-.51.11-.11.25-.28.37-.43.12-.15.16-.25.25-.44.08-.19.04-.35-.02-.48-.07-.12-.56-1.32-.76-1.82-.2-.48-.41-.41-.56-.42h-.48c-.16 0-.43.06-.65.3-.23.25-.87.85-.87 2.07 0 1.22.89 2.4 1.01 2.57.13.16 1.74 2.65 4.21 3.72.59.25 1.05.4 1.41.51.59.19 1.13.16 1.56.1.48-.07 1.47-.6 1.67-1.18.21-.58.21-1.08.15-1.18-.06-.1-.21-.16-.46-.21z" />
+  </svg>
+);
 const rawApiUrl = process.env.NEXT_PUBLIC_API_URL || 'http://localhost:5005/api';
 const cleanApiUrl = rawApiUrl.replace(/\/+$/, '');
 const API_BASE = cleanApiUrl.endsWith('/api') ? cleanApiUrl : `${cleanApiUrl}/api`;
@@ -51,413 +50,61 @@ const INITIAL_FALLBACK_BRANDS = [
   { id: 'brand-7', name: 'SMP Luxury', logo: '/smp-logo.png', slug: 'smp-luxury' },
 ];
 
-const BRAND_LOGOS = INITIAL_FALLBACK_BRANDS;
-
-// Luxury Double-Chime Audio Synthesis for Adding to Cart
-const playAddToCartSound = () => {
-  try {
-    const AudioCtx = window.AudioContext || window.webkitAudioContext;
-    if (!AudioCtx) return;
-    const ctx = new AudioCtx();
-    if (ctx.state === 'suspended') {
-      ctx.resume();
-    }
-    const now = ctx.currentTime;
-
-    // Primary Tone (D5 -> A5)
-    const osc1 = ctx.createOscillator();
-    const gain1 = ctx.createGain();
-    osc1.type = 'sine';
-    osc1.frequency.setValueAtTime(587.33, now);
-    osc1.frequency.exponentialRampToValueAtTime(880, now + 0.12);
-    gain1.gain.setValueAtTime(0.22, now);
-    gain1.gain.exponentialRampToValueAtTime(0.001, now + 0.36);
-    osc1.connect(gain1);
-    gain1.connect(ctx.destination);
-    osc1.start(now);
-    osc1.stop(now + 0.38);
-
-    // High Sparkle Chime (D6 -> A6)
-    const osc2 = ctx.createOscillator();
-    const gain2 = ctx.createGain();
-    osc2.type = 'triangle';
-    osc2.frequency.setValueAtTime(1174.66, now + 0.08);
-    osc2.frequency.exponentialRampToValueAtTime(1760, now + 0.2);
-    gain2.gain.setValueAtTime(0.12, now + 0.08);
-    gain2.gain.exponentialRampToValueAtTime(0.001, now + 0.42);
-    osc2.connect(gain2);
-    gain2.connect(ctx.destination);
-    osc2.start(now + 0.08);
-    osc2.stop(now + 0.44);
-  } catch (err) {
-    // Audio context safely handled
-  }
-};
-
-
-// Color resolver fallback helper
-function resolveColorHex(name = '', code = '') {
-  if (code && typeof code === 'string' && code.trim().startsWith('#')) return code.trim();
-  const lower = (name || '').toLowerCase();
-  if (lower.includes('white') || lower.includes('cream')) return '#FFFFFF';
-  if (lower.includes('black') || lower.includes('noir') || lower.includes('dark')) return '#111111';
-  if (lower.includes('red') || lower.includes('burgundy') || lower.includes('maroon') || lower.includes('wine')) return '#800020';
-  if (lower.includes('brown') || lower.includes('cognac') || lower.includes('tan') || lower.includes('chocolate')) return '#8B4513';
-  if (lower.includes('green') || lower.includes('emerald') || lower.includes('olive')) return '#064E3B';
-  if (lower.includes('blue') || lower.includes('navy') || lower.includes('azure')) return '#1E3A8A';
-  if (lower.includes('beige') || lower.includes('nude') || lower.includes('sand')) return '#E2D5C3';
-  if (lower.includes('gold') || lower.includes('champagne') || lower.includes('yellow')) return '#D4AF37';
-  if (lower.includes('silver') || lower.includes('grey') || lower.includes('gray')) return '#9CA3AF';
-  if (lower.includes('pink') || lower.includes('rose')) return '#F472B6';
-  return '#1A1817';
-}
-
-// Build unified list of color options: First / Primary Image + Additional Color Variants
-function getProductColorOptions(product) {
-  if (!product) return [];
-  const variants = Array.isArray(product.variants) ? product.variants : [];
-
-  // Check if primary image is already explicitly one of the variant images
-  const isImageInVariants = product.image && variants.some((v) =>
-    v.images && v.images.length > 0 && (v.images[0] === product.image || v.images.includes(product.image))
-  );
-
-  const options = [];
-
-  // 1. Primary / First Image Option (Always available so first image has dedicated color & switching)
-  if (product.image || product.color) {
-    if (!isImageInVariants || variants.length === 0) {
-      options.push({
-        id: 'primary',
-        isPrimary: true,
-        colorName: product.color || 'Primary',
-        colorCode: resolveColorHex(product.color, product.colorCode),
-        images: product.image ? [product.image] : [],
-        stock: product.stock !== undefined ? product.stock : 10,
-        sizes: product.sizes || []
-      });
-    }
-  }
-
-  // 2. Additional Color Variants
-  variants.forEach((v, idx) => {
-    const rawImages = Array.isArray(v.images) ? v.images.filter(Boolean) : (v.image ? [v.image] : []);
-    const cleanImages = rawImages.filter(img => typeof img === 'string' && !img.startsWith('blob:'));
-    const finalImages = cleanImages.length > 0 ? cleanImages : (product.image && !product.image.startsWith('blob:') ? [product.image] : []);
-
-    options.push({
-      id: v.id || `var-${idx}`,
-      isPrimary: false,
-      colorName: v.colorName || `Color ${idx + 1}`,
-      colorCode: resolveColorHex(v.colorName, v.colorCode),
-      images: finalImages,
-      stock: v.stock !== undefined && v.stock !== '' ? Number(v.stock) : (product.stock ?? 10),
-      sizes: Array.isArray(v.sizes) ? v.sizes : (product.sizes || [])
-    });
-  });
-
-  return options;
-}
-
-// ─── Storefront Product Card Component with Instant Color Switching ───
-function StorefrontProductCard({ product, onBuyNow, onAddToCart }) {
-  const colorOptions = useMemo(() => getProductColorOptions(product), [product]);
-  const productId = product._id || product.id;
-
-  const [selectedOptionId, setSelectedOptionId] = useState(
-    colorOptions.length > 0 ? colorOptions[0].id : 'primary'
-  );
-
-  // Sync when product colorOptions update
-  useEffect(() => {
-    if (colorOptions.length > 0) {
-      if (!colorOptions.some((opt) => opt.id === selectedOptionId)) {
-        setSelectedOptionId(colorOptions[0].id);
-      }
-    }
-  }, [colorOptions, selectedOptionId]);
-
-  // Preload all option images so color switches are completely instantaneous with zero delay
-  useEffect(() => {
-    colorOptions.forEach((opt) => {
-      if (opt.images && opt.images.length > 0) {
-        const img = new Image();
-        img.src = opt.images[0];
-      }
-    });
-  }, [colorOptions]);
-
-  const activeOption = colorOptions.find((opt) => opt.id === selectedOptionId) || colorOptions[0] || null;
-
-  const displayImage = activeOption?.images?.[0] || product.image;
-  const displayColor = activeOption?.colorName || product.color || '';
-  const availableSizes = activeOption?.sizes && activeOption.sizes.length > 0
-    ? activeOption.sizes
-    : (product.sizes || []);
-  const defaultSize = availableSizes.length > 0 ? availableSizes[0] : '';
-
-  return (
-    <div className="editorial-card">
-      {/* Image Wrap linking directly to product inner page */}
-      <Link
-        href={`/product/${productId}`}
-        className="editorial-img-wrap"
-        style={{ textDecoration: 'none', display: 'flex' }}
-      >
-        <img
-          src={displayImage}
-          alt={`${product.title}${displayColor ? ` - ${displayColor}` : ''}`}
-          className="editorial-img"
-          loading="lazy"
-          onError={(e) => {
-            if (product?.image && e.currentTarget.src !== product.image) {
-              e.currentTarget.src = product.image;
-            }
-          }}
-        />
-      </Link>
-
-      {/* Info Container */}
-      <div className="editorial-info">
-        <div className="editorial-brand">
-          {product.brand || 'SMP Luxury'}
-        </div>
-
-        <div className="editorial-title-row">
-          <h3 className="editorial-title">
-            <Link
-              href={`/product/${productId}`}
-              style={{ textDecoration: 'none', color: 'inherit' }}
-              title={product.title}
-            >
-              {product.title}
-            </Link>
-          </h3>
-        </div>
-
-        {/* Clean price row */}
-        <div className="editorial-price-row">
-          <span className="editorial-price">AED {product.price}</span>
-        </div>
-
-        {/* Actions Row: BUY NOW + Small Cart Icon */}
-        <div className="editorial-actions-row">
-          <button
-            onClick={() => onBuyNow(product, defaultSize, activeOption)}
-            className="btn-buy-now-solid"
-            title="Order via WhatsApp with Inspection on Delivery"
-          >
-            BUY NOW
-          </button>
-          <button
-            onClick={() => onAddToCart(product, 1, defaultSize, activeOption)}
-            className="btn-card-cart"
-            title="Add to Cart"
-            aria-label={`Add ${product.title} to cart`}
-          >
-            <ShoppingBag size={14} />
-          </button>
-        </div>
-      </div>
-    </div>
-  );
-}
-
 export default function StorefrontPage() {
   const [products, setProducts] = useState([]);
-  const [activeCategory, setActiveCategory] = useState('all');
-  const [activeGender, setActiveGender] = useState('all'); // 'all', 'men', 'women'
-  const [activeBrand, setActiveBrand] = useState('all');
   const [brandsList, setBrandsList] = useState(INITIAL_FALLBACK_BRANDS);
-  const [categoriesList, setCategoriesList] = useState([
-    { id: 'cat-1', name: 'Footwear', slug: 'footwear' },
-    { id: 'cat-2', name: 'Watches', slug: 'watches' },
-    { id: 'cat-3', name: 'Bags', slug: 'bags' }
-  ]);
+  const [loading, setLoading] = useState(true);
 
+  // Search & Navigation Modals
   const [searchQuery, setSearchQuery] = useState('');
   const [searchOpen, setSearchOpen] = useState(false);
-  const [priceFilter, setPriceFilter] = useState('all');
-  const [showPriceFilter, setShowPriceFilter] = useState(false);
-  const [showBrandFilter, setShowBrandFilter] = useState(false);
-  const [loading, setLoading] = useState(true);
   const [mobileMenuOpen, setMobileMenuOpen] = useState(false);
-  const [currentPage, setCurrentPage] = useState(1);
-  const PRODUCTS_PER_PAGE = 20;
 
-  // Automatically reset to Page 1 when any filter or search changes
-  useEffect(() => {
-    setCurrentPage(1);
-  }, [activeCategory, activeGender, activeBrand, searchQuery, priceFilter]);
-
-  // Dynamically compute all categories from API and loaded products
-  const displayCategories = React.useMemo(() => {
-    const list = [...categoriesList];
-    products.forEach((p) => {
-      const slug = (p.category || '').toLowerCase().trim();
-      const name = p.categoryName || (slug ? slug.charAt(0).toUpperCase() + slug.slice(1) : '');
-      if (slug && !list.some((c) => (c.slug || '').toLowerCase() === slug)) {
-        list.push({ id: `cat-${slug}`, slug, name });
-      }
-    });
-    return list;
-  }, [categoriesList, products]);
-
-  // Fetch live products, categories, and brands from backend
-  useEffect(() => {
-    let isMounted = true;
-    const fetchData = async () => {
-      setLoading(true);
-      try {
-        const prodRes = await fetch(`${API_BASE}/products`);
-        if (prodRes.ok) {
-          const prodData = await prodRes.json();
-          if (isMounted && Array.isArray(prodData)) {
-            setProducts(prodData);
-          }
-        }
-      } catch (err) {
-        console.warn('Live products fetch notice:', err);
-      } finally {
-        if (isMounted) setLoading(false);
-      }
-
-      try {
-        const catRes = await fetch(`${API_BASE}/categories`);
-        if (catRes.ok) {
-          const catData = await catRes.json();
-          if (isMounted && Array.isArray(catData) && catData.length > 0) {
-            setCategoriesList(catData);
-          }
-        }
-      } catch (err) {
-        console.warn('Live categories fetch notice:', err);
-      }
-
-      try {
-        const brandRes = await fetch(`${API_BASE}/brands`);
-        if (brandRes.ok) {
-          const brandData = await brandRes.json();
-          if (isMounted && Array.isArray(brandData) && brandData.length > 0) {
-            setBrandsList(brandData);
-          }
-        }
-      } catch (err) {
-        console.warn('Live brands fetch notice:', err);
-      }
-    };
-    fetchData();
-    return () => { isMounted = false; };
-  }, []);
-
-  // Quick View Modal
-  const [viewProduct, setViewProduct] = useState(null);
-  const [viewVariant, setViewVariant] = useState(null);
-  const [viewImageIndex, setViewImageIndex] = useState(0);
-  const [selectedSize, setSelectedSize] = useState('');
-  const [orderSize, setOrderSize] = useState('');
-
-  const handleOpenQuickView = (product, preselectedOption) => {
-    setViewProduct(product);
-    const options = getProductColorOptions(product);
-    const resolvedOption = preselectedOption
-      ? (options.find((o) => o.id === preselectedOption.id) || preselectedOption)
-      : (options.length > 0 ? options[0] : null);
-    setViewVariant(resolvedOption);
-    setViewImageIndex(0);
-    const sizes = resolvedOption?.sizes && resolvedOption.sizes.length > 0 ? resolvedOption.sizes : (product.sizes || []);
-    setSelectedSize(sizes.length > 0 ? sizes[0] : '');
-  };
-
-  // Buy Now / Address Modal
+  // Cart & Orders
+  const [cart, setCart] = useState([]);
+  const [cartDrawerOpen, setCartDrawerOpen] = useState(false);
   const [orderModalProduct, setOrderModalProduct] = useState(null);
   const [isCartOrder, setIsCartOrder] = useState(false);
   const [quantity, setQuantity] = useState(1);
   const [customerName, setCustomerName] = useState('');
   const [customerPhone, setCustomerPhone] = useState('');
-  const [deliveryAddress, setDeliveryAddress] = useState('');
-  const [emirate, setEmirate] = useState('Dubai');
-  const [notes, setNotes] = useState('');
   const [submittingOrder, setSubmittingOrder] = useState(false);
   const [orderSuccess, setOrderSuccess] = useState(false);
   const [lastWhatsAppUrl, setLastWhatsAppUrl] = useState('');
 
-  const handleCloseOrderModal = () => {
-    setOrderModalProduct(null);
-    setOrderSuccess(false);
-    setSubmittingOrder(false);
-    setIsCartOrder(false);
-  };
+  // Slider Refs for Brand Rows
+  const bagsRef = useRef(null);
+  const shoesRef = useRef(null);
+  const watchesRef = useRef(null);
 
-  // Shopping Cart State
-  const [cart, setCart] = useState([]);
-  const [cartDrawerOpen, setCartDrawerOpen] = useState(false);
-  const [cartToast, setCartToast] = useState(null);
+  const [bagsPage, setBagsPage] = useState(1);
+  const [shoesPage, setShoesPage] = useState(1);
+  const [watchesPage, setWatchesPage] = useState(1);
 
-  // Load cart from localStorage on mount
+  // Load Cart from localStorage
   useEffect(() => {
     try {
-      const saved = localStorage.getItem('smp_cart');
+      const saved = localStorage.getItem('smp_cart_items') || localStorage.getItem('smp_cart');
       if (saved) {
         setCart(JSON.parse(saved));
       }
-    } catch (e) { }
+    } catch (e) {}
   }, []);
 
-  // Update cart in state & localStorage
   const updateCart = (newCart) => {
     setCart(newCart);
     try {
+      localStorage.setItem('smp_cart_items', JSON.stringify(newCart));
       localStorage.setItem('smp_cart', JSON.stringify(newCart));
-    } catch (e) { }
-  };
-
-  const addToCart = (product, qty = 1, sizeChoice, variantChoice) => {
-    playAddToCartSound();
-    const options = getProductColorOptions(product);
-    const chosen = variantChoice || (options.length > 0 ? options[0] : null);
-    const chosenColor = chosen?.colorName || product.color || '';
-    const chosenImage = chosen?.images?.[0] || product.image;
-    const chosenSize = sizeChoice !== undefined ? sizeChoice : (
-      chosen?.sizes && chosen.sizes.length > 0 ? chosen.sizes[0] :
-        (product.sizes && product.sizes.length > 0 ? (selectedSize || product.sizes[0]) : '')
-    );
-
-    const variantKeyPart = chosen ? chosen.id : (chosenColor ? chosenColor.replace(/\s+/g, '-') : 'default');
-    const sizeKeyPart = chosenSize ? chosenSize.replace(/\s+/g, '-') : 'nosize';
-    const itemKey = `${product.id}-${variantKeyPart}-${sizeKeyPart}`;
-
-    let updated;
-    const existingIndex = cart.findIndex((item) => (item.cartKey || item.id) === itemKey);
-    if (existingIndex > -1) {
-      updated = cart.map((item, idx) =>
-        idx === existingIndex ? { ...item, quantity: item.quantity + qty } : item
-      );
-    } else {
-      updated = [
-        ...cart,
-        {
-          ...product,
-          cartKey: itemKey,
-          variantId: chosenVariant?.id || null,
-          color: chosenColor,
-          image: chosenImage,
-          size: chosenSize,
-          quantity: qty
-        }
-      ];
-    }
-    updateCart(updated);
-    setCartToast(`Added "${product.title}"${chosenColor ? ` [${chosenColor}]` : ''}${chosenSize ? ` (Size: ${chosenSize})` : ''} to Cart`);
-    setTimeout(() => setCartToast(null), 2500);
+    } catch (e) {}
   };
 
   const removeFromCart = (productId) => {
-    const updated = cart.filter((item) => item.cartKey ? item.cartKey !== productId : item.id !== productId);
+    const updated = cart.filter((item) => (item.cartKey ? item.cartKey !== productId : item.id !== productId));
     updateCart(updated);
   };
 
-  const updateQuantity = (productId, delta) => {
+  const updateCartQty = (productId, delta) => {
     const updated = cart
       .map((item) => {
         const key = item.cartKey || item.id;
@@ -474,72 +121,204 @@ export default function StorefrontPage() {
   const totalCartCount = cart.reduce((sum, item) => sum + item.quantity, 0);
   const totalCartPrice = cart.reduce((sum, item) => sum + item.price * item.quantity, 0);
 
-  const handleOrderCartWhatsApp = () => {
-    if (cart.length === 0) return;
-    const itemList = cart
-      .map((item, idx) => `${idx + 1}. *${item.title}* (${item.brand || 'SMP Luxury'})${item.color ? ` [Color: ${item.color}]` : ''}${item.size ? ` [Size: ${item.size}]` : ''} (Qty: ${item.quantity}) - AED ${item.price * item.quantity}`)
-      .join('\n');
-    const msg = `🛍️ *NEW CART ORDER - SMP Super Master Products*
-━━━━━━━━━━━━━━━━━━━━━
-${itemList}
-━━━━━━━━━━━━━━━━━━━━━
-*Total Items:* ${totalCartCount}
-*Grand Total:* AED ${totalCartPrice}
+  // Fetch Products & Brands strictly from Admin API
+  useEffect(() => {
+    let isMounted = true;
+    const fetchData = async () => {
+      setLoading(true);
+      try {
+        let data = null;
+        try {
+          const res = await fetch('/api/products');
+          if (res.ok) data = await res.json();
+        } catch (_) {}
 
-Hello SMP, I would like to order these items from my shopping bag.`;
-    window.open(`https://wa.me/${WHATSAPP_NUMBER}?text=${encodeURIComponent(msg)}`, '_blank');
+        if (!data && API_BASE) {
+          try {
+            const res = await fetch(`${API_BASE}/products`);
+            if (res.ok) data = await res.json();
+          } catch (_) {}
+        }
+
+        if (isMounted && data) {
+          setProducts(Array.isArray(data) ? data : (data.products || []));
+        }
+      } catch (err) {
+        console.warn('Products fetch notice:', err);
+      } finally {
+        if (isMounted) setLoading(false);
+      }
+
+      try {
+        let brandData = null;
+        try {
+          const brandRes = await fetch('/api/brands');
+          if (brandRes.ok) brandData = await brandRes.json();
+        } catch (_) {}
+
+        if (!brandData && API_BASE) {
+          try {
+            const brandRes = await fetch(`${API_BASE}/brands`);
+            if (brandRes.ok) brandData = await brandRes.json();
+          } catch (_) {}
+        }
+
+        if (isMounted && Array.isArray(brandData) && brandData.length > 0) {
+          setBrandsList(brandData);
+        }
+      } catch (e) {}
+    };
+
+    fetchData();
+    return () => { isMounted = false; };
+  }, []);
+
+  // Slider Scroll Handler
+  const handleScrollSlider = (ref, direction, setPage, totalItems) => {
+    if (!ref.current) return;
+    const scrollAmount = 220;
+    const currentScroll = ref.current.scrollLeft;
+    const targetScroll = direction === 'next' ? currentScroll + scrollAmount : currentScroll - scrollAmount;
+    ref.current.scrollTo({ left: targetScroll, behavior: 'smooth' });
+
+    setTimeout(() => {
+      if (ref.current) {
+        const newPage = Math.max(1, Math.min(totalItems, Math.round(ref.current.scrollLeft / 180) + 1));
+        setPage(newPage);
+      }
+    }, 200);
   };
 
-  // Open Buy Now Modal for single product
-  const handleOpenBuyNow = (product, sizeChoice, variantChoice) => {
-    setIsCartOrder(false);
-    const options = getProductColorOptions(product);
-    const chosen = variantChoice || (options.length > 0 ? options[0] : null);
-    const resolvedColor = chosen ? chosen.colorName : (product.color || '');
-    const resolvedImage = chosen?.images?.[0] || product.image;
-    const resolvedSize = sizeChoice !== undefined ? sizeChoice : (
-      chosen?.sizes && chosen.sizes.length > 0 ? chosen.sizes[0] :
-        (product.sizes && product.sizes.length > 0 ? (selectedSize || product.sizes[0]) : '')
-    );
+  // Generate Brand Cards strictly from real products in the Database (Admin Panel)
+  const getBrandCardsForCategory = (catType) => {
+    const catProducts = products.filter((p) => {
+      const c = (p.category || '').toLowerCase();
+      const cn = (p.categoryName || '').toLowerCase();
+      const titleLower = (p.title || '').toLowerCase();
+      const brandLower = (p.brand || '').toLowerCase();
 
-    setOrderModalProduct({
-      ...product,
-      color: resolvedColor,
-      image: resolvedImage,
-      variantId: chosen?.id || null
+      // Clear watch markers
+      const isWatchMarker = brandLower.includes('rolex') || brandLower.includes('relox') || brandLower.includes('richard') || 
+        brandLower.includes('patek') || brandLower.includes('audemars') || brandLower.includes('cartier') || 
+        brandLower.includes('omega') || brandLower.includes('chopard') || brandLower.includes('chaumet') ||
+        titleLower.includes('gmt') || titleLower.includes('submariner') || titleLower.includes('watch') || titleLower.includes('dial');
+
+      // Clear footwear markers
+      const isFootwearMarker = titleLower.includes('boot') || titleLower.includes('heel') || titleLower.includes('sandal') || 
+        titleLower.includes('shoe') || titleLower.includes('mule') || titleLower.includes('slide') || 
+        titleLower.includes('sneaker') || titleLower.includes('pump') || titleLower.includes('loafer');
+
+      // Clear bag markers
+      const isBagMarker = titleLower.includes('bag') || titleLower.includes('tote') || titleLower.includes('peekaboo') || 
+        titleLower.includes('evelyn') || titleLower.includes('kelly') || titleLower.includes('birkin') || 
+        titleLower.includes('vanity') || titleLower.includes('hobo') || titleLower.includes('capucines');
+
+      if (catType === 'footwear') {
+        if (isWatchMarker || isBagMarker) return false;
+        return c === 'footwear' || c === 'shoes' || isFootwearMarker || cn.includes('shoe') || cn.includes('footwear');
+      }
+      if (catType === 'bags') {
+        if (isWatchMarker || isFootwearMarker) return false;
+        return c === 'bags' || isBagMarker || cn.includes('bag');
+      }
+      if (catType === 'watches') {
+        if (isBagMarker || isFootwearMarker) return false;
+        return c === 'watches' || isWatchMarker || cn.includes('watch');
+      }
+      return false;
     });
-    setOrderSize(resolvedSize);
-    setQuantity(1);
-    setCustomerName('');
-    setCustomerPhone('');
-    setDeliveryAddress('');
-    setEmirate('Dubai');
-    setNotes('');
-    setSubmittingOrder(false);
-    setOrderSuccess(false);
+
+    if (catProducts.length === 0) {
+      return [];
+    }
+
+    const brandMap = new Map();
+    catProducts.forEach((p) => {
+      const bName = (p.brand || '').trim();
+      if (bName && !brandMap.has(bName.toLowerCase())) {
+        brandMap.set(bName.toLowerCase(), {
+          brand: bName,
+          title: `${bName} ${catType === 'footwear' ? 'shoes' : catType} →`,
+          href: `/collections/${catType === 'footwear' ? 'shoes' : catType}?brand=${encodeURIComponent(bName)}`,
+          img: p.image || ''
+        });
+      }
+    });
+
+    const brandCards = Array.from(brandMap.values());
+    const firstBrandName = brandCards[0]?.brand?.toLowerCase() || '';
+
+    // Guarantee NO adjacent identical images: pick a product from a DIFFERENT brand for the "all" card!
+    const diffBrandProduct = catProducts.find((p) => {
+      const b = (p.brand || '').trim().toLowerCase();
+      return b && b !== firstBrandName && p.image;
+    });
+    const diffImgProduct = catProducts.find((p) => p.image && p.image !== brandCards[0]?.img);
+    const allCardImg = diffBrandProduct?.image || diffImgProduct?.image || catProducts[0]?.image || '';
+
+    const allCard = {
+      title: `all ${catType === 'footwear' ? 'shoes' : catType} →`,
+      href: `/collections/${catType === 'footwear' ? 'shoes' : catType}`,
+      img: allCardImg
+    };
+
+    return [allCard, ...brandCards];
   };
 
-  // Open Buy Now Modal for entire cart
+  const bagsSlideCards = useMemo(() => getBrandCardsForCategory('bags'), [products]);
+  const shoesSlideCards = useMemo(() => getBrandCardsForCategory('footwear'), [products]);
+  const watchesSlideCards = useMemo(() => getBrandCardsForCategory('watches'), [products]);
+
+  // "Shop by categories" Shortcut Cards strictly using real product images from DB
+  const categoryShortcuts = useMemo(() => [
+    {
+      title: 'all bags →',
+      href: '/collections/bags',
+      img: bagsSlideCards[0]?.img || ''
+    },
+    {
+      title: 'all shoes →',
+      href: '/collections/shoes',
+      img: shoesSlideCards[0]?.img || ''
+    },
+    {
+      title: 'all watches →',
+      href: '/collections/watches',
+      img: watchesSlideCards[0]?.img || ''
+    }
+  ].filter((item) => item.img), [bagsSlideCards, shoesSlideCards, watchesSlideCards]);
+
+  // Spotlight / New Arrivals: Latest products strictly from database
+  const newArrivals = useMemo(() => {
+    return products.slice(0, 8);
+  }, [products]);
+
+  // Live Search Results
+  const searchResults = useMemo(() => {
+    const q = searchQuery.trim().toLowerCase();
+    if (!q) return [];
+    return products.filter((p) => {
+      const title = (p.title || '').toLowerCase();
+      const brand = (p.brand || '').toLowerCase();
+      const cat = (p.category || '').toLowerCase();
+      return title.includes(q) || brand.includes(q) || cat.includes(q);
+    }).slice(0, 8);
+  }, [searchQuery, products]);
+
+  // Order Submission & WhatsApp Routing
   const handleOpenCartBuyNow = () => {
     if (cart.length === 0) return;
     setIsCartOrder(true);
     setOrderModalProduct(cart[0]);
-    setOrderSize('');
     setCartDrawerOpen(false);
     setCustomerName('');
     setCustomerPhone('');
-    setDeliveryAddress('');
-    setEmirate('Dubai');
-    setNotes('');
     setSubmittingOrder(false);
     setOrderSuccess(false);
   };
 
-  // Submit Order & Open WhatsApp
   const handleConfirmAndContinueWhatsApp = async (e) => {
     e.preventDefault();
-    if (!orderModalProduct && !isCartOrder) return;
-
     if (!customerName.trim() || !customerPhone.trim()) {
       alert('Please enter your Name and WhatsApp Mobile Number.');
       return;
@@ -548,32 +327,29 @@ Hello SMP, I would like to order these items from my shopping bag.`;
     setSubmittingOrder(true);
 
     const orderItems = isCartOrder
-      ? cart.map(item => ({
-        productId: item.id,
-        variantId: item.variantId || null,
-        title: item.title,
-        price: item.price,
-        quantity: item.quantity,
-        image: item.image,
-        color: item.color || '',
-        size: item.size || ''
-      }))
+      ? cart.map((item) => ({
+          productId: item.id,
+          title: item.title,
+          price: item.price,
+          quantity: item.quantity,
+          image: item.image,
+          color: item.color || '',
+          size: item.size || ''
+        }))
       : [
-        {
-          productId: orderModalProduct.id,
-          variantId: orderModalProduct.variantId || null,
-          title: orderModalProduct.title,
-          price: orderModalProduct.price,
-          quantity: quantity,
-          image: orderModalProduct.image,
-          color: orderModalProduct.color || '',
-          size: orderSize || ''
-        }
-      ];
+          {
+            productId: orderModalProduct?.id,
+            title: orderModalProduct?.title,
+            price: orderModalProduct?.price,
+            quantity: quantity,
+            image: orderModalProduct?.image,
+            color: orderModalProduct?.color || '',
+            size: orderModalProduct?.size || ''
+          }
+        ];
 
-    const totalAmount = isCartOrder ? totalCartPrice : orderModalProduct.price * quantity;
+    const totalAmount = isCartOrder ? totalCartPrice : (orderModalProduct?.price || 0) * quantity;
 
-    // 1. Save order to backend so admin can view full customer details, price, quantity, and images
     try {
       await fetch(`${API_BASE}/orders`, {
         method: 'POST',
@@ -586,18 +362,19 @@ Hello SMP, I would like to order these items from my shopping bag.`;
         })
       });
     } catch (err) {
-      console.warn('Backend order recording skipped or offline:', err);
+      console.warn('Backend order recording notice:', err);
     }
 
-    // 2. Prepare WhatsApp message
     let formattedMessage = '';
     if (isCartOrder) {
-      const itemsList = cart.map((item, idx) =>
-        `${idx + 1}. *${item.title}* (${item.brand || 'SMP Luxury'})${item.color ? `\n   Color: ${item.color}` : ''}${item.size ? `\n   Size: ${item.size}` : ''}\n   Qty: ${item.quantity} × AED ${item.price} = AED ${item.quantity * item.price}\n   Image: ${item.image}`
-      ).join('\n\n');
+      const itemsList = cart
+        .map(
+          (item, idx) =>
+            `${idx + 1}. *${item.title}* (${item.brand || 'SMP Luxury'})${item.color ? ` [Color: ${item.color}]` : ''}${item.size ? ` [Size: ${item.size}]` : ''}\n   Qty: ${item.quantity} × AED ${item.price} = AED ${item.quantity * item.price}`
+        )
+        .join('\n\n');
 
-      formattedMessage =
-        `🛍️ *NEW VIP ORDER (SHOPPING BAG) - SMP Super Master Products*
+      formattedMessage = `🛍️ *NEW VIP ORDER (SHOPPING BAG) - SMP Super Master Products*
 ━━━━━━━━━━━━━━━━━━━━━
 *Cart Items (${cart.length} Products):*
 
@@ -611,25 +388,24 @@ ${itemsList}
 *Phone:* ${customerPhone.trim()}
 ━━━━━━━━━━━━━━━━━━━━━
 
-Please confirm my shopping bag order. Thank you!`;
+Hello SMP Atelier, please confirm my shopping bag order. Thank you!`;
     } else {
-      formattedMessage =
-        `🛍️ *NEW ORDER - SMP Super Master Products*
+      formattedMessage = `🛍️ *NEW ORDER - SMP Super Master Products*
 ━━━━━━━━━━━━━━━━━━━━━
-*Product:* ${orderModalProduct.title}
-*Brand:* ${orderModalProduct.brand || 'SMP Luxury'}${orderModalProduct.color ? `\n*Color:* ${orderModalProduct.color}` : ''}${orderSize ? `\n*Size:* ${orderSize}` : ''}
+*Product:* ${orderModalProduct?.title}
+*Brand:* ${orderModalProduct?.brand || 'SMP Luxury'}
+*Price:* AED ${orderModalProduct?.price}
 *Quantity:* ${quantity}
-*Price:* AED ${orderModalProduct.price}
 *Total Amount:* AED ${totalAmount}
 
-📸 *Product Image:* ${orderModalProduct.image}
+📸 *Product Image:* ${orderModalProduct?.image}
 
 👤 *Customer Details:*
 *Name:* ${customerName.trim()}
 *Phone:* ${customerPhone.trim()}
 ━━━━━━━━━━━━━━━━━━━━━
 
-Please confirm my order. Thank you!`;
+Hello SMP Atelier, please confirm my order. Thank you!`;
     }
 
     const whatsappUrl = `https://wa.me/${WHATSAPP_NUMBER}?text=${encodeURIComponent(formattedMessage)}`;
@@ -637,13 +413,15 @@ Please confirm my order. Thank you!`;
 
     if (isCartOrder) {
       setCart([]);
-      if (typeof window !== 'undefined') localStorage.removeItem('smp_cart_items');
+      if (typeof window !== 'undefined') {
+        localStorage.removeItem('smp_cart_items');
+        localStorage.removeItem('smp_cart');
+      }
     }
 
     setSubmittingOrder(false);
     setOrderSuccess(true);
 
-    // Reliably open WhatsApp without browser popup blocking
     try {
       const win = window.open(whatsappUrl, '_blank');
       if (!win || win.closed || typeof win.closed === 'undefined') {
@@ -654,146 +432,28 @@ Please confirm my order. Thank you!`;
     }
   };
 
-  const filteredProducts = products.filter(p => {
-    const pCat = (p.category || '').toLowerCase();
-    const pCatName = (p.categoryName || '').toLowerCase();
-    const targetCat = activeCategory.toLowerCase();
-    const matchesCat = activeCategory === 'all' || pCat === targetCat || pCatName === targetCat;
-    if (!matchesCat) return false;
-
-    // Watch Gender Sub-filter (Men / Women / All)
-    if (activeCategory.toLowerCase() === 'watches' && activeGender !== 'all') {
-      const pGender = (p.gender || '').toLowerCase();
-      const text = `${p.title} ${p.description}`.toLowerCase();
-      if (activeGender === 'men') {
-        const isMen = pGender === 'men' || pGender === 'unisex' || (!pGender && (text.includes('men') || text.includes('chrono') || text.includes('steel') || text.includes('onyx') || text.includes('male')));
-        if (!isMen) return false;
-      } else if (activeGender === 'women') {
-        const isWomen = pGender === 'women' || pGender === 'unisex' || (!pGender && (text.includes('women') || text.includes('rose gold') || text.includes('skeleton') || text.includes('crystal') || text.includes('petite') || text.includes('female')));
-        if (!isWomen) return false;
-      }
-    }
-
-    // Brand Filter
-    if (activeBrand !== 'all') {
-      const pBrand = (p.brand || '').toLowerCase();
-      const targetBrand = activeBrand.toLowerCase();
-      if (pBrand !== targetBrand && !pBrand.includes(targetBrand)) return false;
-    }
-
-    // Name, Brand, Category, & Description Multi-field Search
-    if (searchQuery.trim()) {
-      const q = searchQuery.toLowerCase().trim();
-      const titleMatch = (p.title || '').toLowerCase().includes(q);
-      const brandMatch = (p.brand || '').toLowerCase().includes(q);
-      const catMatch = (p.category || '').toLowerCase().includes(q) || (p.categoryName || '').toLowerCase().includes(q);
-      const descMatch = (p.description || '').toLowerCase().includes(q);
-      if (!titleMatch && !brandMatch && !catMatch && !descMatch) return false;
-    }
-
-    if (priceFilter === 'under-400') return p.price < 400;
-    if (priceFilter === '400-600') return p.price >= 400 && p.price <= 600;
-    if (priceFilter === 'above-600') return p.price > 600;
-    return true;
-  });
-
-  // 20 Products per page pagination
-  const totalPages = Math.max(1, Math.ceil(filteredProducts.length / PRODUCTS_PER_PAGE));
-  const startIndex = (currentPage - 1) * PRODUCTS_PER_PAGE;
-  const paginatedProducts = filteredProducts.slice(startIndex, startIndex + PRODUCTS_PER_PAGE);
-
-  const handlePageChange = (newPage) => {
-    if (newPage < 1 || newPage > totalPages || newPage === currentPage) return;
-    setCurrentPage(newPage);
-    // Smoothly scroll to the top of the collections section (never stay at bottom)
-    const collectionsEl = document.getElementById('collections');
-    if (collectionsEl) {
-      const navHeader = document.querySelector('.site-header');
-      const headerHeight = navHeader ? navHeader.offsetHeight : 70;
-      const y = collectionsEl.getBoundingClientRect().top + window.pageYOffset - headerHeight - 16;
-      window.scrollTo({ top: Math.max(0, y), behavior: 'smooth' });
-    } else {
-      window.scrollTo({ top: 0, behavior: 'smooth' });
-    }
-  };
-
-  const liveSearchResults = useMemo(() => {
-    const q = (searchQuery || '').trim().toLowerCase();
-    if (!q) return [];
-    return products.filter((p) => {
-      const title = (p.title || '').toLowerCase();
-      const brand = (p.brand || '').toLowerCase();
-      const cat = (p.category || '').toLowerCase();
-      const desc = (p.description || '').toLowerCase();
-      const color = (p.color || '').toLowerCase();
-      return title.includes(q) || brand.includes(q) || cat.includes(q) || desc.includes(q) || color.includes(q);
-    });
-  }, [searchQuery, products]);
-
-  const activeFilterCount = (activeBrand !== 'all' ? 1 : 0) + (priceFilter !== 'all' ? 1 : 0);
-
-  // Dynamic SEO JSON-LD structured data for Google rich snippets
+  // SEO JSON-LD
   const jsonLd = {
     '@context': 'https://schema.org',
-    '@graph': [
-      {
-        '@type': 'Store',
-        '@id': 'https://smpfashion.ae/#store',
-        name: 'SMP Super Master Products',
-        url: 'https://smpfashion.ae',
-        description: 'Curated luxury fashion in the UAE. High precision watches, handcrafted footwear, and Italian calfskin handbags.',
-        telephone: '+971525973132',
-        currenciesAccepted: 'AED',
-        paymentAccepted: 'Cash, Card on Delivery',
-        priceRange: 'AED 350 - AED 1500',
-        address: {
-          '@type': 'PostalAddress',
-          addressCountry: 'AE',
-          addressRegion: 'Dubai'
-        }
-      },
-      {
-        '@type': 'ItemList',
-        itemListElement: products.slice(0, 10).map((p, idx) => ({
-          '@type': 'ListItem',
-          position: idx + 1,
-          item: {
-            '@type': 'Product',
-            name: p.seoTitle || p.title,
-            description: p.seoDescription || p.description,
-            image: p.image,
-            brand: {
-              '@type': 'Brand',
-              name: p.brand || 'SMP Luxury'
-            },
-            offers: {
-              '@type': 'Offer',
-              priceCurrency: 'AED',
-              price: p.price,
-              availability: 'https://schema.org/InStock',
-              seller: {
-                '@type': 'Organization',
-                name: 'SMP Super Master Products'
-              }
-            }
-          }
-        }))
-      }
-    ]
+    '@type': 'Store',
+    name: 'SMP Super Master Products',
+    url: 'https://smpfashion.ae',
+    description: 'Curated luxury fashion in the UAE. Shoes, bags, and fine horology.',
+    telephone: '+971525973132',
+    currenciesAccepted: 'AED',
+    priceRange: 'AED 350 - AED 1500'
   };
 
   return (
-    <div style={{ minHeight: '100vh', display: 'flex', flexDirection: 'column' }}>
-      {/* Dynamic SEO JSON-LD structured data for Google & Bing */}
+    <div style={{ minHeight: '100vh', display: 'flex', flexDirection: 'column', background: '#FFFFFF' }}>
       <script
         type="application/ld+json"
         dangerouslySetInnerHTML={{ __html: JSON.stringify(jsonLd) }}
       />
 
-      {/* Top Announcement Bar - Seamless Infinite Train Marquee */}
+      {/* Top Announcement Marquee */}
       <div className="top-announcement" role="region" aria-label="Announcement Ticker">
         <div className="top-announcement-track">
-          {/* Ticker Set 1 */}
           <div className="top-announcement-group">
             <span className="ticker-badge-item">
               <img src="/tabby-badge.png" alt="Tabby" className="ticker-payment-badge" />
@@ -810,7 +470,6 @@ Please confirm my order. Thank you!`;
             <span><strong>+971 52 597 3132</strong></span>
             <span className="ticker-dot">|</span>
           </div>
-          {/* Ticker Set 2 (Exact duplicate for seamless infinite loop) */}
           <div className="top-announcement-group" aria-hidden="true">
             <span className="ticker-badge-item">
               <img src="/tabby-badge.png" alt="Tabby" className="ticker-payment-badge" />
@@ -830,312 +489,52 @@ Please confirm my order. Thank you!`;
         </div>
       </div>
 
-      {/* Main Navigation Header */}
-      <header className="site-header">
-        <div className="header-container">
-          <div className="header-left">
-            {/* Mobile Hamburger Button */}
+      {/* Luxury Navigation Header with SMP Logo (Offwhite / Cream / Brown Theme) */}
+      <header className="milina-header">
+        <div className="milina-header-container">
+          <button
+            onClick={() => setMobileMenuOpen(true)}
+            className="milina-icon-btn"
+            aria-label="Open menu"
+          >
+            <Menu size={22} />
+          </button>
+
+          <Link href="/" className="milina-logo-link">
+            <img
+              src="/smp-logo.png"
+              alt="SMP Logo"
+              className="milina-logo-img"
+            />
+          </Link>
+
+          <div style={{ display: 'flex', alignItems: 'center', gap: '14px' }}>
             <button
-              className="mobile-menu-btn"
-              onClick={() => setMobileMenuOpen(true)}
-              aria-label="Open mobile menu"
-            >
-              <Menu size={24} />
-            </button>
-
-            <div className="brand-logo-wrap">
-              <a href="#">
-                <img
-                  src="/smp-logo.png"
-                  alt="SMP Logo"
-                  className="brand-logo-img"
-                />
-              </a>
-            </div>
-          </div>
-
-          <nav className="header-nav">
-            <a href="#" className="nav-item">Home</a>
-            <a
-              href="#collections"
-              onClick={() => { setActiveCategory('all'); setActiveGender('all'); }}
-              className={`nav-item ${activeCategory === 'all' ? 'active-nav' : ''}`}
-            >
-              All Collections
-            </a>
-            {displayCategories.map((cat) => (
-              <a
-                key={cat.id || cat.slug}
-                href="#collections"
-                onClick={() => {
-                  setActiveCategory(cat.slug);
-                  if (cat.slug !== 'watches') setActiveGender('all');
-                }}
-                className={`nav-item ${activeCategory.toLowerCase() === cat.slug.toLowerCase() ? 'active-nav' : ''}`}
-              >
-                {cat.name}
-              </a>
-            ))}
-          </nav>
-
-          {/* Right Header Actions: Search Button & Shopping Cart */}
-          <div className="header-actions">
-            <button
-              id="headerSearchBtn"
-              type="button"
-              className="header-search-btn"
               onClick={() => setSearchOpen(true)}
-              aria-label="Search products"
-              title="Search products"
+              className="milina-icon-btn"
+              aria-label="Search catalog"
             >
-              <Search size={20} />
-              {searchQuery && <span className="header-search-active-dot" />}
+              <Search size={21} />
             </button>
 
             <button
-              id="headerCartBtn"
-              type="button"
-              className="header-cart-btn"
               onClick={() => setCartDrawerOpen(true)}
-              aria-label="View Shopping Bag"
-              title="Shopping Bag"
+              className="milina-icon-btn"
+              style={{ position: 'relative' }}
+              aria-label="Shopping bag"
             >
-              <ShoppingBag size={20} />
+              <ShoppingBag size={21} />
               {totalCartCount > 0 && (
-                <span className="header-cart-badge">{totalCartCount}</span>
+                <span className="milina-cart-badge">{totalCartCount}</span>
               )}
             </button>
           </div>
         </div>
       </header>
 
-      {/* Full Screen White Background Live Search Modal */}
-      {searchOpen && (
-        <div
-          id="searchModalOverlay"
-          className="search-modal-backdrop"
-          onClick={() => setSearchOpen(false)}
-          role="dialog"
-          aria-modal="true"
-          aria-label="Search products"
-        >
-          <div className="search-modal-inner" onClick={(e) => e.stopPropagation()}>
-            <div className="search-modal-bar-row">
-              <div className="search-modal-pill">
-                <Search size={19} className="search-modal-icon" />
-                <input
-                  id="searchModalInput"
-                  type="text"
-                  value={searchQuery}
-                  onChange={(e) => setSearchQuery(e.target.value)}
-                  placeholder="Search luxury heels, bags, watches..."
-                  className="search-modal-input"
-                  autoFocus
-                  onKeyDown={(e) => {
-                    if (e.key === 'Escape') setSearchOpen(false);
-                  }}
-                />
-                {searchQuery && (
-                  <button
-                    type="button"
-                    onClick={() => setSearchQuery('')}
-                    className="search-modal-clear-btn"
-                    aria-label="Clear search"
-                  >
-                    <X size={16} />
-                  </button>
-                )}
-              </div>
-              <button
-                type="button"
-                className="search-modal-close-text-btn"
-                onClick={() => setSearchOpen(false)}
-              >
-                Cancel
-              </button>
-            </div>
-
-            {/* Popular quick searches when query is empty */}
-            {!searchQuery.trim() && (
-              <div className="search-quick-tags-wrap">
-                <span className="search-quick-tags-label">Popular Searches</span>
-                <div className="search-quick-tags-list">
-                  {['Heels', 'Bags', 'Watches', 'Dior', 'Chanel', 'Valentino', 'Louboutin'].map((tag) => (
-                    <button
-                      key={tag}
-                      type="button"
-                      className="search-quick-tag"
-                      onClick={() => setSearchQuery(tag)}
-                    >
-                      {tag}
-                    </button>
-                  ))}
-                </div>
-              </div>
-            )}
-
-            {/* Live Search Results List on White Background */}
-            {searchQuery.trim() && (
-              <div className="search-results-section">
-                <div className="search-results-header">
-                  {liveSearchResults.length > 0
-                    ? `Found ${liveSearchResults.length} product${liveSearchResults.length > 1 ? 's' : ''} for "${searchQuery}"`
-                    : `No products found for "${searchQuery}"`}
-                </div>
-
-                {liveSearchResults.length > 0 ? (
-                  <div className="search-results-list">
-                    {liveSearchResults.map((item) => {
-                      const targetId = item.id || item._id;
-                      return (
-                        <Link
-                          key={targetId}
-                          href={`/product/${targetId}`}
-                          onClick={() => {
-                            setSearchOpen(false);
-                            setSearchQuery('');
-                          }}
-                          className="search-result-item"
-                        >
-                          <img
-                            src={item.image}
-                            alt={item.title}
-                            className="search-result-img"
-                          />
-                          <div className="search-result-info">
-                            <div className="search-result-brand">{item.brand || 'SMP Luxury'}</div>
-                            <div className="search-result-title">{item.title}</div>
-                            <div className="search-result-price-row">
-                              <span className="search-result-price">AED {item.price}</span>
-                              {item.stock > 0 && (
-                                <span className="search-result-stock">In Stock</span>
-                              )}
-                            </div>
-                          </div>
-                          <ArrowRight size={16} color="#A45A28" />
-                        </Link>
-                      );
-                    })}
-                  </div>
-                ) : (
-                  <div className="search-no-results">
-                    <p style={{ fontSize: '15px', color: '#6B7280', marginBottom: '8px' }}>
-                      We couldn't find any products matching "<strong>{searchQuery}</strong>".
-                    </p>
-                    <p style={{ fontSize: '13px', color: '#9CA3AF' }}>
-                      Try searching with another keyword like <em>Dior</em>, <em>Chanel</em>, <em>Slingback</em>, or <em>Watch</em>.
-                    </p>
-                  </div>
-                )}
-              </div>
-            )}
-          </div>
-        </div>
-      )}
-
-      {/* Mobile Navigation Drawer */}
-      {mobileMenuOpen && (
-        <>
-          <div className="mobile-drawer-overlay" onClick={() => setMobileMenuOpen(false)} />
-          <div className="mobile-drawer">
-            <div style={{ display: 'flex', alignItems: 'center', justifyContent: 'space-between', paddingBottom: '16px', borderBottom: '1px solid #ECE6DC' }}>
-              <img src="/smp-logo.png" alt="SMP Logo" style={{ height: '64px', objectFit: 'contain' }} />
-              <button
-                onClick={() => setMobileMenuOpen(false)}
-                style={{ background: 'none', border: 'none', color: '#1C1917', cursor: 'pointer', padding: '4px' }}
-                aria-label="Close menu"
-              >
-                <X size={22} />
-              </button>
-            </div>
-
-            {/* Mobile Drawer Search Box */}
-            <div className="mobile-drawer-search">
-              <div className="mobile-search-inner">
-                <Search size={16} color="var(--color-text-muted)" />
-                <input
-                  type="text"
-                  value={searchQuery}
-                  onChange={(e) => setSearchQuery(e.target.value)}
-                  placeholder="Search footwear, watches, brands..."
-                  className="mobile-search-input"
-                  onKeyDown={(e) => {
-                    if (e.key === 'Enter') {
-                      setMobileMenuOpen(false);
-                      const el = document.getElementById('collections');
-                      if (el) el.scrollIntoView({ behavior: 'smooth' });
-                    }
-                  }}
-                />
-                {searchQuery && (
-                  <button onClick={() => setSearchQuery('')} className="mobile-search-clear">
-                    <X size={14} />
-                  </button>
-                )}
-              </div>
-            </div>
-
-            <div className="mobile-drawer-links">
-              <a
-                href="#"
-                className="mobile-drawer-link"
-                onClick={() => setMobileMenuOpen(false)}
-              >
-                <span>Home</span>
-                <ChevronRight size={16} color="#A45A28" />
-              </a>
-              <a
-                href="#collections"
-                className="mobile-drawer-link"
-                onClick={() => { setActiveCategory('all'); setMobileMenuOpen(false); }}
-              >
-                <span>All Collections</span>
-                <ChevronRight size={16} color="#A45A28" />
-              </a>
-              {displayCategories.map((cat) => (
-                <a
-                  key={cat.id || cat.slug}
-                  href="#collections"
-                  className="mobile-drawer-link"
-                  onClick={() => {
-                    setActiveCategory(cat.slug);
-                    if (cat.slug !== 'watches') setActiveGender('all');
-                    setMobileMenuOpen(false);
-                  }}
-                >
-                  <span>{cat.name}</span>
-                  <ChevronRight size={16} color="#A45A28" />
-                </a>
-              ))}
-            </div>
-
-            <div style={{ marginTop: 'auto', paddingTop: '20px', borderTop: '1px solid #ECE6DC' }}>
-              <a
-                href={`https://wa.me/${WHATSAPP_NUMBER}?text=Hello%20SMP,%20I%20would%20like%20to%20order.`}
-                target="_blank"
-                rel="noopener noreferrer"
-                style={{
-                  display: 'flex',
-                  alignItems: 'center',
-                  justifyContent: 'center',
-                  gap: '8px',
-                  background: '#25D366',
-                  color: '#fff',
-                  padding: '12px',
-                  borderRadius: '8px',
-                  fontWeight: '600',
-                  fontSize: '13px'
-                }}
-              >
-                <MessageSquare size={16} />
-                <span>WhatsApp VIP Order</span>
-              </a>
-            </div>
-          </div>
-        </>
-      )}
-
-      {/* Hero Section with Full View Banner Image */}
+      {/* ─────────────────────────────────────────────────────────────
+          ORIGINAL HERO BANNER SECTION (Using Original Hero Images)
+          ───────────────────────────────────────────────────────────── */}
       <section className="hero-section">
         <div className="hero-banner-container">
           <img
@@ -1149,16 +548,14 @@ Please confirm my order. Thank you!`;
             className="hero-banner-mobile"
           />
 
-          {/* In-Banner Landscape Content for Mobile (Matching Screenshot) */}
+          {/* In-Banner Landscape Content for Mobile */}
           <div className="hero-landscape-content">
             <span className="hero-landscape-brand">SMP Atelier</span>
             <h2 className="hero-landscape-title">Every Step<br /><em>Feels Better</em></h2>
             <p className="hero-landscape-subtitle">COMFORT &amp; LUXURY FOR YOU</p>
-            <a href="#collections" className="hero-landscape-btn">Shop Now</a>
+            <Link href="/collections/shoes" className="hero-landscape-btn">Shop Now</Link>
           </div>
         </div>
-
-
 
         <div className="hero-overlay-content">
           <h1 className="hero-title-script">
@@ -1169,12 +566,12 @@ Please confirm my order. Thank you!`;
           </p>
 
           <div className="hero-btn-row">
-            <a
-              href="#collections"
+            <Link
+              href="/collections/all"
               className="hero-btn-primary"
             >
               <span>Explore Collections</span>
-            </a>
+            </Link>
             <a
               href={`https://wa.me/${WHATSAPP_NUMBER}?text=Hello%20SMP,%20I%20want%20to%20view%20your%20latest%20arrivals.`}
               target="_blank"
@@ -1228,1040 +625,213 @@ Please confirm my order. Thank you!`;
         </div>
       </div>
 
-
       {/* ─────────────────────────────────────────────────────────────
-          EDITORIAL LUXURY 6-COLUMN PRODUCT LISTING (Matching Screenshot)
+          PRODUCT LISTING: SHOP BY BRAND CAROUSELS (Milina Style)
+          Using ONLY Real Products from Database (Admin Panel)
           ───────────────────────────────────────────────────────────── */}
-      <section id="collections" className="products-section" style={{ padding: '36px 0 64px 0' }}>
-        <div className="wide-container">
+      <section className="milina-brand-section">
+        <div className="milina-section-banner">
+          SHOP BY BRAND
+        </div>
 
-          {/* Minimalist Category Filter Bar with Price Filter (Clean Luxury Editorial Tabs) */}
-          <div className="editorial-filter-bar">
-            <div className="editorial-cat-list">
-              <button
-                onClick={() => { setActiveCategory('all'); setActiveGender('all'); }}
-                className={`editorial-cat-btn ${activeCategory === 'all' ? 'active' : ''}`}
-              >
-                All
-              </button>
-              {displayCategories.map((cat) => (
+        {/* 1. Bags Row */}
+        {bagsSlideCards.length > 0 && (
+          <div className="milina-category-row">
+            <div className="milina-category-row-head">
+              <h3 className="milina-category-row-title">BAGS</h3>
+              <div className="milina-carousel-nav">
                 <button
-                  key={cat.id || cat.slug}
-                  onClick={() => {
-                    setActiveCategory(cat.slug);
-                    if (cat.slug !== 'watches') setActiveGender('all');
-                  }}
-                  className={`editorial-cat-btn ${activeCategory.toLowerCase() === cat.slug.toLowerCase() ? 'active' : ''}`}
+                  onClick={() => handleScrollSlider(bagsRef, 'prev', setBagsPage, bagsSlideCards.length)}
+                  className="milina-pdp-arrow-btn"
+                  aria-label="Previous bags"
                 >
-                  {cat.name}
+                  <ChevronLeft size={16} />
                 </button>
-              ))}
+                <span>{bagsPage}/{bagsSlideCards.length}</span>
+                <button
+                  onClick={() => handleScrollSlider(bagsRef, 'next', setBagsPage, bagsSlideCards.length)}
+                  className="milina-pdp-arrow-btn"
+                  aria-label="Next bags"
+                >
+                  <ChevronRight size={16} />
+                </button>
+              </div>
             </div>
 
-            {/* Minimalist Filter Controls: Square-type Brand & Filter Boxes */}
-            <div className="editorial-boxes-row">
-              {/* Left Box: All Brands Dropdown Box */}
-              <div className="editorial-select-wrap">
-                <button
-                  type="button"
-                  onClick={() => {
-                    setShowBrandFilter(!showBrandFilter);
-                    setShowPriceFilter(false);
-                  }}
-                  className={`editorial-select-box ${showBrandFilter || activeBrand !== 'all' ? 'active' : ''}`}
-                  aria-label="Filter by Brand"
-                >
-                  <Tag size={15} className="editorial-box-icon" />
-                  {(() => {
-                    const activeBrandObj = brandsList.find(b => b.name.toLowerCase() === activeBrand.toLowerCase());
-                    const activeLogo = activeBrandObj?.logo || activeBrandObj?.src;
-                    if (activeBrand !== 'all' && activeLogo) {
-                      return (
-                        <div className="editorial-selected-brand-wrap" title={activeBrand}>
-                          <img
-                            src={activeLogo}
-                            alt={activeBrand}
-                            className="editorial-box-brand-logo"
-                          />
-                        </div>
-                      );
-                    }
-                    return (
-                      <span className="editorial-brand-name-text">
-                        {activeBrand === 'all' ? 'All brands' : activeBrand}
-                      </span>
-                    );
-                  })()}
-                  <ChevronDown
-                    size={14}
-                    className="editorial-box-chevron"
-                    style={{
-                      transform: showBrandFilter ? 'rotate(180deg)' : 'none',
-                      transition: 'transform 0.2s ease'
-                    }}
-                  />
-                </button>
-
-                {showBrandFilter && (
-                  <div className="brand-filter-dropdown brand-logos-only-dropdown">
-                    <button
-                      type="button"
-                      onClick={() => { setActiveBrand('all'); setShowBrandFilter(false); }}
-                      className={`brand-all-opt-btn ${activeBrand === 'all' ? 'active' : ''}`}
-                    >
-                      All brands
-                    </button>
-                    <div className="brand-logos-filter-grid">
-                      {brandsList.map((b) => {
-                        const logoSrc = b.logo || b.src;
-                        if (!logoSrc) return null;
-                        const isSelected = activeBrand.toLowerCase() === b.name.toLowerCase();
-                        return (
-                          <button
-                            type="button"
-                            key={b.id || b._id || b.name}
-                            onClick={() => { setActiveBrand(b.name); setShowBrandFilter(false); }}
-                            className={`brand-logo-card-btn ${isSelected ? 'active' : ''}`}
-                            title={`Filter by ${b.name}`}
-                            aria-label={`Filter by ${b.name}`}
-                          >
-                            <img
-                              src={logoSrc}
-                              alt={b.name}
-                              className="brand-opt-small-logo"
-                            />
-                          </button>
-                        );
-                      })}
-                    </div>
+            <div ref={bagsRef} className="milina-carousel-scroll">
+              {bagsSlideCards.map((card, idx) => (
+                <Link key={idx} href={card.href} className="milina-brand-slide-card" prefetch={false}>
+                  <div className="milina-brand-slide-img-box">
+                    <img src={card.img} alt={card.title} className="milina-brand-slide-img" loading="lazy" />
                   </div>
-                )}
-              </div>
-
-              {/* Right Box: Filter Button Box */}
-              <div className="editorial-filter-wrap">
-                <button
-                  type="button"
-                  onClick={() => {
-                    setShowPriceFilter(!showPriceFilter);
-                    setShowBrandFilter(false);
-                  }}
-                  className={`editorial-filter-box-btn ${showPriceFilter || priceFilter !== 'all' ? 'active' : ''}`}
-                  aria-label="Open Filter"
-                >
-                  <div className="editorial-filter-box-left">
-                    <SlidersHorizontal size={15} className="editorial-box-icon" />
-                    <span className="editorial-filter-label-text">Filter</span>
+                  <div className="milina-brand-slide-title">
+                    <span>{card.title}</span>
                   </div>
-                  {activeFilterCount > 0 && (
-                    <span className="editorial-filter-badge">{activeFilterCount}</span>
-                  )}
-                </button>
-
-                {showPriceFilter && (
-                  <div className="price-filter-dropdown">
-                    <button
-                      type="button"
-                      onClick={() => { setPriceFilter('all'); setShowPriceFilter(false); }}
-                      className={`price-opt-btn ${priceFilter === 'all' ? 'active' : ''}`}
-                    >
-                      All prices
-                    </button>
-                    <button
-                      type="button"
-                      onClick={() => { setPriceFilter('under-400'); setShowPriceFilter(false); }}
-                      className={`price-opt-btn ${priceFilter === 'under-400' ? 'active' : ''}`}
-                    >
-                      Under AED 400
-                    </button>
-                    <button
-                      type="button"
-                      onClick={() => { setPriceFilter('400-600'); setShowPriceFilter(false); }}
-                      className={`price-opt-btn ${priceFilter === '400-600' ? 'active' : ''}`}
-                    >
-                      AED 400 - AED 600
-                    </button>
-                    <button
-                      type="button"
-                      onClick={() => { setPriceFilter('above-600'); setShowPriceFilter(false); }}
-                      className={`price-opt-btn ${priceFilter === 'above-600' ? 'active' : ''}`}
-                    >
-                      Above AED 600
-                    </button>
-                  </div>
-                )}
-              </div>
+                </Link>
+              ))}
             </div>
           </div>
+        )}
 
-          {/* Active Brand Indicator Filter Chip */}
-          {activeBrand !== 'all' && (
-            <div className="active-brand-indicator-bar">
-              <span style={{ fontSize: '11.5px', letterSpacing: '1px', textTransform: 'uppercase', color: 'var(--color-text-muted)' }}>
-                Active Brand:
-              </span>
-              <span className="active-brand-chip">
-                {activeBrand}
-                <button onClick={() => setActiveBrand('all')} title="Clear brand filter" className="clear-brand-btn">
-                  <X size={12} />
+        {/* 2. Shoes Row */}
+        {shoesSlideCards.length > 0 && (
+          <div className="milina-category-row">
+            <div className="milina-category-row-head">
+              <h3 className="milina-category-row-title">SHOES</h3>
+              <div className="milina-carousel-nav">
+                <button
+                  onClick={() => handleScrollSlider(shoesRef, 'prev', setShoesPage, shoesSlideCards.length)}
+                  className="milina-pdp-arrow-btn"
+                  aria-label="Previous shoes"
+                >
+                  <ChevronLeft size={16} />
                 </button>
-              </span>
+                <span>{shoesPage}/{shoesSlideCards.length}</span>
+                <button
+                  onClick={() => handleScrollSlider(shoesRef, 'next', setShoesPage, shoesSlideCards.length)}
+                  className="milina-pdp-arrow-btn"
+                  aria-label="Next shoes"
+                >
+                  <ChevronRight size={16} />
+                </button>
+              </div>
             </div>
-          )}
 
-
-
-          {/* Watch Gender Sub-filter Bar (Men's / Women's Watches) */}
-          {activeCategory === 'watches' && (
-            <div className="watch-gender-subbar">
-              <button
-                onClick={() => setActiveGender('all')}
-                className={`watch-gender-pill ${activeGender === 'all' ? 'active' : ''}`}
-              >
-                All Watches
-              </button>
-              <button
-                onClick={() => setActiveGender('men')}
-                className={`watch-gender-pill ${activeGender === 'men' ? 'active' : ''}`}
-              >
-                Men&apos;s Watches
-              </button>
-              <button
-                onClick={() => setActiveGender('women')}
-                className={`watch-gender-pill ${activeGender === 'women' ? 'active' : ''}`}
-              >
-                Women&apos;s Watches
-              </button>
-            </div>
-          )}
-
-          {/* 6 Products in One Row on Laptop View, 2 on Mobile with Shimmer Skeleton Loading */}
-          {loading ? (
-            <div className="products-grid-6col" aria-label="Loading products">
-              {Array.from({ length: 12 }).map((_, sIdx) => (
-                <div key={`prod-skeleton-${sIdx}`} className="editorial-card skeleton-card">
-                  <div className="editorial-img-wrap skeleton-box skeleton-img" />
-                  <div className="editorial-info">
-                    <div className="skeleton-box skeleton-brand" />
-                    <div className="skeleton-box skeleton-title" />
-                    <div className="skeleton-box skeleton-price" />
-                    <div className="skeleton-actions-row">
-                      <div className="skeleton-box skeleton-btn" />
-                      <div className="skeleton-box skeleton-btn-small" />
-                    </div>
+            <div ref={shoesRef} className="milina-carousel-scroll">
+              {shoesSlideCards.map((card, idx) => (
+                <Link key={idx} href={card.href} className="milina-brand-slide-card" prefetch={false}>
+                  <div className="milina-brand-slide-img-box">
+                    <img src={card.img} alt={card.title} className="milina-brand-slide-img" loading="lazy" />
                   </div>
-                </div>
+                  <div className="milina-brand-slide-title">
+                    <span>{card.title}</span>
+                  </div>
+                </Link>
               ))}
             </div>
-          ) : filteredProducts.length > 0 ? (
-            <>
-              <div className="products-grid-6col">
-                {paginatedProducts.map((p, pIdx) => (
-                  <React.Fragment key={p.id}>
-                    <StorefrontProductCard
-                      product={p}
-                      onBuyNow={handleOpenBuyNow}
-                      onAddToCart={addToCart}
-                    />
+          </div>
+        )}
 
-                    {/* Brand Logos Train Marquee after 4 Products (on Page 1) */}
-                    {currentPage === 1 && pIdx === 3 && (
-                      <div className="collection-brand-train-wrapper">
-                        <div className="brand-train-section" aria-label="Luxury Brands">
-                          <div className="brand-train-track brand-train-forward">
-                            {(() => {
-                              const validBrands = brandsList.filter(b => b.logo || b.src);
-                              const displayBrands = validBrands.length > 0 ? validBrands : INITIAL_FALLBACK_BRANDS;
-                              return [...displayBrands, ...displayBrands, ...displayBrands, ...displayBrands].map((brand, bIdx) => (
-                                <div
-                                  key={`brand-train-${bIdx}`}
-                                  className="brand-train-item"
-                                  onClick={() => {
-                                    setActiveBrand(brand.name);
-                                    const el = document.getElementById('collections');
-                                    if (el) el.scrollIntoView({ behavior: 'smooth' });
-                                  }}
-                                  title={`Filter by ${brand.name}`}
-                                  style={{ cursor: 'pointer' }}
-                                >
-                                  <img
-                                    src={brand.logo || brand.src}
-                                    alt={brand.name}
-                                    className="brand-train-logo"
-                                    loading="lazy"
-                                  />
-                                </div>
-                              ));
-                            })()}
-                          </div>
-                        </div>
-                      </div>
-                    )}
-
-                    {/* 4-Step Order Process Infographic Banner after 10 Products (on Page 1) */}
-                    {currentPage === 1 && pIdx === 9 && (
-                      <div className="collection-order-process-banner">
-                        <img
-                          src="/order-process-banner.png"
-                          alt="SMP Order Process - Search Products, Order Through WhatsApp, Inspect Before Payment, Happy Delivery"
-                          className="collection-order-process-img"
-                          loading="lazy"
-                        />
-                      </div>
-                    )}
-                  </React.Fragment>
-                ))}
-              </div>
-
-              {/* Luxury Pagination Controls with 18 Items Per Page */}
-              {totalPages > 1 && (
-                <div
-                  className="collection-pagination"
-                  style={{
-                    marginTop: '44px',
-                    paddingTop: '28px',
-                    borderTop: '1px solid #ECE6D8',
-                    display: 'flex',
-                    flexDirection: 'column',
-                    alignItems: 'center',
-                    gap: '16px'
-                  }}
+        {/* 3. Watches Row */}
+        {watchesSlideCards.length > 0 && (
+          <div className="milina-category-row">
+            <div className="milina-category-row-head">
+              <h3 className="milina-category-row-title">WATCHES</h3>
+              <div className="milina-carousel-nav">
+                <button
+                  onClick={() => handleScrollSlider(watchesRef, 'prev', setWatchesPage, watchesSlideCards.length)}
+                  className="milina-pdp-arrow-btn"
+                  aria-label="Previous watches"
                 >
-                  <div style={{ fontSize: '13px', color: '#786F66', letterSpacing: '0.02em' }}>
-                    Showing <strong>{startIndex + 1}–{Math.min(startIndex + PRODUCTS_PER_PAGE, filteredProducts.length)}</strong> of <strong>{filteredProducts.length}</strong> luxury pieces
-                  </div>
-
-                  <nav aria-label="Catalog pagination" style={{ display: 'flex', alignItems: 'center', gap: '8px', flexWrap: 'wrap', justifyContent: 'center' }}>
-                    <button
-                      type="button"
-                      onClick={() => handlePageChange(currentPage - 1)}
-                      disabled={currentPage === 1}
-                      aria-label="Previous page"
-                      style={{
-                        padding: '10px 18px',
-                        borderRadius: '30px',
-                        border: '1px solid #D6CEBE',
-                        background: currentPage === 1 ? '#F7F5F0' : '#FFFFFF',
-                        color: currentPage === 1 ? '#B8B0A4' : '#4A2027',
-                        fontWeight: '600',
-                        fontSize: '13px',
-                        cursor: currentPage === 1 ? 'not-allowed' : 'pointer',
-                        display: 'inline-flex',
-                        alignItems: 'center',
-                        gap: '6px',
-                        transition: 'all 0.2s ease',
-                        boxShadow: currentPage === 1 ? 'none' : '0 2px 6px rgba(0,0,0,0.04)'
-                      }}
-                    >
-                      <ChevronLeft size={16} />
-                      <span>Previous</span>
-                    </button>
-
-                    <div style={{ display: 'flex', gap: '6px', alignItems: 'center' }}>
-                      {Array.from({ length: totalPages }, (_, i) => i + 1).map((pageNum) => {
-                        const isActive = pageNum === currentPage;
-                        return (
-                          <button
-                            key={`catalog-page-${pageNum}`}
-                            type="button"
-                            onClick={() => handlePageChange(pageNum)}
-                            aria-current={isActive ? 'page' : undefined}
-                            aria-label={`Page ${pageNum}`}
-                            style={{
-                              width: '40px',
-                              height: '40px',
-                              borderRadius: '50%',
-                              border: isActive ? '2px solid #66300F' : '1px solid #E8E2D2',
-                              background: isActive ? '#66300F' : '#FFFFFF',
-                              color: isActive ? '#FFFFFF' : '#4A2027',
-                              fontWeight: isActive ? '700' : '600',
-                              fontSize: '14px',
-                              cursor: 'pointer',
-                              display: 'inline-flex',
-                              alignItems: 'center',
-                              justifyContent: 'center',
-                              transition: 'all 0.2s ease',
-                              boxShadow: isActive ? '0 4px 10px rgba(102,48,15,0.25)' : 'none'
-                            }}
-                          >
-                            {pageNum}
-                          </button>
-                        );
-                      })}
-                    </div>
-
-                    <button
-                      type="button"
-                      onClick={() => handlePageChange(currentPage + 1)}
-                      disabled={currentPage === totalPages}
-                      aria-label="Next page"
-                      style={{
-                        padding: '10px 20px',
-                        borderRadius: '30px',
-                        border: '1px solid #66300F',
-                        background: currentPage === totalPages ? '#F7F5F0' : '#66300F',
-                        color: currentPage === totalPages ? '#B8B0A4' : '#FFFFFF',
-                        fontWeight: '600',
-                        fontSize: '13px',
-                        cursor: currentPage === totalPages ? 'not-allowed' : 'pointer',
-                        display: 'inline-flex',
-                        alignItems: 'center',
-                        gap: '6px',
-                        transition: 'all 0.2s ease',
-                        boxShadow: currentPage === totalPages ? 'none' : '0 4px 12px rgba(102,48,15,0.2)'
-                      }}
-                    >
-                      <span>Next</span>
-                      <ChevronRight size={16} />
-                    </button>
-                  </nav>
-                </div>
-              )}
-            </>
-          ) : (
-            <div style={{ textAlign: 'center', padding: '60px 20px', color: '#786F66' }}>
-              <Package size={44} color="#D1C7B7" style={{ margin: '0 auto 16px' }} />
-              <h3 style={{ fontSize: '18px', fontWeight: '700', color: '#1C1917', marginBottom: '8px' }}>
-                No Products Found
-              </h3>
-              <p style={{ fontSize: '13px', marginBottom: '22px' }}>
-                No luxury pieces match your current filters. Try selecting another brand or clearing filters.
-              </p>
-              <button
-                type="button"
-                onClick={() => {
-                  setActiveCategory('all');
-                  setActiveBrand('all');
-                  setActiveGender('all');
-                  setPriceFilter('all');
-                  setSearchQuery('');
-                }}
-                className="btn-buy-now-solid"
-                style={{ display: 'inline-block', maxWidth: '220px', margin: '0 auto', padding: '10px 20px', fontSize: '13px' }}
-              >
-                Reset All Filters
-              </button>
+                  <ChevronLeft size={16} />
+                </button>
+                <span>{watchesPage}/{watchesSlideCards.length}</span>
+                <button
+                  onClick={() => handleScrollSlider(watchesRef, 'next', setWatchesPage, watchesSlideCards.length)}
+                  className="milina-pdp-arrow-btn"
+                  aria-label="Next watches"
+                >
+                  <ChevronRight size={16} />
+                </button>
+              </div>
             </div>
-          )}
 
+            <div ref={watchesRef} className="milina-carousel-scroll">
+              {watchesSlideCards.map((card, idx) => (
+                <Link key={idx} href={card.href} className="milina-brand-slide-card" prefetch={false}>
+                  <div className="milina-brand-slide-img-box">
+                    <img src={card.img} alt={card.title} className="milina-brand-slide-img" loading="lazy" />
+                  </div>
+                  <div className="milina-brand-slide-title">
+                    <span>{card.title}</span>
+                  </div>
+                </Link>
+              ))}
+            </div>
+          </div>
+        )}
+      </section>
+
+      {/* ─────────────────────────────────────────────────────────────
+          PRODUCT LISTING: SHOP BY CATEGORIES SHORTCUT SECTION
+          ───────────────────────────────────────────────────────────── */}
+      <section className="milina-brand-section" style={{ paddingTop: '0' }}>
+        <h2 className="milina-category-row-title" style={{ fontSize: '20px', marginBottom: '16px' }}>
+          SHOP BY CATEGORIES
+        </h2>
+        <div className="milina-category-shortcuts-grid">
+          {categoryShortcuts.map((item, idx) => (
+            <Link key={idx} href={item.href} className="milina-brand-slide-card" style={{ flex: 'none' }} prefetch={false}>
+              <div className="milina-brand-slide-img-box" style={{ aspectRatio: '1 / 1' }}>
+                <img src={item.img} alt={item.title} className="milina-brand-slide-img" loading="lazy" />
+              </div>
+              <div className="milina-brand-slide-title" style={{ fontSize: '15px' }}>
+                <span>{item.title}</span>
+              </div>
+            </Link>
+          ))}
         </div>
       </section>
 
-      {/* Quick View Modal Disabled - Products navigate to dedicated inner page */}
-      {false && (() => {
-        const colorOpts = getProductColorOptions(viewProduct);
-        const activeVar = viewVariant
-          ? (colorOpts.find((o) => o.id === viewVariant.id) || viewVariant)
-          : (colorOpts.length > 0 ? colorOpts[0] : null);
-        const varImages = (activeVar?.images && activeVar.images.length > 0)
-          ? activeVar.images
-          : (Array.isArray(viewProduct.images) && viewProduct.images.length > 0)
-            ? viewProduct.images
-            : (viewProduct.image ? [viewProduct.image] : []);
-        const mainImg = varImages[viewImageIndex] || varImages[0] || viewProduct.image;
-        const activeColor = activeVar?.colorName || viewProduct.color || '';
-        const activeSizes = (activeVar?.sizes && activeVar.sizes.length > 0) ? activeVar.sizes : (viewProduct.sizes || []);
-        const activeStock = activeVar?.stock !== undefined ? activeVar.stock : (viewProduct.stock ?? 10);
-
-        return (
-          <div className="modal-overlay" onClick={() => setViewProduct(null)}>
-            <div className="modal-dialog" onClick={(e) => e.stopPropagation()} style={{ maxWidth: '640px' }}>
-              <div className="modal-head">
-                <div>
-                  <span style={{ fontSize: '11px', color: 'var(--color-brown)', fontWeight: '700', textTransform: 'uppercase' }}>
-                    {viewProduct.brand || 'SMP LUXURY'}
-                  </span>
-                  <h3 className="modal-title">{viewProduct.title}</h3>
-                </div>
-                <button onClick={() => setViewProduct(null)} className="modal-close-btn">
-                  <X size={20} />
-                </button>
-              </div>
-
-              <div className="modal-content">
-                {/* Main Featured Image - Generous container with complete, uncropped contain display */}
-                <div style={{
-                  position: 'relative',
-                  width: '100%',
-                  minHeight: '280px',
-                  maxHeight: '440px',
-                  aspectRatio: '1 / 1',
-                  borderRadius: '14px',
-                  overflow: 'hidden',
-                  marginBottom: (varImages.length > 1 || colorOpts.length > 1) ? '12px' : '16px',
-                  background: '#FFFFFF',
-                  border: '1px solid #ECE7DE',
-                  boxShadow: '0 4px 20px rgba(0, 0, 0, 0.04)',
-                  display: 'flex',
-                  alignItems: 'center',
-                  justifyContent: 'center',
-                  padding: '16px',
-                }}>
-                  <img
-                    src={mainImg}
-                    alt={`${viewProduct.title} - ${activeColor}`}
-                    style={{
-                      maxWidth: '100%',
-                      maxHeight: '100%',
-                      width: 'auto',
-                      height: 'auto',
-                      objectFit: 'contain',
-                      objectPosition: 'center',
-                      display: 'block',
-                      transition: 'opacity 0.2s ease, transform 0.2s ease',
-                    }}
-                  />
-                </div>
-
-                {/* Thumbnail Strip for Variant Images */}
-                {varImages.length > 1 && (
-                  <div className="variant-gallery-thumbnails" style={{ marginBottom: '16px' }}>
-                    {varImages.map((imgUrl, idx) => (
-                      <button
-                        key={idx}
-                        type="button"
-                        onClick={() => setViewImageIndex(idx)}
-                        className={`variant-gallery-thumb ${viewImageIndex === idx ? 'active' : ''}`}
-                        title={`View angle ${idx + 1}`}
-                      >
-                        <img src={imgUrl} alt={`${viewProduct.title} angle ${idx + 1}`} />
-                      </button>
-                    ))}
-                  </div>
-                )}
-
-                {/* Clean Price & Stock */}
-                <div style={{ display: 'flex', alignItems: 'baseline', gap: '12px', marginBottom: '12px' }}>
-                  <span style={{ fontSize: '22px', fontWeight: '800', color: 'var(--color-dark-brown)' }}>
-                    AED {viewProduct.price}
-                  </span>
-                  <span style={{ marginLeft: 'auto', fontSize: '11px', color: activeStock > 0 ? '#15803D' : '#DC2626', fontWeight: '700', background: activeStock > 0 ? '#DCFCE7' : '#FEE2E2', padding: '3px 8px', borderRadius: '4px' }}>
-                    {activeStock > 0 ? `In Stock (${activeStock} available)` : 'Out of Stock'}
-                  </span>
-                </div>
-
-                {/* Color Swatches Selector in Quick View (Shows First Image Color + Variants) */}
-                {colorOpts.length > 1 ? (
-                  <div style={{ marginBottom: '14px', background: '#FAF7EF', padding: '12px 14px', borderRadius: '8px', border: '1px solid #E8E2D5' }}>
-                    <div style={{ display: 'flex', alignItems: 'center', justifyContent: 'space-between', marginBottom: '8px' }}>
-                      <span style={{ fontSize: '11px', textTransform: 'uppercase', letterSpacing: '1px', color: '#66300F', fontWeight: '700' }}>
-                        Available Colors ({colorOpts.length}):
-                      </span>
-                      {activeColor && (
-                        <span style={{ fontSize: '11.5px', color: '#66300F', fontWeight: '700' }}>
-                          Selected: {activeColor}
-                        </span>
-                      )}
-                    </div>
-                    <div className="detail-variant-swatches-wrap" style={{ display: 'flex', gap: '8px', flexWrap: 'wrap' }}>
-                      {colorOpts.map((opt) => {
-                        const isSelected = activeVar?.id === opt.id;
-                        const optThumb = opt.images && opt.images.length > 0 ? opt.images[0] : null;
-                        return (
-                          <button
-                            key={opt.id}
-                            type="button"
-                            onClick={() => {
-                              setViewVariant(opt);
-                              setViewImageIndex(0);
-                              if (opt.sizes && opt.sizes.length > 0) {
-                                setSelectedSize(opt.sizes[0]);
-                              }
-                            }}
-                            className={`detail-swatch-btn ${isSelected ? 'active' : ''}`}
-                            style={{
-                              display: 'inline-flex',
-                              alignItems: 'center',
-                              gap: '8px',
-                              padding: '6px 14px',
-                              borderRadius: '24px',
-                              border: isSelected ? '1.5px solid #66300F' : '1px solid #D8D0C3',
-                              background: isSelected ? '#66300F' : '#FFFFFF',
-                              color: isSelected ? '#FFFFFF' : '#332E29',
-                              fontSize: '12px',
-                              fontWeight: isSelected ? '700' : '500',
-                              cursor: 'pointer',
-                              transition: 'all 0.15s ease'
-                            }}
-                            title={`${opt.colorName} (${opt.stock || 0} in stock)`}
-                          >
-                            {optThumb ? (
-                              <img
-                                src={optThumb}
-                                alt={opt.colorName}
-                                style={{
-                                  width: '20px',
-                                  height: '20px',
-                                  borderRadius: '50%',
-                                  objectFit: 'cover',
-                                  border: isSelected ? '1px solid #FFFFFF' : '1px solid #E5E0D8'
-                                }}
-                              />
-                            ) : (
-                              <span
-                                className="detail-swatch-circle"
-                                style={{ backgroundColor: opt.colorCode || '#000000', width: '12px', height: '12px', borderRadius: '50%' }}
-                              />
-                            )}
-                            <span>{opt.colorName}</span>
-                          </button>
-                        );
-                      })}
-                    </div>
-                  </div>
-                ) : viewProduct.color ? (
-                  <div style={{ display: 'flex', alignItems: 'center', gap: '8px', marginBottom: '14px' }}>
-                    <span style={{ fontSize: '11px', textTransform: 'uppercase', letterSpacing: '1px', color: 'var(--color-text-muted)', fontWeight: '600' }}>
-                      Color:
-                    </span>
-                    <span style={{ fontSize: '12.5px', fontWeight: '600', color: 'var(--color-dark-brown)', background: '#FAF7EF', border: '1px solid #E8E2D5', padding: '3px 10px', borderRadius: '4px' }}>
-                      {viewProduct.color}
-                    </span>
-                  </div>
-                ) : null}
-
-                {/* Optional Sizes Selector */}
-                {activeSizes && activeSizes.length > 0 && (
-                  <div style={{ marginBottom: '16px', background: '#FAF7EF', padding: '12px 14px', borderRadius: '8px', border: '1px solid #E8E2D5' }}>
-                    <div style={{ display: 'flex', alignItems: 'center', justifyContent: 'space-between', marginBottom: '8px' }}>
-                      <span style={{ fontSize: '11px', textTransform: 'uppercase', letterSpacing: '1px', color: '#66300F', fontWeight: '700' }}>
-                        Available Sizes <span style={{ textTransform: 'none', fontWeight: 'normal', color: 'var(--color-text-muted)' }}>(Optional)</span>:
-                      </span>
-                      {selectedSize && (
-                        <span style={{ fontSize: '11.5px', color: '#66300F', fontWeight: '700' }}>
-                          Selected: {selectedSize}
-                        </span>
-                      )}
-                    </div>
-                    <div style={{ display: 'flex', gap: '8px', flexWrap: 'wrap' }}>
-                      {activeSizes.map((sz) => (
-                        <button
-                          key={sz}
-                          type="button"
-                          onClick={() => setSelectedSize(selectedSize === sz ? '' : sz)}
-                          style={{
-                            minWidth: '40px',
-                            height: '34px',
-                            padding: '0 12px',
-                            borderRadius: '6px',
-                            border: selectedSize === sz ? '1.5px solid #66300F' : '1px solid #D8D0C3',
-                            background: selectedSize === sz ? '#66300F' : '#FFFFFF',
-                            color: selectedSize === sz ? '#FFFFFF' : '#332E29',
-                            fontWeight: selectedSize === sz ? '700' : '500',
-                            fontSize: '12px',
-                            cursor: 'pointer',
-                            transition: 'all 0.15s ease'
-                          }}
-                        >
-                          {sz}
-                        </button>
-                      ))}
-                    </div>
-                  </div>
-                )}
-
-                <p style={{ fontSize: '13.5px', color: 'var(--color-text-muted)', lineHeight: '1.6', marginBottom: '16px' }}>
-                  {viewProduct.description}
-                </p>
-
-                {viewProduct.details && viewProduct.details.length > 0 && (
-                  <div style={{ background: '#FAF7EF', padding: '14px', borderRadius: '8px', border: '1px solid var(--color-border)', marginBottom: '18px' }}>
-                    <h4 style={{ fontSize: '12px', fontWeight: '700', color: 'var(--color-dark-brown)', marginBottom: '8px' }}>
-                      Craftsmanship &amp; Highlights:
-                    </h4>
-                    <ul style={{ paddingLeft: '18px', fontSize: '12.5px', color: '#4B230A', display: 'flex', flexDirection: 'column', gap: '5px' }}>
-                      {viewProduct.details.map((d, idx) => (
-                        <li key={idx}>{d}</li>
-                      ))}
-                    </ul>
-                  </div>
-                )}
-
-                {/* Action Buttons: Add to Cart + Buy Now */}
-                <div style={{ display: 'flex', gap: '10px' }}>
-                  <button
-                    onClick={() => {
-                      addToCart(viewProduct, 1, selectedSize, activeVar);
-                      setViewProduct(null);
-                    }}
-                    className="btn-modal-cart"
-                    title="Add to Cart"
-                  >
-                    <ShoppingBag size={17} />
-                    <span>Add to Cart</span>
-                  </button>
-
-                  <button
-                    onClick={() => {
-                      const p = viewProduct;
-                      const sz = selectedSize;
-                      const v = activeVar;
-                      setViewProduct(null);
-                      handleOpenBuyNow(p, sz, v);
-                    }}
-                    className="btn-buy-now-solid"
-                    style={{ flex: 1, margin: 0, padding: '12px 16px', fontSize: '13px' }}
-                  >
-                    BUY NOW
-                  </button>
-                </div>
-              </div>
-            </div>
-          </div>
-        );
-      })()}
-
-      {/* Buy Now & Delivery Address Modal */}
-      {orderModalProduct && (
-        <div className="modal-overlay" onClick={() => !submittingOrder && handleCloseOrderModal()}>
-          <div className="modal-dialog" onClick={(e) => e.stopPropagation()}>
-            <div className="modal-head">
-              <div>
-                <span style={{ fontSize: '11px', color: 'var(--color-brown)', fontWeight: '700', textTransform: 'uppercase' }}>
-                  Delivery Details
-                </span>
-                <h3 className="modal-title">Complete Your Order</h3>
-              </div>
-              <button
-                onClick={handleCloseOrderModal}
-                className="modal-close-btn"
-                disabled={submittingOrder}
-              >
-                <X size={20} />
-              </button>
-            </div>
-
-            <div className="modal-content">
-              {orderSuccess ? (
-                <div style={{ textAlign: 'center', padding: '24px 0' }}>
-                  <div style={{ width: '64px', height: '64px', borderRadius: '50%', background: '#DCFCE7', color: '#15803D', display: 'flex', alignItems: 'center', justifyContent: 'center', margin: '0 auto 16px' }}>
-                    <CheckCircle size={36} />
-                  </div>
-                  <h3 style={{ fontSize: '20px', fontFamily: 'var(--font-serif)', color: 'var(--color-dark-brown)', marginBottom: '8px' }}>
-                    Order Saved &amp; WhatsApp Connected!
-                  </h3>
-                  <p style={{ fontSize: '14px', color: 'var(--color-text-muted)', marginBottom: '20px', lineHeight: '1.5' }}>
-                    WhatsApp is opening now to finalize your order details with our concierge (+971 52 597 3132).
-                  </p>
-                  <a
-                    href={lastWhatsAppUrl || `https://wa.me/${WHATSAPP_NUMBER}`}
-                    target="_blank"
-                    rel="noopener noreferrer"
-                    className="btn-buy-now"
-                    style={{
-                      display: 'flex',
-                      alignItems: 'center',
-                      justifyContent: 'center',
-                      gap: '8px',
-                      textDecoration: 'none',
-                      width: '100%',
-                      marginBottom: '10px'
-                    }}
-                  >
-                    <MessageSquare size={17} />
-                    <span>Open WhatsApp Chat Directly</span>
-                  </a>
-                  <button
-                    type="button"
-                    onClick={handleCloseOrderModal}
-                    className="btn-modal-cart"
-                    style={{
-                      width: '100%',
-                      height: '42px',
-                      borderRadius: '8px',
-                      border: '1px solid #DCD5C6',
-                      background: 'transparent',
-                      color: '#66300F',
-                      fontWeight: '600',
-                      cursor: 'pointer'
-                    }}
-                  >
-                    Done / Close
-                  </button>
-                </div>
-              ) : (
-                <form onSubmit={handleConfirmAndContinueWhatsApp}>
-                  {/* Selected Cart / Product Summary Box */}
-                  {isCartOrder ? (
-                    <div style={{ padding: '10px 12px', background: '#FAF7EF', border: '1px solid #E8E2D2', borderRadius: '8px', marginBottom: '14px', maxHeight: '160px', overflowY: 'auto' }}>
-                      <div style={{ fontSize: '11px', color: '#66300F', fontWeight: '700', textTransform: 'uppercase', marginBottom: '8px', letterSpacing: '0.5px' }}>
-                        Shopping Bag Items ({cart.length})
-                      </div>
-                      <div style={{ display: 'flex', flexDirection: 'column', gap: '8px' }}>
-                        {cart.map(item => (
-                          <div key={item.id} style={{ display: 'flex', alignItems: 'center', gap: '10px' }}>
-                            <img src={item.image} alt={item.title} style={{ width: '36px', height: '36px', objectFit: 'cover', borderRadius: '4px', border: '1px solid #C18A5B' }} />
-                            <div style={{ flex: 1, minWidth: 0 }}>
-                              <div style={{ fontSize: '12px', fontWeight: '600', color: '#1C1917', whiteSpace: 'nowrap', overflow: 'hidden', textOverflow: 'ellipsis' }}>
-                                {item.title}
-                              </div>
-                              <div style={{ fontSize: '11px', color: '#66300F', display: 'flex', gap: '6px', flexWrap: 'wrap' }}>
-                                <span>{item.quantity} × AED {item.price}</span>
-                                {item.color && <span>• {item.color}</span>}
-                                {item.size && <span>• Size {item.size}</span>}
-                              </div>
-                            </div>
-                            <div style={{ fontSize: '12px', fontWeight: '700', color: '#66300F' }}>
-                              AED {item.quantity * item.price}
-                            </div>
-                          </div>
-                        ))}
-                      </div>
-                    </div>
-                  ) : orderModalProduct ? (
-                    <div style={{ display: 'flex', alignItems: 'center', gap: '12px', padding: '10px 12px', background: '#FAF7EF', border: '1px solid #E8E2D2', borderRadius: '8px', marginBottom: '14px' }}>
-                      <img
-                        src={orderModalProduct.image}
-                        alt={orderModalProduct.title}
-                        style={{ width: '48px', height: '48px', objectFit: 'cover', borderRadius: '4px', border: '1px solid #C18A5B' }}
-                      />
-                      <div style={{ flex: 1, minWidth: 0 }}>
-                        <div style={{ fontSize: '10px', color: 'var(--color-brown)', fontWeight: '700', textTransform: 'uppercase', letterSpacing: '0.5px' }}>
-                          {orderModalProduct.brand}
-                        </div>
-                        <div style={{ fontWeight: '600', fontSize: '13px', color: 'var(--color-text-main)', whiteSpace: 'nowrap', overflow: 'hidden', textOverflow: 'ellipsis' }}>
-                          {orderModalProduct.title}
-                        </div>
-                        <div style={{ display: 'flex', alignItems: 'center', gap: '8px', flexWrap: 'wrap', marginTop: '2px' }}>
-                          <span style={{ fontSize: '12px', fontWeight: '700', color: 'var(--color-dark-brown)' }}>
-                            AED {orderModalProduct.price}
-                          </span>
-                          {orderModalProduct.color && (
-                            <span style={{ fontSize: '10.5px', color: '#66300F', background: '#F4EFE6', padding: '1px 6px', borderRadius: '3px', fontWeight: '600' }}>
-                              Color: {orderModalProduct.color}
-                            </span>
-                          )}
-                          {orderSize && (
-                            <span style={{ fontSize: '10.5px', color: '#1E40AF', background: '#EFF6FF', padding: '1px 6px', borderRadius: '3px', fontWeight: '600' }}>
-                              Size: {orderSize}
-                            </span>
-                          )}
-                        </div>
-                      </div>
-
-                      {/* Quantity controls */}
-                      <div style={{ display: 'flex', alignItems: 'center', border: '1px solid #DCD5C6', borderRadius: '4px', background: '#fff' }}>
-                        <button
-                          type="button"
-                          onClick={() => setQuantity(Math.max(1, quantity - 1))}
-                          style={{ padding: '2px 8px', fontSize: '13px', fontWeight: '700', color: 'var(--color-dark-brown)', border: 'none', background: 'transparent', cursor: 'pointer' }}
-                        >
-                          -
-                        </button>
-                        <span style={{ padding: '0 6px', fontSize: '12px', fontWeight: '700' }}>{quantity}</span>
-                        <button
-                          type="button"
-                          onClick={() => setQuantity(quantity + 1)}
-                          style={{ padding: '2px 8px', fontSize: '13px', fontWeight: '700', color: 'var(--color-dark-brown)', border: 'none', background: 'transparent', cursor: 'pointer' }}
-                        >
-                          +
-                        </button>
-                      </div>
-                    </div>
-                  ) : null}
-
-                  {/* Customer Full Name */}
-                  <div className="form-field">
-                    <label className="field-label">Full Name *</label>
-                    <input
-                      type="text"
-                      className="field-input"
-                      value={customerName}
-                      onChange={(e) => setCustomerName(e.target.value)}
-                      placeholder="e.g. Fatima Al Mansoori"
-                      required
-                    />
-                  </div>
-
-                  {/* WhatsApp Mobile Number */}
-                  <div className="form-field" style={{ marginBottom: '16px' }}>
-                    <label className="field-label">WhatsApp Mobile Number *</label>
-                    <input
-                      type="tel"
-                      className="field-input"
-                      value={customerPhone}
-                      onChange={(e) => setCustomerPhone(e.target.value)}
-                      placeholder="+971 50 123 4567"
-                      required
-                    />
-                  </div>
-
-                  {/* Live Total */}
-                  <div style={{ display: 'flex', alignItems: 'center', justifyContent: 'space-between', marginBottom: '14px', paddingTop: '4px' }}>
-                    <div style={{ fontSize: '11px', color: '#786F66', textTransform: 'uppercase', letterSpacing: '0.8px', fontWeight: '600' }}>
-                      Total Amount
-                    </div>
-                    <div style={{ fontSize: '18px', fontWeight: '800', color: '#66300F' }}>
-                      AED {isCartOrder ? totalCartPrice : (orderModalProduct ? orderModalProduct.price * quantity : 0)}
-                    </div>
-                  </div>
-
-                  {/* Brown Continue to WhatsApp Button */}
-                  <button
-                    type="submit"
-                    disabled={submittingOrder}
-                    className="modal-btn-whatsapp"
-                  >
-                    <MessageSquare size={16} />
-                    <span>{submittingOrder ? 'Processing...' : 'Continue to WhatsApp (+971 52 597 3132)'}</span>
-                  </button>
-                </form>
-              )}
-            </div>
-          </div>
-        </div>
-      )}
-
-      {/* Slide-in Shopping Cart Drawer */}
-      {cartDrawerOpen && (
-        <div className="cart-drawer-overlay" onClick={() => setCartDrawerOpen(false)}>
-          <div className="cart-drawer" onClick={(e) => e.stopPropagation()}>
-            <div className="cart-drawer-head">
-              <div style={{ display: 'flex', alignItems: 'center', gap: '8px' }}>
-                <ShoppingBag size={18} color="#66300F" />
-                <h3 style={{ fontSize: '15px', fontWeight: '700', color: '#66300F', margin: 0 }}>
-                  Your Shopping Bag ({totalCartCount})
-                </h3>
-              </div>
-              <button
-                onClick={() => setCartDrawerOpen(false)}
-                className="modal-close-btn"
-                aria-label="Close cart"
-              >
-                <X size={18} />
-              </button>
-            </div>
-
-            <div className="cart-drawer-body">
-              {cart.length === 0 ? (
-                <div style={{ textAlign: 'center', padding: '48px 16px', color: '#786F66' }}>
-                  <ShoppingBag size={44} color="#D1C7B7" style={{ margin: '0 auto 16px' }} />
-                  <p style={{ fontSize: '15px', fontWeight: '600', color: '#1C1917', marginBottom: '6px' }}>
-                    Your shopping bag is empty
-                  </p>
-                  <p style={{ fontSize: '12.5px', marginBottom: '20px' }}>
-                    Explore our curated footwear, watches, and handbags.
-                  </p>
-                  <button
-                    onClick={() => setCartDrawerOpen(false)}
-                    className="btn-buy-now-solid"
-                    style={{ maxWidth: '200px', margin: '0 auto', padding: '10px 16px' }}
-                  >
-                    Start Shopping
-                  </button>
-                </div>
-              ) : (
-                <div className="cart-items-list">
-                  {cart.map((item) => {
-                    const itemKey = item.cartKey || item.id;
-                    return (
-                      <div key={itemKey} className="cart-item-row">
-                        <img
-                          src={item.image}
-                          alt={item.title}
-                          className="cart-item-img"
-                        />
-                        <div className="cart-item-info">
-                          <div className="cart-item-brand">{item.brand || 'SMP'}</div>
-                          <div className="cart-item-title">{item.title}</div>
-                          {(item.color || item.size) && (
-                            <div style={{ display: 'flex', gap: '6px', flexWrap: 'wrap', marginTop: '3px', marginBottom: '4px' }}>
-                              {item.color && (
-                                <span style={{ fontSize: '11px', color: '#66300F', background: '#F8F4EE', border: '1px solid #E6D7C3', padding: '1px 6px', borderRadius: '4px', fontWeight: '600' }}>
-                                  Color: {item.color}
-                                </span>
-                              )}
-                              {item.size && (
-                                <span style={{ fontSize: '11px', color: '#786F66', background: '#F5F5F0', border: '1px solid #E5E5E0', padding: '1px 6px', borderRadius: '4px', fontWeight: '500' }}>
-                                  Size: {item.size}
-                                </span>
-                              )}
-                            </div>
-                          )}
-                          <div className="cart-item-price">AED {item.price}</div>
-                          <div className="cart-item-qty-row">
-                            <button
-                              onClick={() => updateQuantity(itemKey, -1)}
-                              className="cart-qty-btn"
-                              aria-label="Decrease quantity"
-                            >
-                              <Minus size={11} />
-                            </button>
-                            <span className="cart-qty-val">{item.quantity}</span>
-                            <button
-                              onClick={() => updateQuantity(itemKey, 1)}
-                              className="cart-qty-btn"
-                              aria-label="Increase quantity"
-                            >
-                              <Plus size={11} />
-                            </button>
-                          </div>
-                        </div>
-                        <button
-                          onClick={() => removeFromCart(itemKey)}
-                          className="cart-item-remove-btn"
-                          title="Remove item"
-                          aria-label="Remove item"
-                        >
-                          <Trash2 size={15} />
-                        </button>
-                      </div>
-                    );
-                  })}
-                </div>
-              )}
-            </div>
-
-            {cart.length > 0 && (
-              <div className="cart-drawer-footer">
-                <div style={{ display: 'flex', alignItems: 'center', justifyContent: 'space-between', marginBottom: '10px' }}>
-                  <span style={{ fontSize: '13px', color: '#6A5F54', fontWeight: '500' }}>Subtotal</span>
-                  <span style={{ fontSize: '18px', fontWeight: '800', color: '#66300F' }}>
-                    AED {totalCartPrice}
-                  </span>
-                </div>
-                <div style={{ fontSize: '11px', color: '#15803D', fontWeight: '600', marginBottom: '14px' }}>
-                  ✓ Free UAE Delivery &amp; Inspection Before Payment
-                </div>
-                <button
-                  onClick={handleOpenCartBuyNow}
-                  className="btn-buy-now-solid"
-                  style={{ width: '100%', padding: '14px', fontSize: '13px' }}
-                >
-                  <span>BUY NOW</span>
-                </button>
-              </div>
-            )}
-          </div>
-        </div>
-      )}
-
-      {/* Floating Add to Cart Toast Notification */}
-      {cartToast && (
-        <div className="cart-toast-notification">
-          <ShoppingBag size={15} />
-          <span>{cartToast}</span>
-        </div>
-      )}
-
       {/* ─────────────────────────────────────────────────────────────
-          BRAND LOGOS TRAIN ANIMATION (OPPOSITE / RIGHT DIRECTION - ABOVE FOOTER)
+          PRODUCT LISTING: NEW ARRIVALS SPOTLIGHT (2-Col Mobile / 4-Col Desktop)
           ───────────────────────────────────────────────────────────── */}
+      <section className="milina-new-arrivals-section">
+        <div className="milina-new-arrivals-head">
+          <h2 className="milina-new-arrivals-title">NEW ARRIVALS: CHECK OUT</h2>
+          <Link href="/collections/all" className="milina-view-all-link">
+            VIEW ALL →
+          </Link>
+        </div>
+
+        {loading ? (
+          <div className="milina-product-grid">
+            {Array.from({ length: 4 }).map((_, idx) => (
+              <div key={idx} style={{ background: '#FAF8F5', aspectRatio: '1/1', borderRadius: '6px' }} />
+            ))}
+          </div>
+        ) : (
+          <div className="milina-product-grid">
+            {newArrivals.map((prod) => (
+              <Link
+                key={prod._id || prod.id}
+                href={`/product/${prod._id || prod.id}`}
+                className="milina-product-card"
+                prefetch={false}
+              >
+                <div className="milina-product-img-wrap">
+                  <img
+                    src={prod.image}
+                    alt={prod.title}
+                    className="milina-product-img"
+                    loading="lazy"
+                  />
+                  {prod.brand && (
+                    <span className="milina-brand-tag">{prod.brand}</span>
+                  )}
+                </div>
+                <div className="milina-product-info">
+                  <h3 className="milina-product-title">{prod.title}</h3>
+                  <div className="milina-product-price">
+                    AED {prod.price}
+                  </div>
+                </div>
+              </Link>
+            ))}
+          </div>
+        )}
+      </section>
+
+      {/* Brand Train Marquee */}
       <section className="brand-train-section brand-train-footer-wrap" aria-label="Luxury Brands">
         <div className="brand-train-track brand-train-reverse">
           {(() => {
-            const validBrands = brandsList.filter(b => b.logo || b.src);
+            const validBrands = brandsList.filter((b) => b.logo || b.src);
             const displayBrands = validBrands.length > 0 ? validBrands : INITIAL_FALLBACK_BRANDS;
             return [...displayBrands, ...displayBrands, ...displayBrands, ...displayBrands].map((brand, idx) => (
               <div
-                key={`brand-bot-${idx}`}
+                key={`brand-train-${idx}`}
                 className="brand-train-item"
-                onClick={() => {
-                  setActiveBrand(brand.name);
-                  const el = document.getElementById('collections');
-                  if (el) el.scrollIntoView({ behavior: 'smooth' });
-                }}
-                title={`Filter by ${brand.name}`}
                 style={{ cursor: 'pointer' }}
               >
                 <img
@@ -2276,54 +846,44 @@ Please confirm my order. Thank you!`;
         </div>
       </section>
 
-      {/* Luxury Footer with Montserrat Light & Transparent Logo */}
-      <footer className="site-footer">
+      {/* Luxury Footer (Offwhite / Cream / Brown Theme) */}
+      <footer className="site-footer" style={{ background: '#2C140E', color: '#FAF7EF' }}>
         <div className="footer-container">
           <div className="footer-grid">
             <div className="footer-col">
-              <a href="#">
+              <Link href="/">
                 <img
                   src="/smp-logo.png"
                   alt="SMP Super Master Products"
                   className="footer-logo-img"
                 />
-              </a>
-              <p className="footer-desc">
-                Curating timeless luxury across footwear, horology, and fine leather goods. Handcrafted with master precision and delivered with effortless direct WhatsApp service across the United Arab Emirates.
+              </Link>
+              <p className="footer-desc" style={{ marginTop: '12px' }}>
+                Curating timeless luxury across footwear, horology, and fine leather goods. Handcrafted with master precision and delivered with direct VIP WhatsApp service across the UAE.
               </p>
-              <div style={{ marginTop: '20px', display: 'flex', alignItems: 'center', gap: '10px', color: '#FFFFFF', fontSize: '13.5px', fontWeight: '500' }}>
+              <div style={{ marginTop: '18px', display: 'flex', alignItems: 'center', gap: '8px', color: '#FFFFFF', fontSize: '13px' }}>
                 <Phone size={15} style={{ color: '#E8D5C4' }} />
                 <span>VIP Concierge: +971 52 597 3132</span>
               </div>
             </div>
 
             <div className="footer-col">
-              <h3>Collections</h3>
+              <h3>Shop Collections</h3>
               <ul className="footer-links">
-                <li><a href="#collections" onClick={() => { setActiveCategory('all'); setActiveGender('all'); }}>All Collections</a></li>
-                {displayCategories.slice(0, 4).map((cat) => (
-                  <li key={cat.id || cat.slug}>
-                    <a
-                      href="#collections"
-                      onClick={() => {
-                        setActiveCategory(cat.slug);
-                        if (cat.slug !== 'watches') setActiveGender('all');
-                      }}
-                    >
-                      {cat.name}
-                    </a>
-                  </li>
-                ))}
+                <li><Link href="/collections/shoes">All Shoes</Link></li>
+                <li><Link href="/collections/bags">All Bags</Link></li>
+                <li><Link href="/collections/watches">All Watches</Link></li>
+                <li><Link href="/collections/all">All Collections</Link></li>
               </ul>
             </div>
 
             <div className="footer-col">
               <h3>Client Care</h3>
               <ul className="footer-links">
-                <li><a href="#collections">Inspect Before Payment</a></li>
-                <li><a href="#collections">Free UAE Express Delivery</a></li>
-                <li><a href={`https://wa.me/${WHATSAPP_NUMBER}`} target="_blank" rel="noopener noreferrer">Direct WhatsApp Concierge</a></li>
-                <li><a href="http://localhost:3001" target="_blank" rel="noopener noreferrer">Admin Management</a></li>
+                <li><Link href="/collections/all">Inspect Before Payment</Link></li>
+                <li><Link href="/collections/all">Free UAE Express Delivery</Link></li>
+                <li><a href={`https://wa.me/${WHATSAPP_NUMBER}`} target="_blank" rel="noopener noreferrer">WhatsApp Order Concierge</a></li>
+                <li><a href="http://localhost:3003" target="_blank" rel="noopener noreferrer">Admin Management</a></li>
               </ul>
             </div>
 
@@ -2332,20 +892,9 @@ Please confirm my order. Thank you!`;
               <p className="footer-desc" style={{ marginBottom: '14px' }}>
                 Experience 100% peace of mind. Pay zero upfront; our courier presents your luxury piece at your doorstep to inspect and approve before completing payment.
               </p>
-              <div style={{ display: 'flex', flexDirection: 'column', gap: '12px' }}>
-                <div style={{ display: 'inline-flex', alignItems: 'center', gap: '8px', background: 'rgba(255, 255, 255, 0.1)', border: '1px solid rgba(255, 255, 255, 0.22)', padding: '8px 14px', borderRadius: '8px', color: '#FFFFFF', fontSize: '12px', fontWeight: '600', width: 'fit-content' }}>
-                  <ShieldCheck size={16} style={{ color: '#25D366' }} />
-                  <span>100% Authenticity Guarantee</span>
-                </div>
-                <div>
-                  <div style={{ fontSize: '11px', color: 'rgba(255, 255, 255, 0.75)', fontWeight: '600', textTransform: 'uppercase', letterSpacing: '0.8px', marginBottom: '8px' }}>
-                    Pay in 4 Installments:
-                  </div>
-                  <div style={{ display: 'flex', alignItems: 'center', gap: '8px' }}>
-                    <img src="/tabby-badge.png" alt="Tabby" className="footer-badge-img" />
-                    <img src="/tamara-badge.png" alt="Tamara" className="footer-badge-img" />
-                  </div>
-                </div>
+              <div style={{ display: 'flex', alignItems: 'center', gap: '8px' }}>
+                <img src="/tabby-badge.png" alt="Tabby" className="footer-badge-img" />
+                <img src="/tamara-badge.png" alt="Tamara" className="footer-badge-img" />
               </div>
             </div>
           </div>
@@ -2362,6 +911,297 @@ Please confirm my order. Thank you!`;
           </div>
         </div>
       </footer>
+
+      {/* Floating WhatsApp Concierge Button */}
+      <a
+        href={`https://wa.me/${WHATSAPP_NUMBER}?text=Hello%20SMP,%20I%20would%20like%20to%20order.`}
+        target="_blank"
+        rel="noopener noreferrer"
+        className="milina-whatsapp-float"
+        aria-label="Chat on WhatsApp"
+      >
+        <WhatsAppIcon size={28} color="#FFFFFF" />
+      </a>
+
+      {/* Mobile Drawer */}
+      {mobileMenuOpen && (
+        <div className="milina-drawer-backdrop" onClick={() => setMobileMenuOpen(false)}>
+          <div className="milina-mobile-drawer" onClick={(e) => e.stopPropagation()}>
+            <div className="milina-drawer-header">
+              <img src="/smp-logo.png" alt="SMP Logo" style={{ height: '44px', objectFit: 'contain' }} />
+              <button onClick={() => setMobileMenuOpen(false)} className="milina-icon-btn">
+                <X size={20} />
+              </button>
+            </div>
+            <div className="milina-drawer-links">
+              <Link href="/" className="milina-drawer-link" onClick={() => setMobileMenuOpen(false)}>Home</Link>
+              <Link href="/collections/all" className="milina-drawer-link" onClick={() => setMobileMenuOpen(false)}>All Collections</Link>
+              <Link href="/collections/shoes" className="milina-drawer-link" onClick={() => setMobileMenuOpen(false)}>Shoes</Link>
+              <Link href="/collections/bags" className="milina-drawer-link" onClick={() => setMobileMenuOpen(false)}>Bags</Link>
+              <Link href="/collections/watches" className="milina-drawer-link" onClick={() => setMobileMenuOpen(false)}>Watches</Link>
+            </div>
+            <div className="milina-drawer-footer">
+              <a
+                href={`https://wa.me/${WHATSAPP_NUMBER}?text=Hello%20SMP,%20I%20need%20concierge%20assistance.`}
+                target="_blank"
+                rel="noopener noreferrer"
+                className="milina-btn-buy-now"
+                style={{ display: 'flex', alignItems: 'center', justifyContent: 'center', gap: '8px', textDecoration: 'none' }}
+              >
+                <MessageSquare size={16} />
+                <WhatsAppIcon size={16} color="#FFFFFF" />
+                <span>WhatsApp VIP Concierge</span>
+              </a>
+            </div>
+          </div>
+        </div>
+      )}
+
+      {/* Search Modal */}
+      {searchOpen && (
+        <div className="search-modal-backdrop" onClick={() => setSearchOpen(false)}>
+          <div className="search-modal-inner" onClick={(e) => e.stopPropagation()}>
+            <div className="search-modal-bar-row">
+              <div className="search-modal-pill">
+                <Search size={19} className="search-modal-icon" />
+                <input
+                  type="text"
+                  value={searchQuery}
+                  onChange={(e) => setSearchQuery(e.target.value)}
+                  placeholder="Search footwear, bags, watches..."
+                  className="search-modal-input"
+                  autoFocus
+                  onKeyDown={(e) => {
+                    if (e.key === 'Escape') setSearchOpen(false);
+                  }}
+                />
+                {searchQuery && (
+                  <button type="button" onClick={() => setSearchQuery('')} className="search-modal-clear-btn">
+                    <X size={16} />
+                  </button>
+                )}
+              </div>
+              <button type="button" className="search-modal-close-text-btn" onClick={() => setSearchOpen(false)}>
+                Cancel
+              </button>
+            </div>
+
+            {searchQuery.trim() && (
+              <div className="search-results-section">
+                <div className="search-results-header">
+                  {searchResults.length > 0 ? `Found ${searchResults.length} products` : 'No products found'}
+                </div>
+                <div className="search-results-list">
+                  {searchResults.map((item) => (
+                    <Link
+                      key={item._id || item.id}
+                      href={`/product/${item._id || item.id}`}
+                      onClick={() => setSearchOpen(false)}
+                      className="search-result-item"
+                    >
+                      <img src={item.image} alt={item.title} className="search-result-img" />
+                      <div className="search-result-info">
+                        <div className="search-result-brand">{item.brand || 'SMP Luxury'}</div>
+                        <div className="search-result-title">{item.title}</div>
+                        <div className="search-result-price-row">
+                          <span className="search-result-price">AED {item.price}</span>
+                        </div>
+                      </div>
+                      <ArrowRight size={16} color="#66300F" />
+                    </Link>
+                  ))}
+                </div>
+              </div>
+            )}
+          </div>
+        </div>
+      )}
+
+      {/* Cart Drawer */}
+      {cartDrawerOpen && (
+        <div className="milina-drawer-backdrop" onClick={() => setCartDrawerOpen(false)}>
+          <div className="milina-cart-drawer" onClick={(e) => e.stopPropagation()}>
+            <div className="milina-drawer-header">
+              <div style={{ display: 'flex', alignItems: 'center', gap: '8px' }}>
+                <ShoppingBag size={18} color="#66300F" />
+                <span style={{ fontSize: '15px', fontWeight: '700', color: '#66300F' }}>Shopping Bag ({totalCartCount})</span>
+              </div>
+              <button onClick={() => setCartDrawerOpen(false)} className="milina-icon-btn">
+                <X size={18} />
+              </button>
+            </div>
+
+            <div style={{ flex: 1, overflowY: 'auto', padding: '16px' }}>
+              {cart.length === 0 ? (
+                <div style={{ textAlign: 'center', padding: '48px 16px', color: '#786F66' }}>
+                  <ShoppingBag size={40} style={{ margin: '0 auto 14px', opacity: 0.3, color: '#C18A5B' }} />
+                  <p style={{ fontWeight: '600', color: '#1C1917', marginBottom: '6px' }}>Your bag is empty</p>
+                  <p style={{ fontSize: '13px', marginBottom: '18px' }}>Explore our curated shoes, bags, and watches.</p>
+                  <Link
+                    href="/collections/shoes"
+                    onClick={() => setCartDrawerOpen(false)}
+                    className="milina-btn-buy-now"
+                    style={{ display: 'inline-flex', alignItems: 'center', justifyContent: 'center', padding: '0 24px', width: 'auto', textDecoration: 'none' }}
+                  >
+                    Start Shopping
+                  </Link>
+                </div>
+              ) : (
+                <div style={{ display: 'flex', flexDirection: 'column', gap: '14px' }}>
+                  {cart.map((item) => {
+                    const itemKey = item.cartKey || item.id;
+                    return (
+                      <div key={itemKey} style={{ display: 'flex', gap: '12px', paddingBottom: '14px', borderBottom: '1px solid #ECE7DE' }}>
+                        <img src={item.image} alt={item.title} style={{ width: '64px', height: '64px', objectFit: 'cover', borderRadius: '4px' }} />
+                        <div style={{ flex: 1, minWidth: 0 }}>
+                          <div style={{ fontSize: '11px', color: '#A45A28', textTransform: 'uppercase', fontWeight: '700' }}>{item.brand || 'SMP'}</div>
+                          <div style={{ fontSize: '13px', fontWeight: '600', color: '#1C1917', whiteSpace: 'nowrap', overflow: 'hidden', textOverflow: 'ellipsis' }}>{item.title}</div>
+                          {(item.color || item.size) && (
+                            <div style={{ fontSize: '11.5px', color: '#66300F', marginTop: '2px' }}>
+                              {item.color && <span>{item.color} </span>}
+                              {item.size && <span>• Size {item.size}</span>}
+                            </div>
+                          )}
+                          <div style={{ fontSize: '13.5px', fontWeight: '700', color: '#66300F', marginTop: '4px' }}>AED {item.price}</div>
+
+                          <div style={{ display: 'flex', alignItems: 'center', gap: '8px', marginTop: '6px' }}>
+                            <button onClick={() => updateCartQty(itemKey, -1)} style={{ width: '24px', height: '24px', border: '1px solid #D6CEBE', borderRadius: '4px', display: 'flex', alignItems: 'center', justifyContent: 'center', background: '#FFFFFF', color: '#66300F', cursor: 'pointer' }}>
+                              <Minus size={11} />
+                            </button>
+                            <span style={{ fontSize: '12px', fontWeight: '700' }}>{item.quantity}</span>
+                            <button onClick={() => updateCartQty(itemKey, 1)} style={{ width: '24px', height: '24px', border: '1px solid #D6CEBE', borderRadius: '4px', display: 'flex', alignItems: 'center', justifyContent: 'center', background: '#FFFFFF', color: '#66300F', cursor: 'pointer' }}>
+                              <Plus size={11} />
+                            </button>
+                          </div>
+                        </div>
+                        <button onClick={() => removeFromCart(itemKey)} style={{ background: 'none', border: 'none', color: '#9B9185', cursor: 'pointer', padding: '4px' }}>
+                          <Trash2 size={15} />
+                        </button>
+                      </div>
+                    );
+                  })}
+                </div>
+              )}
+            </div>
+
+            {cart.length > 0 && (
+              <div style={{ padding: '16px', borderTop: '1px solid #ECE7DE', background: '#FAF8F5' }}>
+                <div style={{ display: 'flex', justifyContent: 'space-between', marginBottom: '8px', fontSize: '13px', color: '#786F66' }}>
+                  <span>Subtotal</span>
+                  <span style={{ fontSize: '17px', fontWeight: '800', color: '#66300F' }}>AED {totalCartPrice}</span>
+                </div>
+                <div style={{ fontSize: '11px', color: '#15803D', fontWeight: '600', marginBottom: '12px' }}>
+                  ✓ Free Express UAE Delivery &amp; Inspection Before Payment
+                </div>
+                <button
+                  onClick={handleOpenCartBuyNow}
+                  className="milina-btn-buy-now"
+                >
+                  Buy It Now
+                </button>
+              </div>
+            )}
+          </div>
+        </div>
+      )}
+
+      {/* Checkout Modal */}
+      {orderModalProduct && (
+        <div className="modal-overlay" onClick={() => !submittingOrder && setOrderModalProduct(null)}>
+          <div className="modal-dialog" onClick={(e) => e.stopPropagation()}>
+            <div className="modal-head">
+              <div>
+                <span style={{ fontSize: '11px', color: '#A45A28', fontWeight: '700', textTransform: 'uppercase' }}>
+                  Delivery Details
+                </span>
+                <h3 className="modal-title">Complete Your Order</h3>
+              </div>
+              <button onClick={() => setOrderModalProduct(null)} className="modal-close-btn" disabled={submittingOrder}>
+                <X size={20} />
+              </button>
+            </div>
+
+            <div className="modal-content">
+              {orderSuccess ? (
+                <div style={{ textAlign: 'center', padding: '24px 0' }}>
+                  <div style={{ width: '56px', height: '56px', borderRadius: '50%', background: '#DCFCE7', color: '#15803D', display: 'flex', alignItems: 'center', justifyContent: 'center', margin: '0 auto 14px' }}>
+                    <CheckCircle size={32} />
+                  </div>
+                  <h3 style={{ fontSize: '18px', fontWeight: '700', color: '#66300F', marginBottom: '6px' }}>
+                    Order Saved &amp; WhatsApp Connected!
+                  </h3>
+                  <p style={{ fontSize: '13px', color: '#786F66', marginBottom: '18px', lineHeight: '1.4' }}>
+                    WhatsApp is opening to finalize delivery with our concierge (+971 52 597 3132).
+                  </p>
+                  <a
+                    href={lastWhatsAppUrl || `https://wa.me/${WHATSAPP_NUMBER}`}
+                    target="_blank"
+                    rel="noopener noreferrer"
+                    className="milina-btn-buy-now"
+                    style={{ display: 'flex', alignItems: 'center', justifyContent: 'center', gap: '8px', textDecoration: 'none', marginBottom: '8px' }}
+                  >
+                    <MessageSquare size={16} />
+                    <WhatsAppIcon size={16} color="#FFFFFF" />
+                    <span>Open WhatsApp Directly</span>
+                  </a>
+                  <button
+                    type="button"
+                    onClick={() => setOrderModalProduct(null)}
+                    className="milina-btn-add-cart"
+                  >
+                    Close
+                  </button>
+                </div>
+              ) : (
+                <form onSubmit={handleConfirmAndContinueWhatsApp}>
+                  <div className="form-field">
+                    <label className="field-label">Full Name *</label>
+                    <label className="field-label" style={{ fontWeight: '400', fontSize: '11px', textTransform: 'uppercase', letterSpacing: '0.5px' }}>Full Name *</label>
+                    <input
+                      type="text"
+                      className="field-input"
+                      value={customerName}
+                      onChange={(e) => setCustomerName(e.target.value)}
+                      placeholder="e.g. Fatima Al Mansoori"
+                      required
+                    />
+                  </div>
+
+                  <div className="form-field" style={{ marginBottom: '16px' }}>
+                    <label className="field-label">WhatsApp Mobile Number *</label>
+                    <label className="field-label" style={{ fontWeight: '400', fontSize: '11px', textTransform: 'uppercase', letterSpacing: '0.5px' }}>WhatsApp Mobile Number *</label>
+                    <input
+                      type="tel"
+                      className="field-input"
+                      value={customerPhone}
+                      onChange={(e) => setCustomerPhone(e.target.value)}
+                      placeholder="+971 50 123 4567"
+                      required
+                    />
+                  </div>
+
+                  <div style={{ display: 'flex', alignItems: 'center', justifyContent: 'space-between', marginBottom: '14px' }}>
+                    <span style={{ fontSize: '11px', color: '#777', textTransform: 'uppercase', fontWeight: '400', letterSpacing: '1px' }}>Total Amount</span>
+                    <span style={{ fontSize: '16px', fontWeight: '500', color: '#1A1817' }}>
+                      AED {isCartOrder ? totalCartPrice : (orderModalProduct?.price || 0) * quantity}
+                    </span>
+                  </div>
+
+                  <button
+                    type="submit"
+                    disabled={submittingOrder}
+                    className="milina-btn-buy-now"
+                    style={{ display: 'flex', alignItems: 'center', justifyContent: 'center', gap: '8px' }}
+                  >
+                    <WhatsAppIcon size={17} color="#FFFFFF" />
+                    <span>{submittingOrder ? 'Processing...' : 'Continue to WhatsApp (+971 52 597 3132)'}</span>
+                  </button>
+                </form>
+              )}
+            </div>
+          </div>
+        </div>
+      )}
     </div>
   );
 }

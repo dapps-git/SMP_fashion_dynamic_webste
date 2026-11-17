@@ -6,6 +6,8 @@ import Link from 'next/link';
 import {
   ArrowLeft,
   ArrowRight,
+  ChevronLeft,
+  ChevronRight,
   ShoppingBag,
   Search,
   Menu,
@@ -14,8 +16,22 @@ import {
   Check,
   CheckCircle,
   MessageSquare,
-  Play
+  Play,
+  ExternalLink
 } from 'lucide-react';
+
+// Authentic Official WhatsApp Vector Icon
+const WhatsAppIcon = ({ size = 22, color = '#FFFFFF' }) => (
+  <svg
+    width={size}
+    height={size}
+    viewBox="0 0 24 24"
+    fill="currentColor"
+    style={{ display: 'inline-block', verticalAlign: 'middle', flexShrink: 0, color }}
+  >
+    <path d="M12.04 2C6.58 2 2.13 6.45 2.13 11.91c0 1.75.46 3.45 1.32 4.95L2.05 22l5.25-1.38c1.45.79 3.08 1.21 4.74 1.21 5.46 0 9.91-4.45 9.91-9.91 0-2.65-1.03-5.14-2.9-7.01A9.816 9.816 0 0 0 12.04 2zm.01 18.16c-1.48 0-2.93-.4-4.2-1.15l-.3-.18-3.12.82.83-3.04-.2-.32a7.99 7.99 0 0 1-1.26-4.38c0-4.54 3.7-8.24 8.25-8.24 2.2 0 4.26.86 5.82 2.42a8.18 8.18 0 0 1 2.41 5.83c0 4.54-3.7 8.24-8.23 8.24zm4.52-5.77c-.25-.12-1.46-.72-1.68-.81-.23-.08-.39-.12-.56.13-.16.25-.64.81-.78.98-.15.17-.29.19-.54.06-.25-.12-1.05-.38-2-1.23-.74-.66-1.24-1.47-1.38-1.72-.15-.25-.02-.38.11-.51.11-.11.25-.28.37-.43.12-.15.16-.25.25-.44.08-.19.04-.35-.02-.48-.07-.12-.56-1.32-.76-1.82-.2-.48-.41-.41-.56-.42h-.48c-.16 0-.43.06-.65.3-.23.25-.87.85-.87 2.07 0 1.22.89 2.4 1.01 2.57.13.16 1.74 2.65 4.21 3.72.59.25 1.05.4 1.41.51.59.19 1.13.16 1.56.1.48-.07 1.47-.6 1.67-1.18.21-.58.21-1.08.15-1.18-.06-.1-.21-.16-.46-.21z" />
+  </svg>
+);
 
 const WHATSAPP_NUMBER = '971525973132'; // +971 52 597 3132
 const rawApiUrl = process.env.NEXT_PUBLIC_API_URL || 'http://localhost:5005/api';
@@ -63,7 +79,8 @@ function resolveColorHex(name = '', code = '') {
 
 function getProductColorOptions(product) {
   if (!product) return [];
-  const variants = Array.isArray(product.variants) ? product.variants : [];
+  const rawVariants = Array.isArray(product.variants) ? product.variants : [];
+  const variants = rawVariants.filter(v => v && typeof v === 'object');
   
   const isImageInVariants = product.image && variants.some((v) => 
     v.images && v.images.length > 0 && (v.images[0] === product.image || v.images.includes(product.image))
@@ -86,6 +103,7 @@ function getProductColorOptions(product) {
   }
 
   variants.forEach((v, idx) => {
+    if (!v) return;
     const rawImages = Array.isArray(v.images) ? v.images.filter(Boolean) : (v.image ? [v.image] : []);
     const cleanImages = rawImages.filter(img => typeof img === 'string' && !img.startsWith('blob:'));
     const finalImages = cleanImages.length > 0 ? cleanImages : (product.image && !product.image.startsWith('blob:') ? [product.image] : []);
@@ -225,38 +243,54 @@ export default function ProductInnerPage() {
   const fetchProduct = async () => {
     try {
       setLoading(true);
-      const res = await fetch(`${API_BASE}/products/${id}`);
-      if (res.ok) {
-        const data = await res.json();
-        applyProductData(data);
+      let foundData = null;
+
+      // 1. Try relative /api/products/:id first (routed safely via Next.js proxy)
+      try {
+        const res = await fetch(`/api/products/${id}`);
+        if (res.ok) foundData = await res.json();
+      } catch (_) {}
+
+      // 2. Try direct API_BASE if not found
+      if (!foundData && API_BASE) {
+        try {
+          const res = await fetch(`${API_BASE}/products/${id}`);
+          if (res.ok) foundData = await res.json();
+        } catch (_) {}
+      }
+
+      if (foundData) {
+        applyProductData(foundData);
+        return;
+      }
+
+      // 3. Robust fallback: search in all products list
+      let list = [];
+      try {
+        const res = await fetch('/api/products');
+        if (res.ok) list = await res.json();
+      } catch (_) {
+        try {
+          const res = await fetch(`${API_BASE}/products`);
+          if (res.ok) list = await res.json();
+        } catch (_) {}
+      }
+
+      const prods = Array.isArray(list) ? list : (list.products || []);
+      const match = prods.find((p) => 
+        String(p._id) === String(id) || 
+        String(p.id) === String(id) || 
+        p.slug === id ||
+        (p.title && p.title.toLowerCase().replace(/[^a-z0-9]+/g, '-') === id)
+      );
+
+      if (match) {
+        applyProductData(match);
       } else {
-        // Fallback: search in list of all products
-        const fallbackRes = await fetch(`${API_BASE}/products`);
-        if (fallbackRes.ok) {
-          const list = await fallbackRes.json();
-          const prods = Array.isArray(list) ? list : (list.products || []);
-          const match = prods.find((p) => p.id === id || p._id === id || p.slug === id);
-          if (match) {
-            applyProductData(match);
-            return;
-          }
-        }
         setProduct(null);
       }
     } catch (err) {
       console.warn('Live product fetch error:', err);
-      try {
-        const fallbackRes = await fetch(`${API_BASE}/products`);
-        if (fallbackRes.ok) {
-          const list = await fallbackRes.json();
-          const prods = Array.isArray(list) ? list : (list.products || []);
-          const match = prods.find((p) => p.id === id || p._id === id || p.slug === id);
-          if (match) {
-            applyProductData(match);
-            return;
-          }
-        }
-      } catch (_) {}
       setProduct(null);
     } finally {
       setLoading(false);
@@ -299,16 +333,32 @@ export default function ProductInnerPage() {
   const activeColor = currentVariant?.colorName || product?.color || '';
   const activeStock = currentVariant?.stock !== undefined ? currentVariant.stock : (product?.stock ?? 15);
   
-  // Default footwear sizes (35-42) if none specified, matching luxury shoes in screenshot
+  const categoryLower = ((product?.category || product?.categoryName || '') + ' ' + (product?.title || '')).toLowerCase();
+  const isFootwear = categoryLower.includes('footwear') || categoryLower.includes('shoe') || categoryLower.includes('heel') || categoryLower.includes('sneaker') || categoryLower.includes('boot') || categoryLower.includes('sandal') || categoryLower.includes('slide') || categoryLower.includes('ballerina') || categoryLower.includes('loafer');
+  const sizeLabel = isFootwear ? 'Shoe size' : 'Size';
+
+  // Category-aware sizes with luxury formatting (square box display)
   const activeSizes = useMemo(() => {
-    if (currentVariant?.sizes && currentVariant.sizes.length > 0) return currentVariant.sizes;
-    if (product?.sizes && product.sizes.length > 0) return product.sizes;
-    const cat = (product?.category || '').toLowerCase();
-    if (cat.includes('footwear') || cat.includes('shoe') || cat.includes('heel') || cat.includes('sneaker')) {
-      return ['35', '36', '37', '38', '39', '40', '41', '42'];
+    let sizes = [];
+    if (currentVariant?.sizes && currentVariant.sizes.length > 0) {
+      sizes = currentVariant.sizes;
+    } else if (product?.sizes && product.sizes.length > 0) {
+      sizes = product.sizes;
+    } else if (isFootwear) {
+      sizes = ['35', '36', '37', '38', '39', '40', '41', '42'];
     }
-    return [];
-  }, [currentVariant, product]);
+
+    // Clean and format size items (e.g. format '36' to '36 cm' if product is a 36 cm bag)
+    return sizes.map((sz) => {
+      const trimmed = String(sz || '').trim();
+      if (!isFootwear && /^\d+$/.test(trimmed)) {
+        if (categoryLower.includes('cm') || (product?.title || '').toLowerCase().includes(`${trimmed} cm`)) {
+          return `${trimmed} cm`;
+        }
+      }
+      return trimmed;
+    }).filter(Boolean);
+  }, [currentVariant, product, isFootwear, categoryLower]);
 
   const handleAddToCart = () => {
     if (!product) return;
@@ -510,64 +560,44 @@ Please confirm my order. Thank you!`;
         </div>
       </div>
 
-      {/* Main Navigation Header (Fixed/Sticky all over site, identical to Home) */}
-      <header className="site-header">
-        <div className="header-container">
-          <div className="header-left">
-            <button
-              className="mobile-menu-btn"
-              onClick={() => setMobileMenuOpen(true)}
-              aria-label="Open mobile menu"
-            >
-              <Menu size={24} />
-            </button>
-
-            <div className="brand-logo-wrap">
-              <Link href="/">
-                <img
-                  src="/smp-logo.png"
-                  alt="SMP Logo"
-                  className="brand-logo-img"
-                />
-              </Link>
-            </div>
-          </div>
-
-          <nav className="header-nav">
-            <Link href="/" className="nav-item">Home</Link>
-            <Link href="/#collections" className="nav-item">All Collections</Link>
-            {categories.map((cat) => (
-              <Link
-                key={cat.id || cat.slug}
-                href={`/?category=${cat.slug}#collections`}
-                className={`nav-item ${(product?.category || '').toLowerCase() === (cat.slug || '').toLowerCase() ? 'active' : ''}`}
-              >
-                {cat.name}
-              </Link>
-            ))}
-          </nav>
-
-          <div className="header-actions">
+      {/* Luxury Navigation Header with SMP Logo (Offwhite / Cream / Brown Theme) */}
+      <header className="milina-header">
+        <div className="milina-header-container">
+          <div style={{ display: 'flex', alignItems: 'center', gap: '12px' }}>
             <button
               type="button"
-              className="header-search-btn"
+              className="milina-icon-btn"
+              onClick={() => setMobileMenuOpen(true)}
+              aria-label="Open menu"
+            >
+              <Menu size={22} />
+            </button>
+          </div>
+
+          <Link href="/" className="milina-logo-link">
+            <img src="/smp-logo.png" alt="SMP Logo" className="milina-logo-img" />
+          </Link>
+
+          <div style={{ display: 'flex', alignItems: 'center', gap: '14px' }}>
+            <button
+              type="button"
+              className="milina-icon-btn"
               onClick={() => setSearchOpen(true)}
-              aria-label="Search products"
-              title="Search products"
+              aria-label="Search"
             >
               <Search size={20} />
             </button>
 
             <button
               type="button"
-              className="header-cart-btn"
+              className="milina-icon-btn"
               onClick={() => setCartDrawerOpen(true)}
-              aria-label="View Shopping Bag"
-              title="Shopping Bag"
+              aria-label="Cart"
+              style={{ position: 'relative' }}
             >
               <ShoppingBag size={20} />
               {totalCartCount > 0 && (
-                <span className="header-cart-badge">{totalCartCount}</span>
+                <span className="milina-cart-badge">{totalCartCount}</span>
               )}
             </button>
           </div>
@@ -735,54 +765,38 @@ Please confirm my order. Thank you!`;
         </>
       )}
 
-      {/* Back to Collections Bar */}
-      <div className="product-inner-container" style={{ paddingBottom: '0' }}>
+      {/* Breadcrumb / Back Button */}
+      <div style={{ maxWidth: '1180px', margin: '0 auto', padding: '16px 16px 0' }}>
         <button
           onClick={() => router.back()}
-          className="product-back-btn"
+          style={{
+            background: 'none',
+            border: 'none',
+            display: 'inline-flex',
+            alignItems: 'center',
+            gap: '6px',
+            fontSize: '12.5px',
+            color: '#666',
+            cursor: 'pointer',
+            padding: 0
+          }}
         >
-          <ArrowLeft size={16} />
+          <ArrowLeft size={15} />
           <span>Back to Collections</span>
         </button>
       </div>
 
-      {/* Main Product Showcase Section */}
-      <div className="product-inner-container">
-        <div className="product-inner-grid">
+      {/* Main Product Showcase Section (Milina Screenshot 5 & 6) */}
+      <div className="milina-pdp-container">
+        <div className="milina-pdp-grid">
           
-          {/* LEFT: GALLERY WITH VERTICAL THUMBNAIL STRIP & EXPAND ICON */}
-          <div className="product-gallery-side-by-side">
-            
-            {/* Vertical Thumbnail Strip */}
-            {variantImages.length > 1 && (
-              <div className="product-gallery-thumbs-vertical">
-                {variantImages.map((imgUrl, idx) => (
-                  <button
-                    key={idx}
-                    type="button"
-                    onClick={() => setActiveImageIndex(idx)}
-                    className={`product-gallery-thumb-item ${activeImageIndex === idx ? 'active' : ''}`}
-                    title={`View angle ${idx + 1}`}
-                  >
-                    <img 
-                      src={imgUrl} 
-                      alt={`${product.title} angle ${idx + 1}`} 
-                      onError={(e) => {
-                        if (product?.image && e.currentTarget.src !== product.image) {
-                          e.currentTarget.src = product.image;
-                        }
-                      }}
-                    />
-                  </button>
-                ))}
-              </div>
-            )}
-
-            {/* Main High-Res Preview Card */}
-            <div className="product-gallery-main-card">
+          {/* LEFT: GALLERY WITH EXPAND ICON & < 1/5 > COUNTER */}
+          <div className="milina-pdp-gallery">
+            <div className="milina-pdp-main-img-box">
               <img
                 src={activeImage}
                 alt={`${product.title} - ${activeColor}`}
+                className="milina-pdp-main-img"
                 onError={(e) => {
                   if (product?.image && e.currentTarget.src !== product.image) {
                     e.currentTarget.src = product.image;
@@ -790,50 +804,68 @@ Please confirm my order. Thank you!`;
                 }}
               />
 
-              {/* Top-Right Expand Button (as seen in screenshot) */}
+              {/* Top-Left Expand Zoom Button (Screenshot 5) */}
               <button
                 type="button"
                 onClick={() => setLightboxOpen(true)}
-                className="product-gallery-expand-btn"
-                title="Zoom / Fullscreen view"
+                className="milina-pdp-zoom-btn"
+                title="Zoom view"
                 aria-label="Expand Image"
               >
-                <Maximize2 size={16} />
+                <Search size={17} />
               </button>
             </div>
+
+            {/* Gallery Page Counter: < 1/5 > (Screenshot 5) */}
+            {variantImages.length > 1 && (
+              <div className="milina-pdp-gallery-counter">
+                <button
+                  type="button"
+                  className="milina-pdp-arrow-btn"
+                  onClick={() => setActiveImageIndex((prev) => (prev > 0 ? prev - 1 : variantImages.length - 1))}
+                  aria-label="Previous photo"
+                >
+                  <ChevronLeft size={18} />
+                </button>
+                <span>{activeImageIndex + 1}/{variantImages.length}</span>
+                <button
+                  type="button"
+                  className="milina-pdp-arrow-btn"
+                  onClick={() => setActiveImageIndex((prev) => (prev < variantImages.length - 1 ? prev + 1 : 0))}
+                  aria-label="Next photo"
+                >
+                  <ChevronRight size={18} />
+                </button>
+              </div>
+            )}
           </div>
 
-          {/* RIGHT: PRODUCT DETAILS */}
-          <div className="product-details-col">
+          {/* RIGHT: PRODUCT DETAILS (Screenshots 5 & 6) */}
+          <div className="milina-pdp-details">
             
             {/* Brand Header */}
-            <div className="product-brand-tag">
-              {product.brand || 'VALENTINO'}
+            <div className="milina-pdp-brand" style={{ textTransform: 'uppercase', letterSpacing: '1.8px', fontSize: '11px', fontWeight: '400', color: '#888' }}>
+              {product.brand || 'SMP ATELIER'}
             </div>
 
             {/* Product Title */}
-            <h1 className="product-title-heading">
+            <h1 className="milina-pdp-title" style={{ fontSize: '22px', fontWeight: '400', color: '#1A1817', margin: '4px 0 10px', letterSpacing: '0.5px' }}>
               {product.title}
             </h1>
 
-            {/* Price & In Stock Badge Row */}
-            <div className="product-price-stock-row">
-              <span className="product-price-val">
-                AED {product.price}
-              </span>
-              <span className="product-stock-pill">
-                In Stock ({activeStock} available)
-              </span>
+            {/* Price (Screenshot 5: Dhs. 450.00 AED) */}
+            <div className="milina-pdp-price" style={{ fontSize: '16px', fontWeight: '500', color: '#111', marginBottom: '16px' }}>
+              {isNaN(Number(product.price)) ? `AED ${product.price || '0'}` : `Dhs. ${Number(product.price).toFixed(2)} AED`}
             </div>
 
-            {/* Color Selection - Circle Swatch with Color Name Underneath */}
+            {/* Color Selection - Circular Swatch (Screenshot 5) */}
             {colorOptions && colorOptions.length > 0 && (
-              <div className="product-color-section">
-                <label className="product-section-label">
-                  Color:
+              <div>
+                <label className="milina-pdp-section-label">
+                  Color: <span style={{ fontWeight: '400', color: '#555' }}>{activeColor}</span>
                 </label>
 
-                <div className="product-colors-line">
+                <div className="milina-color-swatches">
                   {colorOptions.map((opt) => {
                     const isSelected = currentVariant?.id === opt.id;
                     return (
@@ -841,20 +873,15 @@ Please confirm my order. Thank you!`;
                         key={opt.id}
                         type="button"
                         onClick={() => handleSelectVariant(opt)}
-                        className={`product-color-chip ${isSelected ? 'active' : ''}`}
+                        className={`milina-color-swatch-btn ${isSelected ? 'active' : ''}`}
                         title={opt.colorName}
                       >
                         <span
-                          className="product-color-circle"
+                          className="milina-color-swatch-inner"
                           style={{
                             backgroundColor: opt.colorCode || '#2D1E12'
                           }}
-                        >
-                          {isSelected && (
-                            <Check size={13} strokeWidth={3} className="product-color-check-icon" />
-                          )}
-                        </span>
-                        <span className="product-color-name-under">{opt.colorName}</span>
+                        />
                       </button>
                     );
                   })}
@@ -862,44 +889,49 @@ Please confirm my order. Thank you!`;
               </div>
             )}
 
-            {/* Size Selection - All Available Sizes in Single Line with Reduced Font Size */}
+            {/* Size Selection - Square Boxes */}
             {activeSizes && activeSizes.length > 0 && (
-              <div className="product-sizes-section">
-                <label className="product-section-label">
-                  Size (EU): <span style={{ fontWeight: '500', color: '#5A4A3E' }}>{selectedSize}</span>
+              <div>
+                <label className="milina-pdp-section-label">
+                  {sizeLabel}
                 </label>
 
-                <div className="product-sizes-line">
-                  {activeSizes.map((sz) => (
-                    <button
-                      key={sz}
-                      type="button"
-                      onClick={() => setSelectedSize(sz)}
-                      className={`product-size-btn ${selectedSize === sz ? 'active' : ''}`}
-                    >
-                      {sz}
-                    </button>
-                  ))}
+                <div className="milina-size-pills">
+                  {activeSizes.map((sz) => {
+                    const isSelected = selectedSize === sz;
+                    return (
+                      <button
+                        key={sz}
+                        type="button"
+                        onClick={() => setSelectedSize(sz)}
+                        className={`milina-size-pill-btn ${isSelected ? 'active' : ''}`}
+                      >
+                        {sz}
+                      </button>
+                    );
+                  })}
                 </div>
               </div>
             )}
 
-            {/* Quantity Selector */}
-            <div className="product-quantity-section">
-              <label className="product-section-label">
-                Quantity:
+            {/* Quantity Selector (Screenshot 6) */}
+            <div>
+              <label className="milina-pdp-section-label">
+                Quantity
               </label>
-              <div className="product-quantity-stepper">
+              <div className="milina-quantity-box">
                 <button
                   type="button"
+                  className="milina-qty-btn"
                   onClick={() => setQuantity(Math.max(1, quantity - 1))}
                   aria-label="Decrease quantity"
                 >
                   -
                 </button>
-                <span>{quantity}</span>
+                <span className="milina-qty-val">{quantity}</span>
                 <button
                   type="button"
+                  className="milina-qty-btn"
                   onClick={() => setQuantity(quantity + 1)}
                   aria-label="Increase quantity"
                 >
@@ -908,42 +940,116 @@ Please confirm my order. Thank you!`;
               </div>
             </div>
 
-            {/* Description Text */}
-            <p className="product-description-text">
-              {product.description || 'Master-crafted luxury footwear featuring iconic silhouette, premium materials, refined detailing, and comfortable ergonomic design. Perfect for elegant daily wear, special occasions, and luxury lifestyle.'}
-            </p>
-
-            {/* Highlights Bullet Points */}
-            <ul className="product-highlights-list">
-              <li>100% Genuine Materials</li>
-              <li>Master Craftsmanship</li>
-              <li>Free Express UAE Delivery</li>
-            </ul>
-
-            {/* Big Brown Solid CTA Button */}
-            <div style={{ display: 'flex', gap: '12px' }}>
-              <button
-                type="button"
-                onClick={handleOpenBuyNowModal}
-                className="product-buy-now-btn"
-              >
-                Buy Now
-              </button>
-
+            {/* Dual Action Buttons (Screenshot 6) */}
+            <div style={{ display: 'flex', flexDirection: 'column', gap: '10px', marginTop: '6px' }}>
               <button
                 type="button"
                 onClick={handleAddToCart}
-                className="btn-modal-cart"
-                style={{ padding: '0 20px', borderRadius: '8px', height: '52px' }}
-                title="Add to Shopping Bag"
+                className="milina-btn-add-cart"
               >
-                <ShoppingBag size={18} />
+                Add to cart
               </button>
+
+              <button
+                type="button"
+                onClick={handleOpenBuyNowModal}
+                className="milina-btn-buy-now"
+              >
+                Buy it now
+              </button>
+            </div>
+
+            {/* Stock counter & Share (Screenshot 6) */}
+            <div style={{ display: 'flex', alignItems: 'center', justifyContent: 'space-between', marginTop: '6px' }}>
+              <span style={{ fontSize: '13px', color: '#666', fontWeight: '500' }}>
+                x{activeStock} in stock
+              </span>
+
+              <button
+                type="button"
+                onClick={() => {
+                  if (typeof navigator !== 'undefined' && navigator.share) {
+                    navigator.share({ title: product.title, url: window.location.href });
+                  } else {
+                    navigator.clipboard.writeText(window.location.href);
+                    alert('Product link copied to clipboard!');
+                  }
+                }}
+                className="milina-share-link"
+              >
+                <ExternalLink size={14} />
+                <span>Share</span>
+              </button>
+            </div>
+
+            {/* Description Text */}
+            <div style={{ borderTop: '1px solid #ECE7DE', paddingTop: '16px', marginTop: '10px' }}>
+              <p style={{ fontSize: '13px', color: '#555', lineHeight: '1.6', margin: 0 }}>
+                {product.description || 'Master-crafted luxury fashion featuring iconic silhouette, premium materials, refined detailing, and comfortable ergonomic design. Perfect for elegant daily wear, special occasions, and luxury lifestyle.'}
+              </p>
             </div>
 
           </div>
         </div>
       </div>
+
+      {/* "You may also like" Section (Screenshot 6) */}
+      <section style={{ maxWidth: '1180px', width: '100%', margin: '40px auto 20px', padding: '0 14px', borderTop: '1px solid #ECE7DE', paddingTop: '32px', boxSizing: 'border-box', overflowX: 'hidden' }}>
+        <h2 style={{ fontSize: '18px', fontWeight: '300', color: '#1A1817', marginBottom: '20px', textTransform: 'uppercase', letterSpacing: '2px' }}>
+          YOU MAY ALSO LIKE
+        </h2>
+
+        <div className="milina-product-grid">
+          {allProducts
+            .filter((p) => (String(p._id || p.id) !== String(product._id || product.id)) && (((p.category || '').toLowerCase() === (product.category || '').toLowerCase()) || ((p.brand || '').toLowerCase() === (product.brand || '').toLowerCase())))
+            .slice(0, 4)
+            .map((rec) => {
+              const recId = rec._id || rec.id;
+              const recPrice = `AED ${rec.price || '0'}`;
+              return (
+                <Link
+                  key={recId}
+                  href={`/product/${recId}`}
+                  className="milina-product-card"
+                  prefetch={false}
+                >
+                  <div className="milina-product-img-wrap">
+                    <img
+                      src={rec.image}
+                      alt={rec.title}
+                      className="milina-product-img"
+                      loading="lazy"
+                    />
+                    {rec.brand && (
+                      <span className="milina-brand-tag">
+                        {rec.brand}
+                      </span>
+                    )}
+                  </div>
+                  <div className="milina-product-info">
+                    <h3 className="milina-product-title">
+                      {rec.title}
+                    </h3>
+                    <div className="milina-product-price">
+                      {recPrice}
+                    </div>
+                  </div>
+                </Link>
+              );
+            })}
+        </div>
+      </section>
+
+      {/* Floating WhatsApp Concierge */}
+      <a
+        href={`https://wa.me/${WHATSAPP_NUMBER}?text=${encodeURIComponent(`Hello SMP Atelier! I am inquiring about: ${product.title}`)}`}
+        target="_blank"
+        rel="noopener noreferrer"
+        className="milina-whatsapp-float"
+        aria-label="Chat on WhatsApp"
+      >
+        <WhatsAppIcon size={28} color="#FFFFFF" />
+      </a>
 
       {/* Lightbox Fullscreen Modal */}
       {lightboxOpen && (
@@ -973,30 +1079,30 @@ Please confirm my order. Thank you!`;
       {orderModalOpen && (
         <div className="modal-overlay" onClick={() => !submittingOrder && handleCloseOrderModal()}>
           <div className="modal-dialog" onClick={(e) => e.stopPropagation()} style={{ maxWidth: '460px', borderRadius: '12px', overflow: 'hidden' }}>
-            <div className="modal-head" style={{ padding: '16px 22px', background: '#FAF7EF', borderBottom: '1px solid #ECE4D5' }}>
+            <div className="modal-head" style={{ padding: '16px 20px', background: '#FAF7EF', borderBottom: '1px solid #ECE4D5' }}>
               <div>
-                <span style={{ fontSize: '11px', color: '#8B5E3C', fontWeight: '800', textTransform: 'uppercase', letterSpacing: '0.8px', display: 'block', marginBottom: '2px' }}>
+                <span style={{ fontSize: '10.5px', color: '#8B5E3C', fontWeight: '400', textTransform: 'uppercase', letterSpacing: '1.5px', display: 'block', marginBottom: '3px' }}>
                   DELIVERY DETAILS
                 </span>
-                <h3 className="modal-title" style={{ fontFamily: 'var(--font-serif)', fontSize: '21px', fontWeight: '700', color: '#4A230B', margin: 0 }}>
+                <h3 className="modal-title" style={{ fontFamily: "'Poppins', sans-serif", fontSize: '16px', fontWeight: '400', textTransform: 'uppercase', letterSpacing: '1.5px', color: '#1A1817', margin: 0 }}>
                   Complete Your Order
                 </h3>
               </div>
               <button onClick={handleCloseOrderModal} className="modal-close-btn" disabled={submittingOrder}>
-                <X size={20} />
+                <X size={18} />
               </button>
             </div>
 
-            <div className="modal-content" style={{ padding: '20px 22px' }}>
+            <div className="modal-content" style={{ padding: '20px' }}>
               {orderSuccess ? (
                 <div style={{ textAlign: 'center', padding: '24px 0' }}>
-                  <div style={{ width: '64px', height: '64px', borderRadius: '50%', background: '#DCFCE7', color: '#15803D', display: 'flex', alignItems: 'center', justifyContent: 'center', margin: '0 auto 16px' }}>
-                    <CheckCircle size={36} />
+                  <div style={{ width: '56px', height: '56px', borderRadius: '50%', background: '#DCFCE7', color: '#15803D', display: 'flex', alignItems: 'center', justifyContent: 'center', margin: '0 auto 16px' }}>
+                    <CheckCircle size={32} />
                   </div>
-                  <h3 style={{ fontSize: '20px', fontFamily: 'var(--font-serif)', color: '#2D1E12', marginBottom: '8px' }}>
+                  <h3 style={{ fontSize: '18px', fontFamily: "'Poppins', sans-serif", fontWeight: '400', textTransform: 'uppercase', letterSpacing: '1.5px', color: '#1A1817', marginBottom: '8px' }}>
                     Order Placed Successfully!
                   </h3>
-                  <p style={{ fontSize: '13.5px', color: '#6B7280', marginBottom: '20px', lineHeight: '1.5' }}>
+                  <p style={{ fontSize: '13px', color: '#6B7280', marginBottom: '20px', lineHeight: '1.5' }}>
                     WhatsApp is opening now to finalize your order details with our concierge (+971 52 597 3132).
                   </p>
                   <a
@@ -1013,7 +1119,7 @@ Please confirm my order. Thank you!`;
                       marginBottom: '10px'
                     }}
                   >
-                    <MessageSquare size={17} />
+                    <WhatsAppIcon size={17} color="#FFFFFF" />
                     <span>Open WhatsApp Chat Directly</span>
                   </a>
                   <button
@@ -1023,11 +1129,12 @@ Please confirm my order. Thank you!`;
                     style={{
                       width: '100%',
                       height: '42px',
-                      borderRadius: '8px',
+                      borderRadius: '2px',
                       border: '1px solid #DCD5C6',
                       background: 'transparent',
                       color: '#66300F',
-                      fontWeight: '600',
+                      fontWeight: '400',
+                      fontSize: '13px',
                       cursor: 'pointer'
                     }}
                   >
@@ -1036,7 +1143,7 @@ Please confirm my order. Thank you!`;
                 </div>
               ) : (
                 <form onSubmit={handleConfirmAndContinueWhatsApp}>
-                  {/* Product Card with Stepper inside (Exact match to screenshot) */}
+                  {/* Product Card with Stepper inside */}
                   <div style={{
                     display: 'flex',
                     alignItems: 'center',
@@ -1045,34 +1152,34 @@ Please confirm my order. Thank you!`;
                     padding: '12px 14px',
                     background: '#FAF7EF',
                     border: '1px solid #EAE3D2',
-                    borderRadius: '10px',
-                    marginBottom: '18px'
+                    borderRadius: '4px',
+                    marginBottom: '16px'
                   }}>
                     <div style={{ display: 'flex', alignItems: 'center', gap: '12px', flex: 1, minWidth: 0 }}>
                       <img
                         src={activeImage}
                         alt={product.title}
-                        style={{ width: '54px', height: '54px', objectFit: 'cover', borderRadius: '8px', border: '1px solid #C18A5B', flexShrink: 0 }}
+                        style={{ width: '52px', height: '52px', objectFit: 'cover', borderRadius: '4px', border: '1px solid #D8CFBE', flexShrink: 0 }}
                       />
                       <div style={{ flex: 1, minWidth: 0 }}>
-                        <div style={{ fontSize: '11px', color: '#8B5E3C', fontWeight: '800', textTransform: 'uppercase', letterSpacing: '0.8px', marginBottom: '2px' }}>
+                        <div style={{ fontSize: '10.5px', color: '#8B5E3C', fontWeight: '500', textTransform: 'uppercase', letterSpacing: '1.2px', marginBottom: '2px' }}>
                           {product.brand || 'SMP Luxury'}
                         </div>
-                        <div style={{ fontWeight: '700', fontSize: '13.5px', color: '#2D1E12', whiteSpace: 'nowrap', overflow: 'hidden', textOverflow: 'ellipsis', marginBottom: '4px' }}>
+                        <div style={{ fontWeight: '400', fontSize: '13.5px', color: '#1A1817', whiteSpace: 'nowrap', overflow: 'hidden', textOverflow: 'ellipsis', marginBottom: '4px' }}>
                           {product.title}
                         </div>
                         <div style={{ display: 'flex', alignItems: 'center', gap: '8px', flexWrap: 'wrap' }}>
-                          <span style={{ fontSize: '14px', fontWeight: '800', color: '#5A2A10' }}>
+                          <span style={{ fontSize: '13.5px', fontWeight: '500', color: '#1A1817' }}>
                             AED {product.price}
                           </span>
                           {activeColor && (
-                            <span style={{ fontSize: '11.5px', color: '#5A2A10', background: '#F4EFE6', border: '1px solid #E2D7C5', padding: '2px 8px', borderRadius: '4px', fontWeight: '700', display: 'inline-flex', alignItems: 'center', gap: '5px' }}>
-                              <span style={{ width: '8px', height: '8px', borderRadius: '50%', background: currentVariant?.colorCode || '#66300F', display: 'inline-block' }} />
+                            <span style={{ fontSize: '11px', color: '#555', background: '#F4EFE6', border: '1px solid #E2D7C5', padding: '1px 7px', borderRadius: '2px', fontWeight: '400', display: 'inline-flex', alignItems: 'center', gap: '5px' }}>
+                              <span style={{ width: '7px', height: '7px', borderRadius: '50%', background: currentVariant?.colorCode || '#66300F', display: 'inline-block' }} />
                               Color: {activeColor}
                             </span>
                           )}
                           {selectedSize && (
-                            <span style={{ fontSize: '11px', color: '#5A2A10', background: '#F4EFE6', border: '1px solid #E8DFD0', padding: '1px 8px', borderRadius: '4px', fontWeight: '600' }}>
+                            <span style={{ fontSize: '11px', color: '#555', background: '#F4EFE6', border: '1px solid #E8DFD0', padding: '1px 7px', borderRadius: '2px', fontWeight: '400' }}>
                               Size: {selectedSize}
                             </span>
                           )}
@@ -1081,22 +1188,22 @@ Please confirm my order. Thank you!`;
                     </div>
 
                     {/* Stepper pill */}
-                    <div style={{ display: 'flex', alignItems: 'center', border: '1px solid #D8CFBE', borderRadius: '6px', background: '#FFFFFF', padding: '2px', flexShrink: 0 }}>
+                    <div style={{ display: 'flex', alignItems: 'center', border: '1px solid #D8CFBE', borderRadius: '2px', background: '#FFFFFF', padding: '2px', flexShrink: 0 }}>
                       <button
                         type="button"
                         onClick={() => setQuantity(Math.max(1, quantity - 1))}
-                        style={{ width: '26px', height: '26px', fontSize: '14px', fontWeight: '700', color: '#5A2A10', border: 'none', background: 'transparent', cursor: 'pointer', display: 'flex', alignItems: 'center', justifyContent: 'center' }}
+                        style={{ width: '26px', height: '26px', fontSize: '14px', fontWeight: '400', color: '#444', border: 'none', background: 'transparent', cursor: 'pointer', display: 'flex', alignItems: 'center', justifyContent: 'center' }}
                         aria-label="Decrease quantity"
                       >
                         -
                       </button>
-                      <span style={{ minWidth: '22px', textAlign: 'center', fontSize: '13px', fontWeight: '700', color: '#2D1E12' }}>
+                      <span style={{ minWidth: '22px', textAlign: 'center', fontSize: '13px', fontWeight: '500', color: '#1A1817' }}>
                         {quantity}
                       </span>
                       <button
                         type="button"
                         onClick={() => setQuantity(quantity + 1)}
-                        style={{ width: '26px', height: '26px', fontSize: '14px', fontWeight: '700', color: '#5A2A10', border: 'none', background: 'transparent', cursor: 'pointer', display: 'flex', alignItems: 'center', justifyContent: 'center' }}
+                        style={{ width: '26px', height: '26px', fontSize: '14px', fontWeight: '400', color: '#444', border: 'none', background: 'transparent', cursor: 'pointer', display: 'flex', alignItems: 'center', justifyContent: 'center' }}
                         aria-label="Increase quantity"
                       >
                         +
@@ -1106,13 +1213,13 @@ Please confirm my order. Thank you!`;
 
                   {/* Customer Full Name */}
                   <div className="form-field" style={{ marginBottom: '14px' }}>
-                    <label className="field-label" style={{ fontSize: '12.5px', fontWeight: '700', color: '#3D2314', marginBottom: '6px', display: 'block' }}>
+                    <label className="field-label" style={{ fontSize: '11px', fontWeight: '400', letterSpacing: '0.5px', textTransform: 'uppercase', color: '#555', marginBottom: '5px', display: 'block' }}>
                       Full Name *
                     </label>
                     <input
                       type="text"
                       className="field-input"
-                      style={{ width: '100%', height: '42px', padding: '0 14px', borderRadius: '6px', border: '1px solid #DCD5C6', fontSize: '13.5px' }}
+                      style={{ width: '100%', height: '42px', padding: '0 14px', borderRadius: '2px', border: '1px solid #DCD5C6', fontSize: '13px', fontFamily: "'Poppins', sans-serif" }}
                       placeholder="e.g. Fatima Al Mansoori"
                       value={customerName}
                       onChange={(e) => setCustomerName(e.target.value)}
@@ -1122,13 +1229,13 @@ Please confirm my order. Thank you!`;
 
                   {/* WhatsApp Mobile Number */}
                   <div className="form-field" style={{ marginBottom: '18px' }}>
-                    <label className="field-label" style={{ fontSize: '12.5px', fontWeight: '700', color: '#3D2314', marginBottom: '6px', display: 'block' }}>
+                    <label className="field-label" style={{ fontSize: '11px', fontWeight: '400', letterSpacing: '0.5px', textTransform: 'uppercase', color: '#555', marginBottom: '5px', display: 'block' }}>
                       WhatsApp Mobile Number *
                     </label>
                     <input
                       type="tel"
                       className="field-input"
-                      style={{ width: '100%', height: '42px', padding: '0 14px', borderRadius: '6px', border: '1px solid #DCD5C6', fontSize: '13.5px' }}
+                      style={{ width: '100%', height: '42px', padding: '0 14px', borderRadius: '2px', border: '1px solid #DCD5C6', fontSize: '13px', fontFamily: "'Poppins', sans-serif" }}
                       placeholder="+971 50 123 4567"
                       value={customerPhone}
                       onChange={(e) => setCustomerPhone(e.target.value)}
@@ -1136,39 +1243,39 @@ Please confirm my order. Thank you!`;
                     />
                   </div>
 
-                  {/* Total Amount Row (Exact match to screenshot) */}
+                  {/* Total Amount Row */}
                   <div style={{ display: 'flex', alignItems: 'center', justifyContent: 'space-between', marginBottom: '16px', paddingTop: '4px' }}>
-                    <div style={{ fontSize: '12px', color: '#786F66', textTransform: 'uppercase', letterSpacing: '0.8px', fontWeight: '700' }}>
+                    <div style={{ fontSize: '11px', color: '#777', textTransform: 'uppercase', letterSpacing: '1.5px', fontWeight: '400' }}>
                       TOTAL AMOUNT
                     </div>
-                    <div style={{ fontSize: '22px', fontWeight: '800', color: '#66300F' }}>
+                    <div style={{ fontSize: '16px', fontWeight: '500', color: '#1A1817' }}>
                       AED {product.price * quantity}
                     </div>
                   </div>
 
-                  {/* Luxury Brown WhatsApp Submit Button (Exact match to screenshot) */}
+                  {/* Sleek Luxury WhatsApp Submit Button with Official WhatsApp Icon */}
                   <button
                     type="submit"
-                    className="modal-btn-whatsapp"
                     disabled={submittingOrder}
                     style={{
                       width: '100%',
-                      height: '48px',
-                      background: '#5A2A10',
+                      height: '44px',
+                      background: '#111111',
                       color: '#FFFFFF',
-                      border: 'none',
-                      borderRadius: '8px',
-                      fontSize: '14.5px',
-                      fontWeight: '700',
+                      border: '1px solid #111111',
+                      borderRadius: '2px',
+                      fontSize: '13.5px',
+                      fontWeight: '400',
+                      letterSpacing: '0.4px',
                       display: 'flex',
                       alignItems: 'center',
                       justifyContent: 'center',
-                      gap: '10px',
-                      cursor: 'pointer',
-                      boxShadow: '0 4px 14px rgba(90, 42, 16, 0.28)'
+                      gap: '8px',
+                      cursor: submittingOrder ? 'not-allowed' : 'pointer',
+                      transition: 'all 0.18s ease'
                     }}
                   >
-                    <MessageSquare size={17} />
+                    <WhatsAppIcon size={17} color="#FFFFFF" />
                     <span>{submittingOrder ? 'Connecting...' : 'Continue to WhatsApp (+971 52 597 3132)'}</span>
                   </button>
                 </form>
@@ -1182,10 +1289,10 @@ Please confirm my order. Thank you!`;
       {cartDrawerOpen && (
         <div className="cart-drawer-overlay" onClick={() => setCartDrawerOpen(false)}>
           <div className="cart-drawer" onClick={(e) => e.stopPropagation()}>
-            <div className="cart-drawer-head">
+            <div className="cart-drawer-head" style={{ padding: '16px 20px', background: '#FAF7EF', borderBottom: '1px solid #ECE6DC' }}>
               <div style={{ display: 'flex', alignItems: 'center', gap: '8px' }}>
-                <ShoppingBag size={18} color="#66300F" />
-                <h3 style={{ fontSize: '15px', fontWeight: '700', color: '#66300F', margin: 0 }}>
+                <ShoppingBag size={17} color="#1A1817" />
+                <h3 style={{ fontSize: '13.5px', fontWeight: '400', textTransform: 'uppercase', letterSpacing: '1.2px', color: '#1A1817', margin: 0, fontFamily: "'Poppins', sans-serif" }}>
                   Your Shopping Bag ({totalCartCount})
                 </h3>
               </div>
@@ -1198,40 +1305,44 @@ Please confirm my order. Thank you!`;
               {cart.length === 0 ? (
                 <div style={{ textAlign: 'center', padding: '48px 16px', color: '#786F66' }}>
                   <ShoppingBag size={44} color="#D1C7B7" style={{ margin: '0 auto 16px' }} />
-                  <p style={{ fontSize: '15px', fontWeight: '600', color: '#1C1917', marginBottom: '6px' }}>
+                  <p style={{ fontSize: '14px', fontWeight: '400', color: '#1C1917', marginBottom: '6px' }}>
                     Your shopping bag is empty
                   </p>
-                  <button onClick={() => setCartDrawerOpen(false)} className="product-buy-now-btn" style={{ maxWidth: '200px', margin: '0 auto', height: '42px', fontSize: '13px' }}>
+                  <button onClick={() => setCartDrawerOpen(false)} className="product-buy-now-btn" style={{ maxWidth: '200px', margin: '0 auto', height: '42px', fontSize: '13px', borderRadius: '2px' }}>
                     Continue Browsing
                   </button>
                 </div>
               ) : (
                 <div className="cart-items-list">
                   {cart.map((item, idx) => (
-                    <div key={item.cartKey || idx} className="cart-item-row">
-                      <img src={item.image} alt={item.title} className="cart-item-img" />
-                      <div className="cart-item-info">
-                        <div className="cart-item-brand">{item.brand || 'SMP Luxury'}</div>
-                        <div className="cart-item-title">{item.title}</div>
+                    <div key={item.cartKey || idx} className="cart-item-row" style={{ padding: '12px 16px', borderBottom: '1px solid #F0ECE4' }}>
+                      <img src={item.image} alt={item.title} className="cart-item-img" style={{ width: '56px', height: '56px', borderRadius: '4px', objectFit: 'cover' }} />
+                      <div className="cart-item-info" style={{ flex: 1, minWidth: 0 }}>
+                        <div className="cart-item-brand" style={{ fontSize: '10.5px', fontWeight: '500', textTransform: 'uppercase', letterSpacing: '1px', color: '#8B5E3C', marginBottom: '2px' }}>
+                          {item.brand || 'SMP Luxury'}
+                        </div>
+                        <div className="cart-item-title" style={{ fontSize: '13.5px', fontWeight: '400', color: '#1A1817', margin: '0 0 4px', whiteSpace: 'nowrap', overflow: 'hidden', textOverflow: 'ellipsis' }}>
+                          {item.title}
+                        </div>
                         {(item.color || item.size) && (
                           <div style={{ display: 'flex', gap: '6px', flexWrap: 'wrap', marginTop: '3px', marginBottom: '4px' }}>
                             {item.color && (
-                              <span style={{ fontSize: '11px', color: '#66300F', background: '#F8F4EE', border: '1px solid #E6D7C3', padding: '1px 6px', borderRadius: '4px', fontWeight: '600' }}>
+                              <span style={{ fontSize: '11px', color: '#555', background: '#F8F4EE', border: '1px solid #E6D7C3', padding: '1px 6px', borderRadius: '2px', fontWeight: '400' }}>
                                 {item.color}
                               </span>
                             )}
                             {item.size && (
-                              <span style={{ fontSize: '11px', color: '#786F66', background: '#F5F5F0', border: '1px solid #E5E5E0', padding: '1px 6px', borderRadius: '4px', fontWeight: '500' }}>
+                              <span style={{ fontSize: '11px', color: '#555', background: '#F5F5F0', border: '1px solid #E5E5E0', padding: '1px 6px', borderRadius: '2px', fontWeight: '400' }}>
                                 Size: {item.size}
                               </span>
                             )}
                           </div>
                         )}
                         <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center', marginTop: '6px' }}>
-                          <span style={{ fontWeight: '700', color: '#66300F', fontSize: '13px' }}>
+                          <span style={{ fontWeight: '500', color: '#1A1817', fontSize: '13.5px' }}>
                             AED {item.price * item.quantity}
                           </span>
-                          <span style={{ fontSize: '12px', color: '#6B7280' }}>
+                          <span style={{ fontSize: '12px', color: '#777', fontWeight: '400' }}>
                             Qty: {item.quantity}
                           </span>
                         </div>
@@ -1243,10 +1354,10 @@ Please confirm my order. Thank you!`;
             </div>
 
             {cart.length > 0 && (
-              <div className="cart-drawer-footer">
-                <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center', marginBottom: '16px' }}>
-                  <span style={{ fontSize: '14px', fontWeight: '600', color: '#374151' }}>Total Amount</span>
-                  <span style={{ fontSize: '20px', fontWeight: '800', color: '#66300F' }}>AED {totalCartPrice}</span>
+              <div className="cart-drawer-footer" style={{ padding: '16px 20px', borderTop: '1px solid #ECE6DC', background: '#FAF7EF' }}>
+                <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center', marginBottom: '14px' }}>
+                  <span style={{ fontSize: '12px', fontWeight: '400', textTransform: 'uppercase', letterSpacing: '1px', color: '#666' }}>Total Amount</span>
+                  <span style={{ fontSize: '16px', fontWeight: '500', color: '#1A1817' }}>AED {totalCartPrice}</span>
                 </div>
                 <button
                   onClick={() => {
@@ -1254,6 +1365,15 @@ Please confirm my order. Thank you!`;
                     handleOpenBuyNowModal();
                   }}
                   className="product-buy-now-btn"
+                  style={{
+                    height: '44px',
+                    borderRadius: '2px',
+                    fontSize: '13.5px',
+                    fontWeight: '400',
+                    letterSpacing: '0.4px',
+                    background: '#111111',
+                    color: '#FFFFFF'
+                  }}
                 >
                   Proceed to Checkout
                 </button>
