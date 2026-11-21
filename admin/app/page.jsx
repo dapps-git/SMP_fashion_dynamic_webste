@@ -150,6 +150,34 @@ export default function DashboardPage() {
           </div>
         </div>
 
+        {/* Total Product Clicks */}
+        <div className="card" style={{ display: 'flex', alignItems: 'center', gap: '18px' }}>
+          <div style={{
+            width: '52px',
+            height: '52px',
+            borderRadius: '14px',
+            background: '#FAF6EF',
+            color: '#66300F',
+            display: 'flex',
+            alignItems: 'center',
+            justifyContent: 'center',
+            border: '1px solid #EAE0D0'
+          }}>
+            <Eye size={24} />
+          </div>
+          <div>
+            <div style={{ fontSize: '12px', color: 'var(--color-text-muted)', fontWeight: '600', textTransform: 'uppercase', letterSpacing: '0.5px' }}>
+              Product Clicks
+            </div>
+            <div style={{ fontSize: '24px', fontWeight: '700', color: '#1F1B18', marginTop: '2px' }}>
+              {stats ? (stats.totalClicks || 0).toLocaleString() : '0'} Clicks
+            </div>
+            <div style={{ fontSize: '11px', color: 'var(--color-success)', display: 'flex', alignItems: 'center', gap: '4px', marginTop: '4px' }}>
+              <TrendingUp size={12} /> Customer Interest Tracking
+            </div>
+          </div>
+        </div>
+
         {/* Categories */}
         <div className="card" style={{ display: 'flex', alignItems: 'center', gap: '18px' }}>
           <div style={{

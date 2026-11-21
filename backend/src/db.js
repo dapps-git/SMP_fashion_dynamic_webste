@@ -391,6 +391,7 @@ function getStats() {
 
   const totalRevenue = orders.reduce((sum, o) => sum + (parseFloat(o.totalPrice) || 0), 0);
   const pendingOrders = orders.filter(o => o.status === 'Pending').length;
+  const totalClicks = products.reduce((sum, p) => sum + (parseInt(p.clicks, 10) || 0), 0);
 
   return {
     totalRevenue,
@@ -398,8 +399,18 @@ function getStats() {
     totalProducts: products.length,
     totalCategories: categories.length,
     pendingOrders,
+    totalClicks,
     recentOrders: orders.slice(0, 10).map(o => ({ ...o, id: o.id || o.orderId }))
   };
+}
+
+function incrementProductClicks(id) {
+  const db = readDb();
+  const index = (db.products || []).findIndex(p => p.id === id || p._id === id);
+  if (index === -1) return 0;
+  db.products[index].clicks = (parseInt(db.products[index].clicks, 10) || 0) + 1;
+  writeDb(db);
+  return db.products[index].clicks;
 }
 
 module.exports = {
@@ -416,6 +427,7 @@ module.exports = {
   createProduct,
   updateProduct,
   deleteProduct,
+  incrementProductClicks,
   getOrders,
   createOrder,
   updateOrderStatus,

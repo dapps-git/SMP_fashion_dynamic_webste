@@ -4941,17 +4941,34 @@ input, select, textarea {
   padding: 0 4px;
 }
 
-/* Category Shortcut Cards (Screenshot 3) */
+/* Category Shortcut Cards (3 in one row on Mobile & Desktop) */
 .milina-category-shortcuts-grid {
   display: grid;
-  grid-template-columns: repeat(2, 1fr);
-  gap: 14px;
+  grid-template-columns: repeat(3, minmax(0, 1fr));
+  gap: 8px;
+}
+
+@media (min-width: 640px) {
+  .milina-category-shortcuts-grid {
+    gap: 14px;
+  }
 }
 
 @media (min-width: 768px) {
   .milina-category-shortcuts-grid {
     grid-template-columns: repeat(3, 1fr);
     gap: 20px;
+  }
+}
+
+@media (max-width: 640px) {
+  .milina-category-shortcuts-grid .milina-brand-slide-title {
+    font-size: 11px !important;
+    padding: 6px 2px 2px !important;
+    letter-spacing: 0.3px;
+    white-space: nowrap;
+    overflow: hidden;
+    text-overflow: ellipsis;
   }
 }
 
@@ -5000,6 +5017,53 @@ input, select, textarea {
 .milina-view-all-link:hover {
   color: #66300F;
   border-color: #66300F;
+}
+
+/* ─── New Arrivals Pagination Controls ─── */
+.new-arrivals-pagination {
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  gap: 8px;
+  margin-top: 32px;
+  padding: 10px 0;
+}
+
+.new-arrivals-page-btn {
+  min-width: 40px;
+  height: 40px;
+  padding: 0 14px;
+  border-radius: 2px;
+  border: 1px solid #ECE4D6;
+  background: #FFFFFF;
+  color: #1A1817;
+  font-family: 'Poppins', sans-serif;
+  font-size: 13px;
+  font-weight: 500;
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  cursor: pointer;
+  transition: all 0.2s ease;
+}
+
+.new-arrivals-page-btn:hover:not(:disabled) {
+  background: #FAF6EF;
+  border-color: #66300F;
+  color: #66300F;
+}
+
+.new-arrivals-page-btn.active {
+  background: #66300F;
+  border-color: #66300F;
+  color: #FFFFFF;
+  font-weight: 600;
+}
+
+.new-arrivals-page-btn:disabled {
+  opacity: 0.35;
+  cursor: not-allowed;
+  border-color: #EAE0D0;
 }
 
 

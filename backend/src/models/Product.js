@@ -30,6 +30,7 @@ const ProductSchema = new mongoose.Schema({
   variants: [VariantSchema], // Dynamic Color Variants
   featured: { type: Boolean, default: true },
   badge: { type: String, default: 'New' },
+  clicks: { type: Number, default: 0 },
   // Dynamic SEO Fields
   seoTitle: { type: String, default: '' },
   seoDescription: { type: String, default: '' },

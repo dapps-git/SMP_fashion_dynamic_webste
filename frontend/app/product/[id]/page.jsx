@@ -189,6 +189,9 @@ export default function ProductInnerPage() {
     fetchProduct();
     fetchCategories();
     fetchAllProducts();
+    try {
+      fetch(`${API_BASE}/products/${id}/click`, { method: 'POST', keepalive: true }).catch(() => {});
+    } catch (_) {}
   }, [id]);
 
   const fetchAllProducts = async () => {

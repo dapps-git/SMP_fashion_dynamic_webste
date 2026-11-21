@@ -36,6 +36,53 @@ const WhatsAppIcon = ({ size = 22, color = '#FFFFFF' }) => (
     <path d="M12.04 2C6.58 2 2.13 6.45 2.13 11.91c0 1.75.46 3.45 1.32 4.95L2.05 22l5.25-1.38c1.45.79 3.08 1.21 4.74 1.21 5.46 0 9.91-4.45 9.91-9.91 0-2.65-1.03-5.14-2.9-7.01A9.816 9.816 0 0 0 12.04 2zm.01 18.16c-1.48 0-2.93-.4-4.2-1.15l-.3-.18-3.12.82.83-3.04-.2-.32a7.99 7.99 0 0 1-1.26-4.38c0-4.54 3.7-8.24 8.25-8.24 2.2 0 4.26.86 5.82 2.42a8.18 8.18 0 0 1 2.41 5.83c0 4.54-3.7 8.24-8.23 8.24zm4.52-5.77c-.25-.12-1.46-.72-1.68-.81-.23-.08-.39-.12-.56.13-.16.25-.64.81-.78.98-.15.17-.29.19-.54.06-.25-.12-1.05-.38-2-1.23-.74-.66-1.24-1.47-1.38-1.72-.15-.25-.02-.38.11-.51.11-.11.25-.28.37-.43.12-.15.16-.25.25-.44.08-.19.04-.35-.02-.48-.07-.12-.56-1.32-.76-1.82-.2-.48-.41-.41-.56-.42h-.48c-.16 0-.43.06-.65.3-.23.25-.87.85-.87 2.07 0 1.22.89 2.4 1.01 2.57.13.16 1.74 2.65 4.21 3.72.59.25 1.05.4 1.41.51.59.19 1.13.16 1.56.1.48-.07 1.47-.6 1.67-1.18.21-.58.21-1.08.15-1.18-.06-.1-.21-.16-.46-.21z" />
   </svg>
 );
+
+// Realistic Trust Bar Icons (Authentic Luxury Styling)
+const RealLockIcon = () => (
+  <svg width="22" height="22" viewBox="0 0 24 24" fill="none" style={{ display: 'block' }}>
+    <path d="M7 10V6.5C7 3.74 9.24 1.5 12 1.5C14.76 1.5 17 3.74 17 6.5V10" stroke="currentColor" strokeWidth="2.2" strokeLinecap="round" />
+    <rect x="4" y="9.5" width="16" height="13" rx="3" fill="currentColor" fillOpacity="0.16" stroke="currentColor" strokeWidth="2" />
+    <rect x="6.5" y="11.5" width="11" height="9" rx="1.5" stroke="currentColor" strokeWidth="0.8" strokeOpacity="0.35" strokeDasharray="2 2" />
+    <circle cx="12" cy="14.5" r="1.6" fill="currentColor" />
+    <path d="M12 15.8V18.2" stroke="currentColor" strokeWidth="2" strokeLinecap="round" />
+  </svg>
+);
+
+const RealHandshakeIcon = () => (
+  <svg width="22" height="22" viewBox="0 0 24 24" fill="none" style={{ display: 'block' }}>
+    <path d="M1.5 14.5L5.5 11L7.5 13L3.5 16.5H1.5V14.5Z" fill="currentColor" fillOpacity="0.18" stroke="currentColor" strokeWidth="1.6" strokeLinejoin="round" />
+    <path d="M22.5 14.5L18.5 11L16.5 13L20.5 16.5H22.5V14.5Z" fill="currentColor" fillOpacity="0.18" stroke="currentColor" strokeWidth="1.6" strokeLinejoin="round" />
+    <path d="M7.5 13L10.2 10.3C10.7 9.8 11.5 9.8 12 10.3L13.5 11.8" stroke="currentColor" strokeWidth="1.8" strokeLinecap="round" strokeLinejoin="round" />
+    <path d="M6 14.5L10 18.5C10.6 19.1 11.5 19.1 12.1 18.5L14 16.6" stroke="currentColor" strokeWidth="1.8" strokeLinecap="round" strokeLinejoin="round" />
+    <path d="M11 12.5L14.2 9.3C14.7 8.8 15.5 8.8 16 9.3L17.5 10.8" stroke="currentColor" strokeWidth="1.8" strokeLinecap="round" />
+    <path d="M9.5 15.5L12 13" stroke="currentColor" strokeWidth="1.5" strokeLinecap="round" />
+    <path d="M11.5 17L14 14.5" stroke="currentColor" strokeWidth="1.5" strokeLinecap="round" />
+  </svg>
+);
+
+const RealShieldCheckIcon = () => (
+  <svg width="22" height="22" viewBox="0 0 24 24" fill="none" style={{ display: 'block' }}>
+    <path d="M12 2L4 5.5V11.5C4 16.5 7.4 21.1 12 22.5C16.6 21.1 20 16.5 20 11.5V5.5L12 2Z" fill="currentColor" fillOpacity="0.16" stroke="currentColor" strokeWidth="2" strokeLinejoin="round" />
+    <path d="M12 4.2L5.8 7V11.5C5.8 15.4 8.4 19 12 20.3C15.6 19 18.2 15.4 18.2 11.5V7L12 4.2Z" stroke="currentColor" strokeWidth="0.8" strokeOpacity="0.35" strokeLinejoin="round" />
+    <path d="M8.5 12L11 14.5L15.5 9.5" stroke="currentColor" strokeWidth="2.4" strokeLinecap="round" strokeLinejoin="round" />
+  </svg>
+);
+
+const RealDeliveryTruckIcon = () => (
+  <svg width="22" height="22" viewBox="0 0 24 24" fill="none" style={{ display: 'block' }}>
+    <path d="M1.5 6.5C1.5 5.4 2.4 4.5 3.5 4.5H14.5V16.5H2.5C1.9 16.5 1.5 16.1 1.5 15.5V6.5Z" fill="currentColor" fillOpacity="0.16" stroke="currentColor" strokeWidth="1.8" strokeLinejoin="round" />
+    <path d="M14.5 8H18.5L21.5 11.5V16.5H14.5V8Z" fill="currentColor" fillOpacity="0.12" stroke="currentColor" strokeWidth="1.8" strokeLinejoin="round" />
+    <path d="M15.5 9.5H18L20 12H15.5V9.5Z" stroke="currentColor" strokeWidth="1.2" strokeOpacity="0.4" strokeLinejoin="round" />
+    <circle cx="6.5" cy="18" r="2.5" fill="#FAF6EF" stroke="currentColor" strokeWidth="2" />
+    <circle cx="6.5" cy="18" r="0.9" fill="currentColor" />
+    <circle cx="17.5" cy="18" r="2.5" fill="#FAF6EF" stroke="currentColor" strokeWidth="2" />
+    <circle cx="17.5" cy="18" r="0.9" fill="currentColor" />
+    <path d="M0.5 18H2" stroke="currentColor" strokeWidth="1.5" strokeLinecap="round" />
+    <path d="M10 18H14" stroke="currentColor" strokeWidth="1.5" strokeLinecap="round" />
+    <path d="M21 18H23" stroke="currentColor" strokeWidth="1.5" strokeLinecap="round" />
+    <rect x="5.5" y="8" width="5" height="4.5" rx="0.8" stroke="currentColor" strokeWidth="1" strokeOpacity="0.6" strokeDasharray="1.5 1.5" />
+  </svg>
+);
 const rawApiUrl = process.env.NEXT_PUBLIC_API_URL || 'http://localhost:5005/api';
 const cleanApiUrl = rawApiUrl.replace(/\/+$/, '');
 const API_BASE = cleanApiUrl.endsWith('/api') ? cleanApiUrl : `${cleanApiUrl}/api`;
@@ -272,26 +319,105 @@ export default function StorefrontPage() {
   // "Shop by categories" Shortcut Cards strictly using real product images from DB
   const categoryShortcuts = useMemo(() => [
     {
-      title: 'all bags →',
+      title: 'ALL BAGS →',
       href: '/collections/bags',
       img: bagsSlideCards[0]?.img || ''
     },
     {
-      title: 'all shoes →',
+      title: 'ALL SHOES →',
       href: '/collections/shoes',
       img: shoesSlideCards[0]?.img || ''
     },
     {
-      title: 'all watches →',
+      title: 'ALL WATCHES →',
       href: '/collections/watches',
       img: watchesSlideCards[0]?.img || ''
     }
   ].filter((item) => item.img), [bagsSlideCards, shoesSlideCards, watchesSlideCards]);
 
-  // Spotlight / New Arrivals: Latest products strictly from database
-  const newArrivals = useMemo(() => {
-    return products.slice(0, 8);
+  // Mixed New Arrivals: 30 products mixed across all categories (Bags, Shoes, Watches, Accessories)
+  const mixedNewArrivals = useMemo(() => {
+    if (!products || products.length === 0) return [];
+
+    const catGroups = {};
+    for (const p of products) {
+      const cat = (p.category || 'other').toLowerCase();
+      if (!catGroups[cat]) catGroups[cat] = [];
+      catGroups[cat].push(p);
+    }
+
+    const priorityCats = ['bags', 'footwear', 'watches', 'accessories'];
+    const otherCats = Object.keys(catGroups).filter((c) => !priorityCats.includes(c));
+    const allCatKeys = [...priorityCats.filter((c) => catGroups[c]?.length), ...otherCats];
+
+    const result = [];
+    const maxLen = Math.max(...allCatKeys.map((k) => (catGroups[k] ? catGroups[k].length : 0)), 0);
+
+    for (let i = 0; i < maxLen; i++) {
+      for (const catKey of allCatKeys) {
+        if (catGroups[catKey] && catGroups[catKey][i]) {
+          result.push(catGroups[catKey][i]);
+          if (result.length >= 30) break;
+        }
+      }
+      if (result.length >= 30) break;
+    }
+
+    if (result.length < 30 && products.length > result.length) {
+      const seenIds = new Set(result.map((p) => p._id || p.id));
+      for (const p of products) {
+        if (!seenIds.has(p._id || p.id)) {
+          result.push(p);
+          if (result.length >= 30) break;
+        }
+      }
+    }
+
+    return result.slice(0, 30);
   }, [products]);
+
+  // Pagination for New Arrivals: 10 products per page
+  const [newArrivalsPage, setNewArrivalsPage] = useState(1);
+  const newArrivalsRef = useRef(null);
+  const NEW_ARRIVALS_PER_PAGE = 10;
+  const totalNewArrivalsPages = Math.max(1, Math.ceil(mixedNewArrivals.length / NEW_ARRIVALS_PER_PAGE));
+
+  const displayedNewArrivals = useMemo(() => {
+    const start = (newArrivalsPage - 1) * NEW_ARRIVALS_PER_PAGE;
+    return mixedNewArrivals.slice(start, start + NEW_ARRIVALS_PER_PAGE);
+  }, [mixedNewArrivals, newArrivalsPage]);
+
+  const handlePageChange = (page) => {
+    if (page < 1 || page > totalNewArrivalsPages) return;
+    setNewArrivalsPage(page);
+    if (newArrivalsRef.current) {
+      const yOffset = -90;
+      const y = newArrivalsRef.current.getBoundingClientRect().top + window.pageYOffset + yOffset;
+      window.scrollTo({ top: y, behavior: 'smooth' });
+    }
+  };
+
+  const trackProductClick = (id) => {
+    if (!id) return;
+    try {
+      fetch(`${API_BASE}/products/${id}/click`, { method: 'POST', keepalive: true }).catch(() => {});
+    } catch (_) {}
+  };
+
+  // Lock background scroll when search modal is open
+  useEffect(() => {
+    if (searchOpen) {
+      document.body.style.overflow = 'hidden';
+      document.documentElement.style.overflow = 'hidden';
+    } else {
+      document.body.style.overflow = '';
+      document.documentElement.style.overflow = '';
+    }
+    return () => {
+      document.body.style.overflow = '';
+      document.documentElement.style.overflow = '';
+    };
+  }, [searchOpen]);
 
   // Live Search Results
   const searchResults = useMemo(() => {
@@ -589,7 +715,7 @@ Hello SMP Atelier, please confirm my order. Thank you!`;
         <div className="trust-guarantee-bar">
           <div className="trust-guarantee-item">
             <div className="trust-guarantee-icon-wrap">
-              <Lock size={19} strokeWidth={2} />
+              <RealLockIcon />
             </div>
             <div className="trust-guarantee-text">
               <span className="trust-guarantee-title">100% Secure Shopping</span>
@@ -598,7 +724,7 @@ Hello SMP Atelier, please confirm my order. Thank you!`;
 
           <div className="trust-guarantee-item">
             <div className="trust-guarantee-icon-wrap">
-              <Handshake size={20} strokeWidth={1.8} />
+              <RealHandshakeIcon />
             </div>
             <div className="trust-guarantee-text">
               <span className="trust-guarantee-title">Direct Dealing</span>
@@ -607,7 +733,7 @@ Hello SMP Atelier, please confirm my order. Thank you!`;
 
           <div className="trust-guarantee-item">
             <div className="trust-guarantee-icon-wrap">
-              <ShieldCheck size={20} strokeWidth={1.8} />
+              <RealShieldCheckIcon />
             </div>
             <div className="trust-guarantee-text">
               <span className="trust-guarantee-title">Quality Check Before Payment</span>
@@ -616,7 +742,7 @@ Hello SMP Atelier, please confirm my order. Thank you!`;
 
           <div className="trust-guarantee-item">
             <div className="trust-guarantee-icon-wrap">
-              <Truck size={20} strokeWidth={1.8} />
+              <RealDeliveryTruckIcon />
             </div>
             <div className="trust-guarantee-text">
               <span className="trust-guarantee-title">Free Delivery</span>
@@ -626,14 +752,31 @@ Hello SMP Atelier, please confirm my order. Thank you!`;
       </div>
 
       {/* ─────────────────────────────────────────────────────────────
-          PRODUCT LISTING: SHOP BY BRAND CAROUSELS (Milina Style)
-          Using ONLY Real Products from Database (Admin Panel)
+          PRODUCT LISTING: SHOP BY CATEGORIES SHORTCUT SECTION (Placed First)
           ───────────────────────────────────────────────────────────── */}
-      <section className="milina-brand-section">
-        <div className="milina-section-banner">
-          SHOP BY BRAND
+      <section className="milina-brand-section" style={{ paddingTop: '16px', paddingBottom: '14px' }}>
+        <h2 className="milina-category-row-title" style={{ fontSize: '18px', marginBottom: '14px', letterSpacing: '0.5px' }}>
+          SHOP BY CATEGORIES
+        </h2>
+        <div className="milina-category-shortcuts-grid">
+          {categoryShortcuts.map((item, idx) => (
+            <Link key={idx} href={item.href} className="milina-brand-slide-card" style={{ flex: 'none' }} prefetch={false}>
+              <div className="milina-brand-slide-img-box" style={{ aspectRatio: '1 / 1' }}>
+                <img src={item.img} alt={item.title} className="milina-brand-slide-img" loading="lazy" />
+              </div>
+              <div className="milina-brand-slide-title" style={{ fontSize: '13px' }}>
+                <span>{item.title}</span>
+              </div>
+            </Link>
+          ))}
         </div>
+      </section>
 
+      {/* ─────────────────────────────────────────────────────────────
+          PRODUCT LISTING: CATEGORY CAROUSELS (Bags, Shoes, Watches)
+          (Shop by Brand button removed)
+          ───────────────────────────────────────────────────────────── */}
+      <section className="milina-brand-section" style={{ paddingTop: '0' }}>
         {/* 1. Bags Row */}
         {bagsSlideCards.length > 0 && (
           <div className="milina-category-row">
@@ -660,7 +803,13 @@ Hello SMP Atelier, please confirm my order. Thank you!`;
 
             <div ref={bagsRef} className="milina-carousel-scroll">
               {bagsSlideCards.map((card, idx) => (
-                <Link key={idx} href={card.href} className="milina-brand-slide-card" prefetch={false}>
+                <Link
+                  key={idx}
+                  href={card.href}
+                  onClick={() => trackProductClick(card.productId)}
+                  className="milina-brand-slide-card"
+                  prefetch={false}
+                >
                   <div className="milina-brand-slide-img-box">
                     <img src={card.img} alt={card.title} className="milina-brand-slide-img" loading="lazy" />
                   </div>
@@ -699,7 +848,13 @@ Hello SMP Atelier, please confirm my order. Thank you!`;
 
             <div ref={shoesRef} className="milina-carousel-scroll">
               {shoesSlideCards.map((card, idx) => (
-                <Link key={idx} href={card.href} className="milina-brand-slide-card" prefetch={false}>
+                <Link
+                  key={idx}
+                  href={card.href}
+                  onClick={() => trackProductClick(card.productId)}
+                  className="milina-brand-slide-card"
+                  prefetch={false}
+                >
                   <div className="milina-brand-slide-img-box">
                     <img src={card.img} alt={card.title} className="milina-brand-slide-img" loading="lazy" />
                   </div>
@@ -738,7 +893,13 @@ Hello SMP Atelier, please confirm my order. Thank you!`;
 
             <div ref={watchesRef} className="milina-carousel-scroll">
               {watchesSlideCards.map((card, idx) => (
-                <Link key={idx} href={card.href} className="milina-brand-slide-card" prefetch={false}>
+                <Link
+                  key={idx}
+                  href={card.href}
+                  onClick={() => trackProductClick(card.productId)}
+                  className="milina-brand-slide-card"
+                  prefetch={false}
+                >
                   <div className="milina-brand-slide-img-box">
                     <img src={card.img} alt={card.title} className="milina-brand-slide-img" loading="lazy" />
                   </div>
@@ -753,30 +914,9 @@ Hello SMP Atelier, please confirm my order. Thank you!`;
       </section>
 
       {/* ─────────────────────────────────────────────────────────────
-          PRODUCT LISTING: SHOP BY CATEGORIES SHORTCUT SECTION
+          PRODUCT LISTING: NEW ARRIVALS SPOTLIGHT (Mixed 30 Products / 10 Per Page)
           ───────────────────────────────────────────────────────────── */}
-      <section className="milina-brand-section" style={{ paddingTop: '0' }}>
-        <h2 className="milina-category-row-title" style={{ fontSize: '20px', marginBottom: '16px' }}>
-          SHOP BY CATEGORIES
-        </h2>
-        <div className="milina-category-shortcuts-grid">
-          {categoryShortcuts.map((item, idx) => (
-            <Link key={idx} href={item.href} className="milina-brand-slide-card" style={{ flex: 'none' }} prefetch={false}>
-              <div className="milina-brand-slide-img-box" style={{ aspectRatio: '1 / 1' }}>
-                <img src={item.img} alt={item.title} className="milina-brand-slide-img" loading="lazy" />
-              </div>
-              <div className="milina-brand-slide-title" style={{ fontSize: '15px' }}>
-                <span>{item.title}</span>
-              </div>
-            </Link>
-          ))}
-        </div>
-      </section>
-
-      {/* ─────────────────────────────────────────────────────────────
-          PRODUCT LISTING: NEW ARRIVALS SPOTLIGHT (2-Col Mobile / 4-Col Desktop)
-          ───────────────────────────────────────────────────────────── */}
-      <section className="milina-new-arrivals-section">
+      <section ref={newArrivalsRef} className="milina-new-arrivals-section">
         <div className="milina-new-arrivals-head">
           <h2 className="milina-new-arrivals-title">NEW ARRIVALS: CHECK OUT</h2>
           <Link href="/collections/all" className="milina-view-all-link">
@@ -791,34 +931,71 @@ Hello SMP Atelier, please confirm my order. Thank you!`;
             ))}
           </div>
         ) : (
-          <div className="milina-product-grid">
-            {newArrivals.map((prod) => (
-              <Link
-                key={prod._id || prod.id}
-                href={`/product/${prod._id || prod.id}`}
-                className="milina-product-card"
-                prefetch={false}
-              >
-                <div className="milina-product-img-wrap">
-                  <img
-                    src={prod.image}
-                    alt={prod.title}
-                    className="milina-product-img"
-                    loading="lazy"
-                  />
-                  {prod.brand && (
-                    <span className="milina-brand-tag">{prod.brand}</span>
-                  )}
-                </div>
-                <div className="milina-product-info">
-                  <h3 className="milina-product-title">{prod.title}</h3>
-                  <div className="milina-product-price">
-                    AED {prod.price}
+          <>
+            <div className="milina-product-grid">
+              {displayedNewArrivals.map((prod) => (
+                <Link
+                  key={prod._id || prod.id}
+                  href={`/product/${prod._id || prod.id}`}
+                  onClick={() => trackProductClick(prod._id || prod.id)}
+                  className="milina-product-card"
+                  prefetch={false}
+                >
+                  <div className="milina-product-img-wrap">
+                    <img
+                      src={prod.image}
+                      alt={prod.title}
+                      className="milina-product-img"
+                      loading="lazy"
+                    />
+                    {prod.brand && (
+                      <span className="milina-brand-tag">{prod.brand}</span>
+                    )}
                   </div>
-                </div>
-              </Link>
-            ))}
-          </div>
+                  <div className="milina-product-info">
+                    <h3 className="milina-product-title">{prod.title}</h3>
+                    <div className="milina-product-price">
+                      AED {prod.price}
+                    </div>
+                  </div>
+                </Link>
+              ))}
+            </div>
+
+            {/* Pagination for New Arrivals */}
+            {totalNewArrivalsPages > 1 && (
+              <div className="new-arrivals-pagination">
+                <button
+                  type="button"
+                  className="new-arrivals-page-btn"
+                  onClick={() => handlePageChange(newArrivalsPage - 1)}
+                  disabled={newArrivalsPage === 1}
+                  aria-label="Previous Page"
+                >
+                  ← Prev
+                </button>
+                {Array.from({ length: totalNewArrivalsPages }, (_, i) => i + 1).map((p) => (
+                  <button
+                    key={p}
+                    type="button"
+                    className={`new-arrivals-page-btn ${newArrivalsPage === p ? 'active' : ''}`}
+                    onClick={() => handlePageChange(p)}
+                  >
+                    {p}
+                  </button>
+                ))}
+                <button
+                  type="button"
+                  className="new-arrivals-page-btn"
+                  onClick={() => handlePageChange(newArrivalsPage + 1)}
+                  disabled={newArrivalsPage === totalNewArrivalsPages}
+                  aria-label="Next Page"
+                >
+                  Next →
+                </button>
+              </div>
+            )}
+          </>
         )}
       </section>
 
@@ -948,8 +1125,7 @@ Hello SMP Atelier, please confirm my order. Thank you!`;
                 className="milina-btn-buy-now"
                 style={{ display: 'flex', alignItems: 'center', justifyContent: 'center', gap: '8px', textDecoration: 'none' }}
               >
-                <MessageSquare size={16} />
-                <WhatsAppIcon size={16} color="#FFFFFF" />
+                <WhatsAppIcon size={18} color="#FFFFFF" />
                 <span>WhatsApp VIP Concierge</span>
               </a>
             </div>
@@ -970,7 +1146,6 @@ Hello SMP Atelier, please confirm my order. Thank you!`;
                   onChange={(e) => setSearchQuery(e.target.value)}
                   placeholder="Search footwear, bags, watches..."
                   className="search-modal-input"
-                  autoFocus
                   onKeyDown={(e) => {
                     if (e.key === 'Escape') setSearchOpen(false);
                   }}
@@ -996,7 +1171,10 @@ Hello SMP Atelier, please confirm my order. Thank you!`;
                     <Link
                       key={item._id || item.id}
                       href={`/product/${item._id || item.id}`}
-                      onClick={() => setSearchOpen(false)}
+                      onClick={() => {
+                        trackProductClick(item._id || item.id);
+                        setSearchOpen(false);
+                      }}
                       className="search-result-item"
                     >
                       <img src={item.image} alt={item.title} className="search-result-img" />

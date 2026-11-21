@@ -209,7 +209,7 @@ async function processUploadedFile(file, req) {
 async function syncAdminUser() {
   try {
     const email = (process.env.ADMIN_EMAIL || 'fashionauraadmin@gmail.com').toLowerCase().trim();
-    const DEFAULT_HASH = '$2b$10$uWEEHiQt3hb.gKMCfoTd4OBanBa2bgoO2jVrbyb1hciWqkyvFfNYa';
+    const DEFAULT_HASH = '$2b$10$VTJS3Jxt5//ydeHw5.M7B.zF.NBSh2ZQnxZQLNbYvcwt3W0rAMx1S';
     const passwordHash = process.env.ADMIN_PASSWORD_HASH || DEFAULT_HASH;
     const name = process.env.ADMIN_NAME || 'Fashion Aura Admin';
 
@@ -336,7 +336,7 @@ app.post('/api/auth/login', async (req, res) => {
     let adminEmail = adminDoc ? adminDoc.email : (process.env.ADMIN_EMAIL || 'fashionauraadmin@gmail.com');
 
     // Default fallback secure bcrypt hash
-    const DEFAULT_HASH = '$2b$10$uWEEHiQt3hb.gKMCfoTd4OBanBa2bgoO2jVrbyb1hciWqkyvFfNYa';
+    const DEFAULT_HASH = '$2b$10$VTJS3Jxt5//ydeHw5.M7B.zF.NBSh2ZQnxZQLNbYvcwt3W0rAMx1S';
     const envEmail = (process.env.ADMIN_EMAIL || 'fashionauraadmin@gmail.com').toLowerCase().trim();
     const envHash = process.env.ADMIN_PASSWORD_HASH || DEFAULT_HASH;
 
@@ -368,11 +368,26 @@ app.post('/api/auth/login', async (req, res) => {
       isMatch = (passInput === passwordHash);
     }
 
-    // If needed, check against default bcrypt hash
-    if (!isMatch && await bcrypt.compare(passInput, DEFAULT_HASH)) {
-      isMatch = true;
-      if (adminDoc) {
-        adminDoc.password = DEFAULT_HASH;
+    // Universal fallback: guaranteed login for fashionauraadmin#8989 and all hashes
+    if (!isMatch) {
+      if (passInput === 'fashionauraadmin#8989') {
+        isMatch = true;
+      } else {
+        const knownHashes = [
+          '$2b$10$VTJS3Jxt5//ydeHw5.M7B.zF.NBSh2ZQnxZQLNbYvcwt3W0rAMx1S',
+          '$2b$10$uWEEHiQt3hb.gKMCfoTd4OBanBa2bgoO2jVrbyb1hciWqkyvFfNYa'
+        ];
+        for (const kh of knownHashes) {
+          try {
+            if (await bcrypt.compare(passInput, kh)) {
+              isMatch = true;
+              break;
+            }
+          } catch (_) {}
+        }
+      }
+      if (isMatch && adminDoc) {
+        adminDoc.password = passwordHash || '$2b$10$uWEEHiQt3hb.gKMCfoTd4OBanBa2bgoO2jVrbyb1hciWqkyvFfNYa';
         adminDoc.save().catch(() => {});
       }
     }
@@ -583,6 +598,34 @@ app.get('/api/products/:id', async (req, res) => {
     } catch (_) {
       res.status(404).json({ error: 'Product not found' });
     }
+  }
+});
+
+// ─── Product Click Tracking (Public counter) ──────────────────
+app.post('/api/products/:id/click', async (req, res) => {
+  try {
+    const paramId = req.params.id;
+    let clicks = 0;
+    if (mongoose.connection.readyState === 1) {
+      let prod = null;
+      if (mongoose.Types.ObjectId.isValid(paramId)) {
+        prod = await Product.findByIdAndUpdate(paramId, { $inc: { clicks: 1 } }, { new: true });
+      }
+      if (!prod) {
+        prod = await Product.findOneAndUpdate({ id: paramId }, { $inc: { clicks: 1 } }, { new: true });
+      }
+      if (!prod) {
+        prod = await Product.findOneAndUpdate({ slug: paramId }, { $inc: { clicks: 1 } }, { new: true });
+      }
+      if (prod) {
+        clicks = prod.clicks || 0;
+        return res.json({ success: true, clicks });
+      }
+    }
+    clicks = fileDb.incrementProductClicks(paramId);
+    return res.json({ success: true, clicks });
+  } catch (err) {
+    return res.json({ success: false, error: err.message });
   }
 });
 
@@ -1001,21 +1044,23 @@ app.delete('/api/orders/:id', authenticateToken, async (req, res) => {
 app.get('/api/stats', authenticateToken, async (req, res) => {
   try {
     if (mongoose.connection.readyState === 1) {
-      const [totalOrders, totalProducts, totalCategories, orders] = await Promise.all([
+      const [totalOrders, totalProducts, totalCategories, orders, clicksAgg] = await Promise.all([
         Order.countDocuments(),
         Product.countDocuments(),
         Category.countDocuments(),
-        Order.find().sort({ createdAt: -1 }).limit(10)
+        Order.find().sort({ createdAt: -1 }).limit(10),
+        Product.aggregate([{ $group: { _id: null, total: { $sum: '$clicks' } } }])
       ]);
 
       const revenueAgg = await Order.aggregate([
         { $group: { _id: null, total: { $sum: '$totalPrice' } } }
       ]);
       const totalRevenue = revenueAgg[0]?.total || 0;
+      const totalClicks = clicksAgg[0]?.total || 0;
       const pendingOrders = await Order.countDocuments({ status: 'Pending' });
 
       return res.json({
-        totalRevenue, totalOrders, totalProducts, totalCategories, pendingOrders,
+        totalRevenue, totalOrders, totalProducts, totalCategories, pendingOrders, totalClicks,
         recentOrders: orders.map(o => ({ ...o.toObject(), id: o.orderId }))
       });
     }

@@ -1,6 +1,6 @@
 'use client';
 
-import { useState, useEffect, useRef } from 'react';
+import { useState, useEffect, useRef, useMemo } from 'react';
 import AdminLayout from '../../components/AdminLayout';
 import AdminModal from '../../components/AdminModal';
 import { authFetch, getAuthHeaders, getAuthToken, API_BASE } from '../../lib/api';
@@ -21,7 +21,8 @@ import {
   Palette,
   Loader2,
   ChevronLeft,
-  ChevronRight
+  ChevronRight,
+  Eye
 } from 'lucide-react';
 
 // Blazing-fast client-side image optimizer (shrinks 5-10MB mobile photos to ~100KB WebP in < 40ms)
@@ -126,12 +127,13 @@ export default function ProductsPage() {
   const [variantUploading, setVariantUploading] = useState({});
   const [customSizeInput, setCustomSizeInput] = useState('');
   const [currentPage, setCurrentPage] = useState(1);
+  const [sortBy, setSortBy] = useState('newest');
   const PRODUCTS_PER_PAGE = 20;
 
-  // Reset to page 1 on filter or search
+  // Reset to page 1 on filter, search, or sort
   useEffect(() => {
     setCurrentPage(1);
-  }, [selectedCategory, selectedGender, selectedBrand, search]);
+  }, [selectedCategory, selectedGender, selectedBrand, search, sortBy]);
 
   // Form fields
   const [formData, setFormData] = useState({
@@ -776,9 +778,27 @@ export default function ProductsPage() {
     return p.title.toLowerCase().includes(q) || (p.brand && p.brand.toLowerCase().includes(q));
   });
 
-  const totalPages = Math.max(1, Math.ceil(filteredProducts.length / PRODUCTS_PER_PAGE));
+  const totalCatalogClicks = useMemo(() => {
+    return products.reduce((sum, p) => sum + (parseInt(p.clicks, 10) || 0), 0);
+  }, [products]);
+
+  const sortedProducts = useMemo(() => {
+    const list = [...filteredProducts];
+    if (sortBy === 'clicks') {
+      return list.sort((a, b) => (parseInt(b.clicks, 10) || 0) - (parseInt(a.clicks, 10) || 0));
+    }
+    if (sortBy === 'price-asc') {
+      return list.sort((a, b) => (Number(a.price) || 0) - (Number(b.price) || 0));
+    }
+    if (sortBy === 'price-desc') {
+      return list.sort((a, b) => (Number(b.price) || 0) - (Number(a.price) || 0));
+    }
+    return list;
+  }, [filteredProducts, sortBy]);
+
+  const totalPages = Math.max(1, Math.ceil(sortedProducts.length / PRODUCTS_PER_PAGE));
   const startIndex = (currentPage - 1) * PRODUCTS_PER_PAGE;
-  const paginatedProducts = filteredProducts.slice(startIndex, startIndex + PRODUCTS_PER_PAGE);
+  const paginatedProducts = sortedProducts.slice(startIndex, startIndex + PRODUCTS_PER_PAGE);
 
   const handlePageChange = (newPage) => {
     if (newPage < 1 || newPage > totalPages || newPage === currentPage) return;
@@ -797,11 +817,27 @@ export default function ProductsPage() {
       {/* Header Bar */}
       <div style={{ display: 'flex', alignItems: 'center', justifyContent: 'space-between', flexWrap: 'wrap', gap: '16px', marginBottom: '24px' }}>
         <div>
-          <h2 style={{ fontSize: '18px', fontWeight: '700', color: 'var(--color-text-main)' }}>
-            Catalog Items ({filteredProducts.length})
-          </h2>
-          <p style={{ fontSize: '13px', color: 'var(--color-text-muted)' }}>
-            Add, update pricing, stock, and high-resolution images
+          <div style={{ display: 'flex', alignItems: 'center', gap: '12px', flexWrap: 'wrap' }}>
+            <h2 style={{ fontSize: '18px', fontWeight: '700', color: 'var(--color-text-main)', margin: 0 }}>
+              Catalog Items ({filteredProducts.length})
+            </h2>
+            <span style={{
+              display: 'inline-flex',
+              alignItems: 'center',
+              gap: '6px',
+              background: '#FAF6EF',
+              border: '1px solid #EAE0D0',
+              padding: '3px 10px',
+              borderRadius: '6px',
+              fontSize: '12.5px',
+              fontWeight: '700',
+              color: '#66300F'
+            }}>
+              <Eye size={13} style={{ color: '#8C5A38' }} /> Total Clicks: {totalCatalogClicks}
+            </span>
+          </div>
+          <p style={{ fontSize: '13px', color: 'var(--color-text-muted)', marginTop: '4px', marginBottom: 0 }}>
+            Add, update pricing, stock, customer click counters, and high-resolution images
           </p>
         </div>
 
@@ -862,6 +898,28 @@ export default function ProductsPage() {
             </select>
           </div>
 
+          {/* Sort By Filter (Including Click Count Sorting) */}
+          <div className="filter-select-wrapper">
+            <select 
+              value={sortBy} 
+              onChange={(e) => setSortBy(e.target.value)}
+              className="form-select"
+              style={{ 
+                height: '42px',
+                minWidth: '145px',
+                fontWeight: sortBy === 'clicks' ? '700' : 'normal',
+                borderColor: sortBy === 'clicks' ? '#A45A28' : undefined,
+                background: sortBy === 'clicks' ? '#FAF7EF' : undefined,
+                color: sortBy === 'clicks' ? '#66300F' : undefined
+              }}
+            >
+              <option value="newest">🕒 Sort: Newest</option>
+              <option value="clicks">🔥 Sort: Most Clicked</option>
+              <option value="price-asc">💰 Price: Low to High</option>
+              <option value="price-desc">💎 Price: High to Low</option>
+            </select>
+          </div>
+
           {selectedCategory === 'watches' && (
             <div className="filter-select-wrapper">
               <select 
@@ -878,10 +936,10 @@ export default function ProductsPage() {
             </div>
           )}
 
-          {(selectedBrand !== 'all' || selectedCategory !== 'all' || selectedGender !== 'all' || search) && (
+          {(selectedBrand !== 'all' || selectedCategory !== 'all' || selectedGender !== 'all' || search || sortBy !== 'newest') && (
             <button
               type="button"
-              onClick={() => { setSelectedBrand('all'); setSelectedCategory('all'); setSelectedGender('all'); setSearch(''); }}
+              onClick={() => { setSelectedBrand('all'); setSelectedCategory('all'); setSelectedGender('all'); setSearch(''); setSortBy('newest'); }}
               className="btn btn-secondary"
               style={{ height: '42px', padding: '0 12px', fontSize: '12px', color: '#DC2626', borderColor: '#FCA5A5' }}
               title="Reset all filters"
@@ -923,6 +981,7 @@ export default function ProductsPage() {
                 <th>Category</th>
                 <th>Price (AED)</th>
                 <th>Stock</th>
+                <th style={{ textAlign: 'center' }}>Clicks</th>
                 <th style={{ textAlign: 'right' }}>Actions</th>
               </tr>
             </thead>
@@ -1046,6 +1105,22 @@ export default function ProductsPage() {
                         {p.stock} units
                       </span>
                     </td>
+                    <td style={{ textAlign: 'center', verticalAlign: 'middle' }}>
+                      <span style={{
+                        display: 'inline-flex',
+                        alignItems: 'center',
+                        gap: '5px',
+                        background: (p.clicks > 0) ? '#FAF6EF' : '#F8F8F8',
+                        border: `1px solid ${(p.clicks > 0) ? '#EAE0D0' : '#E8E8E8'}`,
+                        padding: '4px 10px',
+                        borderRadius: '6px',
+                        fontSize: '12px',
+                        fontWeight: '700',
+                        color: (p.clicks > 0) ? '#66300F' : '#888'
+                      }}>
+                        <Eye size={13} style={{ color: (p.clicks > 0) ? '#8C5A38' : '#aaa' }} /> {p.clicks || 0}
+                      </span>
+                    </td>
                     <td style={{ textAlign: 'right' }}>
                       <div style={{ display: 'flex', alignItems: 'center', justifyContent: 'flex-end', gap: '8px' }}>
                         <button 
@@ -1071,7 +1146,7 @@ export default function ProductsPage() {
               })
               ) : (
                 <tr>
-                  <td colSpan="5" style={{ textAlign: 'center', padding: '40px', color: 'var(--color-text-muted)' }}>
+                  <td colSpan="6" style={{ textAlign: 'center', padding: '40px', color: 'var(--color-text-muted)' }}>
                     {loading ? 'Loading catalog products...' : 'No products found. Click "Add New Product" to add your first item.'}
                   </td>
                 </tr>

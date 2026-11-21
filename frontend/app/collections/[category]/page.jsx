@@ -51,6 +51,13 @@ export default function CategoryListingPage() {
   const [brands, setBrands] = useState([]);
   const [loading, setLoading] = useState(true);
 
+  const trackProductClick = (id) => {
+    if (!id) return;
+    try {
+      fetch(`${API_BASE}/products/${id}/click`, { method: 'POST', keepalive: true }).catch(() => {});
+    } catch (_) {}
+  };
+
   // Filters & Sorting
   const [activeBrand, setActiveBrand] = useState(brandQuery);
   const [sortBy, setSortBy] = useState('featured'); // 'featured', 'price-low', 'price-high'
@@ -352,27 +359,18 @@ export default function CategoryListingPage() {
         </div>
       </header>
 
-      {/* ─── Category Title & Breadcrumbs Banner ─── */}
-      <div style={{ background: '#FAF9F5', borderBottom: '1px solid #ECE7DE', padding: '20px 16px 18px' }}>
+      {/* ─── Streamlined Luxury Header & Brand Bar (Unified & Space-Optimized) ─── */}
+      <div style={{ background: '#FAF9F5', borderBottom: '1px solid #ECE7DE', padding: '14px 16px 0', width: '100%', maxWidth: '100vw', boxSizing: 'border-box' }}>
         <div style={{ maxWidth: '1280px', margin: '0 auto' }}>
-          {/* Breadcrumb */}
-          <div style={{ display: 'flex', alignItems: 'center', gap: '6px', fontSize: '11px', color: '#888', marginBottom: '8px', textTransform: 'uppercase', letterSpacing: '1px' }}>
-            <Link href="/" style={{ color: '#666' }}>Home</Link>
-            <ChevronRight size={11} />
-            <Link href="/" style={{ color: '#666' }}>Collections</Link>
-            <ChevronRight size={11} />
-            <span style={{ color: '#111', fontWeight: '500' }}>{categoryTitle}</span>
-          </div>
-
-          {/* Title and Sort by Arrows (Product count removed as requested) */}
-          <div style={{ display: 'flex', alignItems: 'center', justifyContent: 'space-between', flexWrap: 'wrap', gap: '12px' }}>
-            <h1 style={{ fontSize: '22px', fontWeight: '300', color: '#1A1817', margin: 0, textTransform: 'uppercase', letterSpacing: '2.5px' }}>
+          {/* Row 1: Title on Left, Sleek Minimal Sort on Right */}
+          <div style={{ display: 'flex', alignItems: 'center', justifyContent: 'space-between', gap: '12px', marginBottom: '10px' }}>
+            <h1 style={{ fontSize: '18px', fontWeight: '400', color: '#1A1817', margin: 0, textTransform: 'uppercase', letterSpacing: '2px' }}>
               {categoryTitle}
             </h1>
 
-            {/* Clean Minimal Sort with Up / Down Arrows (Replaces bulky select dropdown) */}
-            <div style={{ display: 'flex', alignItems: 'center', gap: '6px' }}>
-              <span style={{ fontSize: '11px', color: '#888', textTransform: 'uppercase', letterSpacing: '1px', marginRight: '2px' }}>Sort:</span>
+            {/* Minimalist Price Sort Buttons */}
+            <div style={{ display: 'flex', alignItems: 'center', gap: '5px' }}>
+              <span style={{ fontSize: '10px', color: '#888', textTransform: 'uppercase', letterSpacing: '1px', marginRight: '2px' }}>SORT:</span>
               <button
                 type="button"
                 onClick={() => setSortBy(sortBy === 'price-low' ? 'featured' : 'price-low')}
@@ -380,13 +378,13 @@ export default function CategoryListingPage() {
                 style={{
                   display: 'inline-flex',
                   alignItems: 'center',
-                  gap: '4px',
-                  padding: '5px 10px',
+                  gap: '3px',
+                  padding: '4px 8px',
                   borderRadius: '2px',
                   border: sortBy === 'price-low' ? '1px solid #111' : '1px solid #D5CEBF',
                   background: sortBy === 'price-low' ? '#111' : '#FFFFFF',
                   color: sortBy === 'price-low' ? '#FFF' : '#333',
-                  fontSize: '11px',
+                  fontSize: '10.5px',
                   fontWeight: '500',
                   letterSpacing: '0.5px',
                   cursor: 'pointer',
@@ -394,7 +392,7 @@ export default function CategoryListingPage() {
                 }}
               >
                 <span>PRICE</span>
-                <span style={{ fontSize: '12px' }}>↑</span>
+                <span style={{ fontSize: '11px' }}>↑</span>
               </button>
               <button
                 type="button"
@@ -403,13 +401,13 @@ export default function CategoryListingPage() {
                 style={{
                   display: 'inline-flex',
                   alignItems: 'center',
-                  gap: '4px',
-                  padding: '5px 10px',
+                  gap: '3px',
+                  padding: '4px 8px',
                   borderRadius: '2px',
                   border: sortBy === 'price-high' ? '1px solid #111' : '1px solid #D5CEBF',
                   background: sortBy === 'price-high' ? '#111' : '#FFFFFF',
                   color: sortBy === 'price-high' ? '#FFF' : '#333',
-                  fontSize: '11px',
+                  fontSize: '10.5px',
                   fontWeight: '500',
                   letterSpacing: '0.5px',
                   cursor: 'pointer',
@@ -417,55 +415,63 @@ export default function CategoryListingPage() {
                 }}
               >
                 <span>PRICE</span>
-                <span style={{ fontSize: '12px' }}>↓</span>
+                <span style={{ fontSize: '11px' }}>↓</span>
               </button>
             </div>
           </div>
+
+          {/* Row 2: Clean Brand Filter Tabs in Capital Letters */}
+          <div style={{ display: 'flex', alignItems: 'center', gap: '20px', overflowX: 'auto', WebkitOverflowScrolling: 'touch', minWidth: 'max-content', paddingBottom: '2px' }}>
+            <button
+              type="button"
+              onClick={() => handleBrandSelect('all')}
+              style={{
+                background: 'none',
+                border: 'none',
+                padding: '8px 0 10px',
+                borderBottom: activeBrand === 'all' ? '2px solid #66300F' : '2px solid transparent',
+                color: activeBrand === 'all' ? '#66300F' : '#777777',
+                fontSize: '11px',
+                fontWeight: activeBrand === 'all' ? '600' : '400',
+                textTransform: 'uppercase',
+                letterSpacing: '1.2px',
+                cursor: 'pointer',
+                transition: 'all 0.15s ease',
+                whiteSpace: 'nowrap'
+              }}
+            >
+              ALL BRANDS
+            </button>
+
+            {categoryAvailableBrands.map((bName) => {
+              const isSelected = activeBrand.toLowerCase() === bName.toLowerCase();
+              return (
+                <button
+                  key={bName}
+                  type="button"
+                  onClick={() => handleBrandSelect(bName)}
+                  style={{
+                    background: 'none',
+                    border: 'none',
+                    padding: '8px 0 10px',
+                    borderBottom: isSelected ? '2px solid #66300F' : '2px solid transparent',
+                    color: isSelected ? '#66300F' : '#777777',
+                    fontSize: '11px',
+                    fontWeight: isSelected ? '600' : '400',
+                    textTransform: 'uppercase',
+                    letterSpacing: '1.2px',
+                    cursor: 'pointer',
+                    transition: 'all 0.15s ease',
+                    whiteSpace: 'nowrap'
+                  }}
+                >
+                  {bName}
+                </button>
+              );
+            })}
+          </div>
         </div>
       </div>
-
-      {/* ─── Clean Brand Filter Bar in Capital Letters (No bulky button pills) ─── */}
-      <div style={{ background: '#FFFFFF', borderBottom: '1px solid #ECE7DE', padding: '0 16px', overflowX: 'auto', WebkitOverflowScrolling: 'touch', width: '100%', maxWidth: '100vw', boxSizing: 'border-box' }}>
-        <div style={{ maxWidth: '1280px', margin: '0 auto', display: 'flex', alignItems: 'center', gap: '22px', minWidth: 'max-content' }}>
-          <button
-            type="button"
-            onClick={() => handleBrandSelect('all')}
-            style={{
-              background: 'none',
-              border: 'none',
-              padding: '12px 0 10px',
-              borderBottom: activeBrand === 'all' ? '2px solid #66300F' : '2px solid transparent',
-              color: activeBrand === 'all' ? '#66300F' : '#777777',
-              fontSize: '11.5px',
-              fontWeight: activeBrand === 'all' ? '600' : '400',
-              textTransform: 'uppercase',
-              letterSpacing: '1.5px',
-              cursor: 'pointer',
-              transition: 'all 0.15s ease'
-            }}
-          >
-            ALL BRANDS
-          </button>
-
-          {categoryAvailableBrands.map((bName) => {
-            const isSelected = activeBrand.toLowerCase() === bName.toLowerCase();
-            return (
-              <button
-                key={bName}
-                type="button"
-                onClick={() => handleBrandSelect(bName)}
-                style={{
-                  background: 'none',
-                  border: 'none',
-                  padding: '12px 0 10px',
-                  borderBottom: isSelected ? '2px solid #66300F' : '2px solid transparent',
-                  color: isSelected ? '#66300F' : '#777777',
-                  fontSize: '11.5px',
-                  fontWeight: isSelected ? '600' : '400',
-                  textTransform: 'uppercase',
-                  letterSpacing: '1.5px',
-                  cursor: 'pointer',
-                  transition: 'all 0.15s ease'
                 }}
               >
                 {bName}
@@ -516,6 +522,7 @@ export default function CategoryListingPage() {
                 <Link
                   key={productId}
                   href={`/product/${productId}`}
+                  onClick={() => trackProductClick(productId)}
                   className="milina-product-card"
                   prefetch={false}
                 >
