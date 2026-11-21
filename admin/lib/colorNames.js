@@ -175,3 +175,200 @@ export function getColorNameFromHex(hex) {
 
   return closestColor.name;
 }
+
+function rgbToHex(r, g, b) {
+  const toHex = (n) => {
+    const hex = Math.max(0, Math.min(255, Math.round(n))).toString(16);
+    return hex.length === 1 ? '0' + hex : hex;
+  };
+  return `#${toHex(r)}${toHex(g)}${toHex(b)}`.toUpperCase();
+}
+
+/**
+ * Intelligent AI / Client-Side Dominant Color Detector for Product Images
+ * Analyzes image pixels, filters out studio backdrops (white/light-grey/cream),
+ * quantizes colors, scores by frequency & chroma, and maps to luxury fashion color names & HEX.
+ */
+export async function detectDominantColorsFromImage(source, maxPalette = 5) {
+  if (typeof window === 'undefined') return null;
+
+  return new Promise((resolve) => {
+    let imgUrl = '';
+    let shouldRevoke = false;
+
+    if (source instanceof Blob || source instanceof File) {
+      imgUrl = URL.createObjectURL(source);
+      shouldRevoke = true;
+    } else if (typeof source === 'string') {
+      imgUrl = source;
+    } else if (source?.src) {
+      imgUrl = source.src;
+    } else {
+      return resolve(null);
+    }
+
+    const img = new Image();
+    img.crossOrigin = 'Anonymous';
+
+    img.onload = () => {
+      try {
+        const canvas = document.createElement('canvas');
+        const size = 100; // 100x100 = 10,000 pixels (ultra-fast < 15ms)
+        canvas.width = size;
+        canvas.height = size;
+        const ctx = canvas.getContext('2d');
+        if (!ctx) {
+          if (shouldRevoke) URL.revokeObjectURL(imgUrl);
+          return resolve(null);
+        }
+
+        ctx.drawImage(img, 0, 0, size, size);
+        const imgData = ctx.getImageData(0, 0, size, size);
+        const data = imgData.data;
+
+        // 1. Detect common studio background from border pixels
+        const borderPixels = [];
+        for (let x = 0; x < size; x++) {
+          const topIdx = (0 * size + x) * 4;
+          const btmIdx = ((size - 1) * size + x) * 4;
+          borderPixels.push({ r: data[topIdx], g: data[topIdx + 1], b: data[topIdx + 2] });
+          borderPixels.push({ r: data[btmIdx], g: data[btmIdx + 1], b: data[btmIdx + 2] });
+        }
+        for (let y = 1; y < size - 1; y++) {
+          const leftIdx = (y * size + 0) * 4;
+          const rightIdx = (y * size + (size - 1)) * 4;
+          borderPixels.push({ r: data[leftIdx], g: data[leftIdx + 1], b: data[leftIdx + 2] });
+          borderPixels.push({ r: data[rightIdx], g: data[rightIdx + 1], b: data[rightIdx + 2] });
+        }
+
+        let bR = 0, bG = 0, bB = 0;
+        for (const bp of borderPixels) {
+          bR += bp.r;
+          bG += bp.g;
+          bB += bp.b;
+        }
+        const avgBorder = {
+          r: bR / borderPixels.length,
+          g: bG / borderPixels.length,
+          b: bB / borderPixels.length
+        };
+
+        const isBorderLightOrWhite = avgBorder.r > 205 && avgBorder.g > 205 && avgBorder.b > 205;
+
+        // 2. Sample pixels and bucket into color bins
+        const buckets = {};
+        let subjectPixelCount = 0;
+
+        for (let i = 0; i < data.length; i += 4) {
+          const r = data[i];
+          const g = data[i + 1];
+          const b = data[i + 2];
+          const a = data[i + 3];
+
+          if (a < 120) continue; // ignore transparent pixels
+
+          // Distance from border background
+          const distToBorder = getColorDistance({ r, g, b }, avgBorder);
+          const isNearWhite = r > 240 && g > 240 && b > 240;
+
+          // If border is light background and this pixel matches it closely, treat as background
+          const isBackground = (isBorderLightOrWhite && distToBorder < 38) || isNearWhite;
+
+          const maxVal = Math.max(r, g, b);
+          const minVal = Math.min(r, g, b);
+          const chroma = maxVal - minVal;
+
+          // Bucket by 24 for clean grouping
+          const binR = Math.round(r / 24) * 24;
+          const binG = Math.round(g / 24) * 24;
+          const binB = Math.round(b / 24) * 24;
+          const key = `${binR},${binG},${binB}`;
+
+          if (!buckets[key]) {
+            buckets[key] = {
+              r: 0,
+              g: 0,
+              b: 0,
+              count: 0,
+              chromaSum: 0,
+              isBgCount: 0
+            };
+          }
+
+          buckets[key].r += r;
+          buckets[key].g += g;
+          buckets[key].b += b;
+          buckets[key].count++;
+          buckets[key].chromaSum += chroma;
+          if (isBackground) buckets[key].isBgCount++;
+          if (!isBackground) subjectPixelCount++;
+        }
+
+        // 3. Score buckets
+        const candidateList = [];
+        for (const key in buckets) {
+          const b = buckets[key];
+          const avgR = b.r / b.count;
+          const avgG = b.g / b.count;
+          const avgB = b.b / b.count;
+          const avgChroma = b.chromaSum / b.count;
+          const bgRatio = b.isBgCount / b.count;
+
+          // Filter out buckets that are overwhelmingly background (unless almost all pixels are background)
+          if (subjectPixelCount > 300 && bgRatio > 0.85) {
+            continue;
+          }
+
+          // Score prioritizes vivid subject fashion colors, while still allowing dark/black/white items
+          const score = b.count * (1 + (avgChroma / 255) * 1.5) * (1 - bgRatio * 0.7);
+          const hex = rgbToHex(avgR, avgG, avgB);
+          const name = getColorNameFromHex(hex);
+
+          candidateList.push({
+            hex,
+            name,
+            score,
+            count: b.count,
+            chroma: avgChroma
+          });
+        }
+
+        // Sort descending by score
+        candidateList.sort((a, b) => b.score - a.score);
+
+        // Deduplicate similar color names to create a rich diverse palette
+        const palette = [];
+        const seenNames = new Set();
+        const seenHexes = new Set();
+
+        for (const item of candidateList) {
+          if (!seenNames.has(item.name) && !seenHexes.has(item.hex)) {
+            palette.push({ hex: item.hex, name: item.name });
+            seenNames.add(item.name);
+            seenHexes.add(item.hex);
+            if (palette.length >= maxPalette) break;
+          }
+        }
+
+        if (palette.length === 0 && candidateList.length > 0) {
+          palette.push({ hex: candidateList[0].hex, name: candidateList[0].name });
+        }
+
+        const primary = palette[0] || { hex: '#111111', name: 'Black' };
+
+        if (shouldRevoke) URL.revokeObjectURL(imgUrl);
+        resolve({ primary, palette });
+      } catch (err) {
+        if (shouldRevoke) URL.revokeObjectURL(imgUrl);
+        resolve(null);
+      }
+    };
+
+    img.onerror = () => {
+      if (shouldRevoke) URL.revokeObjectURL(imgUrl);
+      resolve(null);
+    };
+
+    img.src = imgUrl;
+  });
+}

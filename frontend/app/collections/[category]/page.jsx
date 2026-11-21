@@ -1,6 +1,6 @@
 'use client';
 
-import React, { useState, useEffect, useMemo } from 'react';
+import React, { useState, useEffect, useMemo, useRef } from 'react';
 import Link from 'next/link';
 import { useParams, useSearchParams, useRouter } from 'next/navigation';
 import {
@@ -212,6 +212,35 @@ export default function CategoryListingPage() {
     });
   }, [products, categoryParam, activeBrand, searchQuery, sortBy, isFootwear, isBags, isWatches]);
 
+  // ─── Pagination: 20 Products Per Page for Fast Browsing ───
+  const [currentPage, setCurrentPage] = useState(1);
+  const productGridRef = useRef(null);
+  const ITEMS_PER_PAGE = 20;
+
+  // Reset to page 1 on filter, search, or sort change
+  useEffect(() => {
+    setCurrentPage(1);
+  }, [categoryParam, activeBrand, searchQuery, sortBy]);
+
+  const totalPages = Math.max(1, Math.ceil(filteredProducts.length / ITEMS_PER_PAGE));
+
+  const displayedProducts = useMemo(() => {
+    const start = (currentPage - 1) * ITEMS_PER_PAGE;
+    return filteredProducts.slice(start, start + ITEMS_PER_PAGE);
+  }, [filteredProducts, currentPage]);
+
+  const handlePageChange = (page) => {
+    if (page < 1 || page > totalPages) return;
+    setCurrentPage(page);
+    if (productGridRef.current) {
+      const yOffset = -90;
+      const y = productGridRef.current.getBoundingClientRect().top + window.pageYOffset + yOffset;
+      window.scrollTo({ top: y, behavior: 'smooth' });
+    } else {
+      window.scrollTo({ top: 0, behavior: 'smooth' });
+    }
+  };
+
   // Available brands in current category
   const categoryAvailableBrands = useMemo(() => {
     const brandSet = new Set();
@@ -368,56 +397,41 @@ export default function CategoryListingPage() {
               {categoryTitle}
             </h1>
 
-            {/* Minimalist Price Sort Buttons */}
-            <div style={{ display: 'flex', alignItems: 'center', gap: '5px' }}>
-              <span style={{ fontSize: '10px', color: '#888', textTransform: 'uppercase', letterSpacing: '1px', marginRight: '2px' }}>SORT:</span>
-              <button
-                type="button"
-                onClick={() => setSortBy(sortBy === 'price-low' ? 'featured' : 'price-low')}
-                title="Price: Low to High"
-                style={{
-                  display: 'inline-flex',
-                  alignItems: 'center',
-                  gap: '3px',
-                  padding: '4px 8px',
-                  borderRadius: '2px',
-                  border: sortBy === 'price-low' ? '1px solid #111' : '1px solid #D5CEBF',
-                  background: sortBy === 'price-low' ? '#111' : '#FFFFFF',
-                  color: sortBy === 'price-low' ? '#FFF' : '#333',
-                  fontSize: '10.5px',
-                  fontWeight: '500',
-                  letterSpacing: '0.5px',
-                  cursor: 'pointer',
-                  transition: 'all 0.15s ease'
-                }}
-              >
-                <span>PRICE</span>
-                <span style={{ fontSize: '11px' }}>↑</span>
-              </button>
-              <button
-                type="button"
-                onClick={() => setSortBy(sortBy === 'price-high' ? 'featured' : 'price-high')}
-                title="Price: High to Low"
-                style={{
-                  display: 'inline-flex',
-                  alignItems: 'center',
-                  gap: '3px',
-                  padding: '4px 8px',
-                  borderRadius: '2px',
-                  border: sortBy === 'price-high' ? '1px solid #111' : '1px solid #D5CEBF',
-                  background: sortBy === 'price-high' ? '#111' : '#FFFFFF',
-                  color: sortBy === 'price-high' ? '#FFF' : '#333',
-                  fontSize: '10.5px',
-                  fontWeight: '500',
-                  letterSpacing: '0.5px',
-                  cursor: 'pointer',
-                  transition: 'all 0.15s ease'
-                }}
-              >
-                <span>PRICE</span>
-                <span style={{ fontSize: '11px' }}>↓</span>
-              </button>
-            </div>
+            {/* Single Price Sort Box with Arrow Inside */}
+            <button
+              type="button"
+              onClick={() => {
+                if (sortBy === 'price-low') {
+                  setSortBy('price-high');
+                } else if (sortBy === 'price-high') {
+                  setSortBy('featured');
+                } else {
+                  setSortBy('price-low');
+                }
+              }}
+              title="Toggle Price Sort: Low to High / High to Low"
+              style={{
+                display: 'inline-flex',
+                alignItems: 'center',
+                gap: '5px',
+                padding: '5px 10px',
+                borderRadius: '2px',
+                border: (sortBy === 'price-low' || sortBy === 'price-high') ? '1px solid #111' : '1px solid #D5CEBF',
+                background: (sortBy === 'price-low' || sortBy === 'price-high') ? '#111' : '#FFFFFF',
+                color: (sortBy === 'price-low' || sortBy === 'price-high') ? '#FFF' : '#333',
+                fontSize: '10.5px',
+                fontWeight: '500',
+                letterSpacing: '0.8px',
+                textTransform: 'uppercase',
+                cursor: 'pointer',
+                transition: 'all 0.15s ease'
+              }}
+            >
+              <span>PRICE</span>
+              <span style={{ fontSize: '11px', fontWeight: '700' }}>
+                {sortBy === 'price-low' ? '↑' : sortBy === 'price-high' ? '↓' : '↑↓'}
+              </span>
+            </button>
           </div>
 
           {/* Row 2: Clean Brand Filter Tabs in Capital Letters */}
@@ -472,14 +486,6 @@ export default function CategoryListingPage() {
           </div>
         </div>
       </div>
-                }}
-              >
-                {bName}
-              </button>
-            );
-          })}
-        </div>
-      </div>
 
       {/* ─── Product Grid Section (Screenshot 4) ─── */}
       <main style={{ flex: 1, padding: '16px 12px 40px', maxWidth: '1280px', width: '100%', margin: '0 auto', boxSizing: 'border-box', overflowX: 'hidden' }}>
@@ -513,46 +519,105 @@ export default function CategoryListingPage() {
             </button>
           </div>
         ) : (
-          <div className="milina-product-grid">
-            {filteredProducts.map((product) => {
-              const productId = product._id || product.id;
-              const formattedPrice = `AED ${product.price || '0'}`;
+          <div ref={productGridRef}>
+            {/* Catalog Count Indicator */}
+            <div style={{ display: 'flex', alignItems: 'center', justifyContent: 'space-between', marginBottom: '14px', padding: '0 2px' }}>
+              <span style={{ fontSize: '12px', color: '#777', letterSpacing: '0.3px' }}>
+                Showing <strong>{Math.min((currentPage - 1) * ITEMS_PER_PAGE + 1, filteredProducts.length)}–{Math.min(currentPage * ITEMS_PER_PAGE, filteredProducts.length)}</strong> of <strong>{filteredProducts.length}</strong> products
+              </span>
+              {totalPages > 1 && (
+                <span style={{ fontSize: '11.5px', color: '#66300F', fontWeight: '500' }}>
+                  Page {currentPage} of {totalPages}
+                </span>
+              )}
+            </div>
 
-              return (
-                <Link
-                  key={productId}
-                  href={`/product/${productId}`}
-                  onClick={() => trackProductClick(productId)}
-                  className="milina-product-card"
-                  prefetch={false}
-                >
-                  {/* Photo Container */}
-                  <div className="milina-product-img-wrap">
-                    <img
-                      src={product.image}
-                      alt={product.title}
-                      className="milina-product-img"
-                      loading="lazy"
-                    />
-                    {product.brand && (
-                      <span className="milina-brand-tag">
-                        {product.brand}
-                      </span>
-                    )}
-                  </div>
+            {/* Fast 20 Products Grid */}
+            <div className="milina-product-grid">
+              {displayedProducts.map((product, idx) => {
+                const productId = product._id || product.id;
+                const formattedPrice = `AED ${product.price || '0'}`;
 
-                  {/* Details (Screenshot 4: Clean Title + Price) */}
-                  <div className="milina-product-info">
-                    <h3 className="milina-product-title">
-                      {product.title}
-                    </h3>
-                    <div className="milina-product-price">
-                      {formattedPrice}
+                return (
+                  <Link
+                    key={productId}
+                    href={`/product/${productId}`}
+                    onClick={() => trackProductClick(productId)}
+                    className="milina-product-card"
+                    prefetch={false}
+                  >
+                    {/* Photo Container */}
+                    <div className="milina-product-img-wrap">
+                      <img
+                        src={product.image}
+                        alt={product.title}
+                        className="milina-product-img"
+                        loading={idx < 4 ? "eager" : "lazy"}
+                      />
+                      {product.brand && (
+                        <span className="milina-brand-tag">
+                          {product.brand}
+                        </span>
+                      )}
                     </div>
-                  </div>
-                </Link>
-              );
-            })}
+
+                    {/* Details (Screenshot 4: Clean Title + Price) */}
+                    <div className="milina-product-info">
+                      <h3 className="milina-product-title">
+                        {product.title}
+                      </h3>
+                      <div className="milina-product-price">
+                        {formattedPrice}
+                      </div>
+                    </div>
+                  </Link>
+                );
+              })}
+            </div>
+
+            {/* Pagination for 20 Products Per Page */}
+            {totalPages > 1 && (
+              <div className="new-arrivals-pagination" style={{ marginTop: '36px', marginBottom: '16px' }}>
+                <button
+                  type="button"
+                  className="new-arrivals-page-btn"
+                  onClick={() => handlePageChange(currentPage - 1)}
+                  disabled={currentPage === 1}
+                  aria-label="Previous Page"
+                >
+                  ← Prev
+                </button>
+                {Array.from({ length: totalPages }, (_, i) => i + 1).map((p) => {
+                  if (totalPages > 7) {
+                    if (p !== 1 && p !== totalPages && Math.abs(p - currentPage) > 2) {
+                      if (p === 2 || p === totalPages - 1) {
+                        return <span key={p} style={{ padding: '0 4px', color: '#999', fontSize: '12px' }}>...</span>;
+                      }
+                      return null;
+                    }
+                  }
+                  return (
+                    <button
+                      key={p}
+                      type="button"
+                      className={`new-arrivals-page-btn ${currentPage === p ? 'active' : ''}`}
+                      onClick={() => handlePageChange(p)}
+                    >
+                      {p}
+                    </button>
+                  );
+                })}
+                <button
+                  type="button"
+                  className="new-arrivals-page-btn"
+                  onClick={() => handlePageChange(currentPage + 1)}
+                  disabled={currentPage === totalPages}
+                  aria-label="Next Page"
+                >
+                  Next →
+                </button>
+              </div>
+            )}
           </div>
         )}
       </main>
@@ -590,8 +655,8 @@ export default function CategoryListingPage() {
               <Link href="/collections/watches" onClick={() => setMobileMenuOpen(false)} className="milina-drawer-link">
                 ⌚ Watches &amp; Horology
               </Link>
-              <Link href="/#shop-by-brand" onClick={() => setMobileMenuOpen(false)} className="milina-drawer-link">
-                ✨ Shop By Brand
+              <Link href="/collections/all" onClick={() => setMobileMenuOpen(false)} className="milina-drawer-link">
+                ✨ All Collections
               </Link>
             </div>
 

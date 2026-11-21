@@ -4,7 +4,7 @@ import { useState, useEffect, useRef, useMemo } from 'react';
 import AdminLayout from '../../components/AdminLayout';
 import AdminModal from '../../components/AdminModal';
 import { authFetch, getAuthHeaders, getAuthToken, API_BASE } from '../../lib/api';
-import { getColorNameFromHex } from '../../lib/colorNames';
+import { getColorNameFromHex, detectDominantColorsFromImage } from '../../lib/colorNames';
 import { 
   Plus, 
   Search, 
@@ -126,6 +126,8 @@ export default function ProductsPage() {
   const [variantUrlInputs, setVariantUrlInputs] = useState({});
   const [variantUploading, setVariantUploading] = useState({});
   const [customSizeInput, setCustomSizeInput] = useState('');
+  const [detectedPalette, setDetectedPalette] = useState([]);
+  const [isAnalyzingColor, setIsAnalyzingColor] = useState(false);
   const [currentPage, setCurrentPage] = useState(1);
   const [sortBy, setSortBy] = useState('newest');
   const PRODUCTS_PER_PAGE = 20;
@@ -244,6 +246,8 @@ export default function ProductsPage() {
     setMainImageUploading(false);
     setVariantUrlInputs({});
     setVariantUploading({});
+    setDetectedPalette([]);
+    setIsAnalyzingColor(false);
     setModalOpen(true);
   };
 
@@ -286,6 +290,17 @@ export default function ProductsPage() {
     setImagePreview(prod.image || '');
     setVariantUrlInputs({});
     setVariantUploading({});
+    setDetectedPalette([]);
+    setIsAnalyzingColor(false);
+    if (prod.image) {
+      setIsAnalyzingColor(true);
+      detectDominantColorsFromImage(prod.image).then((res) => {
+        setIsAnalyzingColor(false);
+        if (res && res.palette?.length) {
+          setDetectedPalette(res.palette);
+        }
+      }).catch(() => setIsAnalyzingColor(false));
+    }
     setModalOpen(true);
   };
 
@@ -366,6 +381,68 @@ export default function ProductsPage() {
     }));
   };
 
+  // AI Dominant Color Analysis helper for uploaded images
+  const runAiColorDetection = async (source, autoApplyPrimary = true) => {
+    if (!source) return;
+    setIsAnalyzingColor(true);
+    try {
+      const result = await detectDominantColorsFromImage(source);
+      if (result && result.primary) {
+        setDetectedPalette(result.palette || []);
+        if (autoApplyPrimary) {
+          setFormData(prev => ({
+            ...prev,
+            color: result.primary.name,
+            colorCode: result.primary.hex
+          }));
+        }
+      }
+    } catch (err) {
+      console.warn('AI color detection error:', err);
+    } finally {
+      setIsAnalyzingColor(false);
+    }
+  };
+
+  const addDetectedColorAsVariant = (col) => {
+    if (!col) return;
+    setFormData(prev => ({
+      ...prev,
+      variants: [
+        ...(prev.variants || []),
+        {
+          id: `var-${Date.now()}-${(prev.variants || []).length}`,
+          colorName: col.name,
+          colorCode: col.hex,
+          images: [],
+          stock: '10',
+          sizes: prev.sizes || ''
+        }
+      ]
+    }));
+  };
+
+  const addAllDetectedColorsAsVariants = () => {
+    if (!detectedPalette || detectedPalette.length === 0) return;
+    setFormData(prev => {
+      const existingNames = new Set((prev.variants || []).map(v => (v.colorName || '').trim().toLowerCase()));
+      const newVariants = detectedPalette
+        .filter(c => !existingNames.has(c.name.trim().toLowerCase()))
+        .map((col, idx) => ({
+          id: `var-${Date.now()}-${idx}-${Math.random().toString(36).substr(2, 4)}`,
+          colorName: col.name,
+          colorCode: col.hex,
+          images: [],
+          stock: '10',
+          sizes: prev.sizes || ''
+        }));
+      return {
+        ...prev,
+        variants: [...(prev.variants || []), ...newVariants]
+      };
+    });
+  };
+
   // Helper functions for Available Sizes management
   const getParsedSizesList = (sizesStr = '') => {
     if (!sizesStr) return [];
@@ -432,6 +509,26 @@ export default function ProductsPage() {
           images: [...(v.images || []), ...localPreviews]
         } : v)
       }));
+
+      // AI Dominant Color Detection on variant image upload
+      if (files[0]) {
+        detectDominantColorsFromImage(files[0]).then((res) => {
+          if (res && res.primary) {
+            setFormData(prev => ({
+              ...prev,
+              variants: (prev.variants || []).map((v, i) => {
+                if (i !== index) return v;
+                const needsColor = !v.colorName || v.colorCode === '#000000' || v.colorCode === '#111111';
+                return {
+                  ...v,
+                  colorName: needsColor ? res.primary.name : v.colorName,
+                  colorCode: needsColor ? res.primary.hex : v.colorCode
+                };
+              })
+            }));
+          }
+        }).catch(() => {});
+      }
 
       // 2. Parallel optimization & concurrent upload (10x faster)
       const uploadResults = await Promise.all(
@@ -566,6 +663,9 @@ export default function ProductsPage() {
     const tempUrl = URL.createObjectURL(file);
     setImagePreview(tempUrl);
     setMainImageUploading(true);
+
+    // 2. Trigger AI Dominant Color Analysis immediately
+    runAiColorDetection(file, true);
 
     try {
       // 2. Convert directly to WebP in browser immediately during upload
@@ -1585,16 +1685,45 @@ export default function ProductsPage() {
                     <span style={{ fontSize: '12px', color: 'var(--color-text-muted)' }}>or paste direct link below:</span>
                   </div>
 
-                  <input 
-                    type="url" 
-                    className="form-input" 
-                    value={formData.imageUrl} 
-                    onChange={(e) => {
-                      setFormData({ ...formData, imageUrl: e.target.value });
-                      setImagePreview(e.target.value);
-                    }}
-                    placeholder="https://res.cloudinary.com/... or https://images.unsplash.com/..." 
-                  />
+                  <div style={{ display: 'flex', gap: '8px', alignItems: 'center' }}>
+                    <input 
+                      type="url" 
+                      className="form-input" 
+                      value={formData.imageUrl} 
+                      onChange={(e) => {
+                        const val = e.target.value;
+                        setFormData({ ...formData, imageUrl: val });
+                        setImagePreview(val);
+                      }}
+                      placeholder="https://res.cloudinary.com/... or https://images.unsplash.com/..." 
+                      style={{ flex: 1 }}
+                    />
+                    {formData.imageUrl && (
+                      <button
+                        type="button"
+                        onClick={() => runAiColorDetection(formData.imageUrl, true)}
+                        disabled={isAnalyzingColor}
+                        title="Detect colors from this image URL with AI"
+                        style={{
+                          display: 'inline-flex',
+                          alignItems: 'center',
+                          gap: '5px',
+                          background: '#FAF6F0',
+                          border: '1px solid #C18A5B',
+                          color: '#66300F',
+                          padding: '8px 12px',
+                          borderRadius: '6px',
+                          fontSize: '12px',
+                          fontWeight: '600',
+                          cursor: 'pointer',
+                          whiteSpace: 'nowrap'
+                        }}
+                      >
+                        <Sparkles size={13} />
+                        <span>AI Detect</span>
+                      </button>
+                    )}
+                  </div>
 
                   {/* Image Preview Box */}
                   {imagePreview && (
@@ -1627,6 +1756,189 @@ export default function ProductsPage() {
                       </div>
                     </div>
                   )}
+
+                  {/* AI Dominant Color Detection Section */}
+                  <div style={{
+                    marginTop: '14px',
+                    padding: '14px 16px',
+                    background: '#FAF8F3',
+                    border: '1.5px solid #E5DBC8',
+                    borderRadius: '8px'
+                  }}>
+                    <div style={{ display: 'flex', alignItems: 'center', justifyContent: 'space-between', marginBottom: '8px' }}>
+                      <div style={{ display: 'flex', alignItems: 'center', gap: '8px' }}>
+                        <span style={{
+                          display: 'inline-flex',
+                          alignItems: 'center',
+                          justifyContent: 'center',
+                          width: '24px',
+                          height: '24px',
+                          borderRadius: '6px',
+                          background: '#66300F',
+                          color: '#FFFFFF'
+                        }}>
+                          <Sparkles size={14} />
+                        </span>
+                        <div>
+                          <div style={{ fontSize: '12px', fontWeight: '700', color: '#66300F', textTransform: 'uppercase', letterSpacing: '0.8px' }}>
+                            AI Image Color Detection
+                          </div>
+                          <div style={{ fontSize: '11px', color: 'var(--color-text-muted)' }}>
+                            Automatically analyzes image, detects dominant colours &amp; generates HEX codes
+                          </div>
+                        </div>
+                      </div>
+                      {imagePreview && (
+                        <button
+                          type="button"
+                          onClick={() => runAiColorDetection(imagePreview, true)}
+                          disabled={isAnalyzingColor}
+                          style={{
+                            display: 'inline-flex',
+                            alignItems: 'center',
+                            gap: '5px',
+                            background: '#FFFFFF',
+                            border: '1px solid #C18A5B',
+                            color: '#66300F',
+                            padding: '4px 10px',
+                            borderRadius: '4px',
+                            fontSize: '11px',
+                            fontWeight: '600',
+                            cursor: 'pointer'
+                          }}
+                        >
+                          {isAnalyzingColor ? <Loader2 size={12} className="spinner" /> : <Sparkles size={12} />}
+                          <span>{isAnalyzingColor ? 'Analyzing...' : 'Re-scan Photo'}</span>
+                        </button>
+                      )}
+                    </div>
+
+                    {isAnalyzingColor ? (
+                      <div style={{ display: 'flex', alignItems: 'center', gap: '8px', padding: '10px 0', color: '#66300F', fontSize: '12px' }}>
+                        <Loader2 size={16} className="spinner" />
+                        <span>Analyzing image pixels and calculating dominant luxury colors...</span>
+                      </div>
+                    ) : detectedPalette && detectedPalette.length > 0 ? (
+                      <div style={{ marginTop: '10px' }}>
+                        <div style={{ fontSize: '11px', fontWeight: '600', color: '#66300F', marginBottom: '6px' }}>
+                          Detected Dominant Colors (Click to select as primary color or add as variant):
+                        </div>
+                        <div style={{ display: 'flex', flexWrap: 'wrap', gap: '8px' }}>
+                          {detectedPalette.map((col, idx) => {
+                            const isCurrentSelected = (formData.colorCode || '').toLowerCase() === col.hex.toLowerCase();
+                            return (
+                              <div
+                                key={col.hex + idx}
+                                style={{
+                                  display: 'inline-flex',
+                                  alignItems: 'center',
+                                  background: isCurrentSelected ? '#F2E8DC' : '#FFFFFF',
+                                  border: isCurrentSelected ? '1.5px solid #66300F' : '1px solid #D8CEBD',
+                                  borderRadius: '6px',
+                                  padding: '4px 8px',
+                                  gap: '6px'
+                                }}
+                              >
+                                <button
+                                  type="button"
+                                  onClick={() => {
+                                    setFormData(prev => ({
+                                      ...prev,
+                                      color: col.name,
+                                      colorCode: col.hex
+                                    }));
+                                  }}
+                                  style={{
+                                    display: 'inline-flex',
+                                    alignItems: 'center',
+                                    gap: '6px',
+                                    background: 'none',
+                                    border: 'none',
+                                    padding: 0,
+                                    cursor: 'pointer',
+                                    color: '#1F1B18',
+                                    fontSize: '12px',
+                                    fontWeight: isCurrentSelected ? '700' : '500'
+                                  }}
+                                  title={`Click to set as primary color: ${col.name} (${col.hex})`}
+                                >
+                                  <span
+                                    style={{
+                                      width: '14px',
+                                      height: '14px',
+                                      borderRadius: '50%',
+                                      backgroundColor: col.hex,
+                                      border: '1px solid rgba(0,0,0,0.2)',
+                                      display: 'inline-block',
+                                      flexShrink: 0
+                                    }}
+                                  />
+                                  <span>{col.name}</span>
+                                  <span style={{ fontSize: '10.5px', color: '#888', fontFamily: 'monospace' }}>
+                                    {col.hex}
+                                  </span>
+                                  {isCurrentSelected && (
+                                    <span style={{ fontSize: '10px', color: '#66300F', fontWeight: '700' }}>✓ Selected</span>
+                                  )}
+                                </button>
+                                <button
+                                  type="button"
+                                  onClick={() => addDetectedColorAsVariant(col)}
+                                  title={`Add ${col.name} as a product color variant`}
+                                  style={{
+                                    marginLeft: '4px',
+                                    background: '#FAF6F0',
+                                    border: '1px solid #C18A5B',
+                                    color: '#66300F',
+                                    borderRadius: '3px',
+                                    padding: '2px 6px',
+                                    fontSize: '10px',
+                                    fontWeight: '600',
+                                    cursor: 'pointer',
+                                    whiteSpace: 'nowrap'
+                                  }}
+                                >
+                                  + Variant
+                                </button>
+                              </div>
+                            );
+                          })}
+                        </div>
+
+                        {/* Quick action to add all detected colors as variants */}
+                        {detectedPalette.length > 1 && (
+                          <div style={{ marginTop: '10px', display: 'flex', alignItems: 'center', justifyContent: 'flex-end' }}>
+                            <button
+                              type="button"
+                              onClick={addAllDetectedColorsAsVariants}
+                              style={{
+                                display: 'inline-flex',
+                                alignItems: 'center',
+                                gap: '5px',
+                                background: '#FFFFFF',
+                                border: '1px solid #66300F',
+                                color: '#66300F',
+                                padding: '4px 10px',
+                                borderRadius: '4px',
+                                fontSize: '11px',
+                                fontWeight: '600',
+                                cursor: 'pointer'
+                              }}
+                            >
+                              <Palette size={12} />
+                              <span>Add All {detectedPalette.length} Colors to Product Variants</span>
+                            </button>
+                          </div>
+                        )}
+                      </div>
+                    ) : (
+                      <div style={{ fontSize: '11.5px', color: '#777', padding: '4px 0' }}>
+                        {imagePreview
+                          ? 'Click "Re-scan Photo" above to analyze image colors.'
+                          : '💡 Upload a product image above — AI will automatically detect dominant colours, assign fashion names, and generate HEX codes.'}
+                      </div>
+                    )}
+                  </div>
 
                   {/* First Image Color Configuration */}
                   <div style={{ marginTop: '14px', paddingTop: '14px', borderTop: '1px dashed #E5DEC9' }}>

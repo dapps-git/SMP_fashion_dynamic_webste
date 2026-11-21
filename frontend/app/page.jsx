@@ -37,52 +37,6 @@ const WhatsAppIcon = ({ size = 22, color = '#FFFFFF' }) => (
   </svg>
 );
 
-// Realistic Trust Bar Icons (Authentic Luxury Styling)
-const RealLockIcon = () => (
-  <svg width="22" height="22" viewBox="0 0 24 24" fill="none" style={{ display: 'block' }}>
-    <path d="M7 10V6.5C7 3.74 9.24 1.5 12 1.5C14.76 1.5 17 3.74 17 6.5V10" stroke="currentColor" strokeWidth="2.2" strokeLinecap="round" />
-    <rect x="4" y="9.5" width="16" height="13" rx="3" fill="currentColor" fillOpacity="0.16" stroke="currentColor" strokeWidth="2" />
-    <rect x="6.5" y="11.5" width="11" height="9" rx="1.5" stroke="currentColor" strokeWidth="0.8" strokeOpacity="0.35" strokeDasharray="2 2" />
-    <circle cx="12" cy="14.5" r="1.6" fill="currentColor" />
-    <path d="M12 15.8V18.2" stroke="currentColor" strokeWidth="2" strokeLinecap="round" />
-  </svg>
-);
-
-const RealHandshakeIcon = () => (
-  <svg width="22" height="22" viewBox="0 0 24 24" fill="none" style={{ display: 'block' }}>
-    <path d="M1.5 14.5L5.5 11L7.5 13L3.5 16.5H1.5V14.5Z" fill="currentColor" fillOpacity="0.18" stroke="currentColor" strokeWidth="1.6" strokeLinejoin="round" />
-    <path d="M22.5 14.5L18.5 11L16.5 13L20.5 16.5H22.5V14.5Z" fill="currentColor" fillOpacity="0.18" stroke="currentColor" strokeWidth="1.6" strokeLinejoin="round" />
-    <path d="M7.5 13L10.2 10.3C10.7 9.8 11.5 9.8 12 10.3L13.5 11.8" stroke="currentColor" strokeWidth="1.8" strokeLinecap="round" strokeLinejoin="round" />
-    <path d="M6 14.5L10 18.5C10.6 19.1 11.5 19.1 12.1 18.5L14 16.6" stroke="currentColor" strokeWidth="1.8" strokeLinecap="round" strokeLinejoin="round" />
-    <path d="M11 12.5L14.2 9.3C14.7 8.8 15.5 8.8 16 9.3L17.5 10.8" stroke="currentColor" strokeWidth="1.8" strokeLinecap="round" />
-    <path d="M9.5 15.5L12 13" stroke="currentColor" strokeWidth="1.5" strokeLinecap="round" />
-    <path d="M11.5 17L14 14.5" stroke="currentColor" strokeWidth="1.5" strokeLinecap="round" />
-  </svg>
-);
-
-const RealShieldCheckIcon = () => (
-  <svg width="22" height="22" viewBox="0 0 24 24" fill="none" style={{ display: 'block' }}>
-    <path d="M12 2L4 5.5V11.5C4 16.5 7.4 21.1 12 22.5C16.6 21.1 20 16.5 20 11.5V5.5L12 2Z" fill="currentColor" fillOpacity="0.16" stroke="currentColor" strokeWidth="2" strokeLinejoin="round" />
-    <path d="M12 4.2L5.8 7V11.5C5.8 15.4 8.4 19 12 20.3C15.6 19 18.2 15.4 18.2 11.5V7L12 4.2Z" stroke="currentColor" strokeWidth="0.8" strokeOpacity="0.35" strokeLinejoin="round" />
-    <path d="M8.5 12L11 14.5L15.5 9.5" stroke="currentColor" strokeWidth="2.4" strokeLinecap="round" strokeLinejoin="round" />
-  </svg>
-);
-
-const RealDeliveryTruckIcon = () => (
-  <svg width="22" height="22" viewBox="0 0 24 24" fill="none" style={{ display: 'block' }}>
-    <path d="M1.5 6.5C1.5 5.4 2.4 4.5 3.5 4.5H14.5V16.5H2.5C1.9 16.5 1.5 16.1 1.5 15.5V6.5Z" fill="currentColor" fillOpacity="0.16" stroke="currentColor" strokeWidth="1.8" strokeLinejoin="round" />
-    <path d="M14.5 8H18.5L21.5 11.5V16.5H14.5V8Z" fill="currentColor" fillOpacity="0.12" stroke="currentColor" strokeWidth="1.8" strokeLinejoin="round" />
-    <path d="M15.5 9.5H18L20 12H15.5V9.5Z" stroke="currentColor" strokeWidth="1.2" strokeOpacity="0.4" strokeLinejoin="round" />
-    <circle cx="6.5" cy="18" r="2.5" fill="#FAF6EF" stroke="currentColor" strokeWidth="2" />
-    <circle cx="6.5" cy="18" r="0.9" fill="currentColor" />
-    <circle cx="17.5" cy="18" r="2.5" fill="#FAF6EF" stroke="currentColor" strokeWidth="2" />
-    <circle cx="17.5" cy="18" r="0.9" fill="currentColor" />
-    <path d="M0.5 18H2" stroke="currentColor" strokeWidth="1.5" strokeLinecap="round" />
-    <path d="M10 18H14" stroke="currentColor" strokeWidth="1.5" strokeLinecap="round" />
-    <path d="M21 18H23" stroke="currentColor" strokeWidth="1.5" strokeLinecap="round" />
-    <rect x="5.5" y="8" width="5" height="4.5" rx="0.8" stroke="currentColor" strokeWidth="1" strokeOpacity="0.6" strokeDasharray="1.5 1.5" />
-  </svg>
-);
 const rawApiUrl = process.env.NEXT_PUBLIC_API_URL || 'http://localhost:5005/api';
 const cleanApiUrl = rawApiUrl.replace(/\/+$/, '');
 const API_BASE = cleanApiUrl.endsWith('/api') ? cleanApiUrl : `${cleanApiUrl}/api`;
@@ -335,57 +289,92 @@ export default function StorefrontPage() {
     }
   ].filter((item) => item.img), [bagsSlideCards, shoesSlideCards, watchesSlideCards]);
 
-  // Mixed New Arrivals: 30 products mixed across all categories (Bags, Shoes, Watches, Accessories)
-  const mixedNewArrivals = useMemo(() => {
-    if (!products || products.length === 0) return [];
-
-    const catGroups = {};
-    for (const p of products) {
-      const cat = (p.category || 'other').toLowerCase();
-      if (!catGroups[cat]) catGroups[cat] = [];
-      catGroups[cat].push(p);
-    }
-
-    const priorityCats = ['bags', 'footwear', 'watches', 'accessories'];
-    const otherCats = Object.keys(catGroups).filter((c) => !priorityCats.includes(c));
-    const allCatKeys = [...priorityCats.filter((c) => catGroups[c]?.length), ...otherCats];
-
-    const result = [];
-    const maxLen = Math.max(...allCatKeys.map((k) => (catGroups[k] ? catGroups[k].length : 0)), 0);
-
-    for (let i = 0; i < maxLen; i++) {
-      for (const catKey of allCatKeys) {
-        if (catGroups[catKey] && catGroups[catKey][i]) {
-          result.push(catGroups[catKey][i]);
-          if (result.length >= 30) break;
-        }
-      }
-      if (result.length >= 30) break;
-    }
-
-    if (result.length < 30 && products.length > result.length) {
-      const seenIds = new Set(result.map((p) => p._id || p.id));
-      for (const p of products) {
-        if (!seenIds.has(p._id || p.id)) {
-          result.push(p);
-          if (result.length >= 30) break;
-        }
-      }
-    }
-
-    return result.slice(0, 30);
-  }, [products]);
-
-  // Pagination for New Arrivals: 10 products per page
+  // ─── Mixed New Arrivals (30 Products Per Page: 10 Bags, 10 Shoes, 10 Watches Mixed) ───
   const [newArrivalsPage, setNewArrivalsPage] = useState(1);
   const newArrivalsRef = useRef(null);
-  const NEW_ARRIVALS_PER_PAGE = 10;
-  const totalNewArrivalsPages = Math.max(1, Math.ceil(mixedNewArrivals.length / NEW_ARRIVALS_PER_PAGE));
+  const NEW_ARRIVALS_PER_PAGE = 30;
+
+  // Accurately categorize all products strictly using categories, titles & brands
+  const categorizedProducts = useMemo(() => {
+    const bags = [];
+    const shoes = [];
+    const watches = [];
+    const others = [];
+
+    (products || []).forEach((p) => {
+      const pCat = (p.category || '').toLowerCase();
+      const pCatName = (p.categoryName || '').toLowerCase();
+      const titleLower = (p.title || '').toLowerCase();
+      const brandLower = (p.brand || '').toLowerCase();
+
+      const isWatch = pCat === 'watches' || pCatName.includes('watch') ||
+        brandLower.includes('rolex') || brandLower.includes('relox') || brandLower.includes('richard') || 
+        brandLower.includes('patek') || brandLower.includes('audemars') || brandLower.includes('cartier') || 
+        brandLower.includes('omega') || brandLower.includes('chopard') || brandLower.includes('chaumet') ||
+        titleLower.includes('gmt') || titleLower.includes('submariner') || titleLower.includes('watch') || titleLower.includes('dial');
+
+      const isFootwear = !isWatch && (pCat === 'footwear' || pCat === 'shoes' || pCatName.includes('shoe') || pCatName.includes('footwear') ||
+        titleLower.includes('boot') || titleLower.includes('heel') || titleLower.includes('sandal') || 
+        titleLower.includes('shoe') || titleLower.includes('mule') || titleLower.includes('slide') || 
+        titleLower.includes('sneaker') || titleLower.includes('pump') || titleLower.includes('loafer'));
+
+      const isBag = !isWatch && !isFootwear && (pCat === 'bags' || pCatName.includes('bag') ||
+        titleLower.includes('bag') || titleLower.includes('tote') || titleLower.includes('peekaboo') || 
+        titleLower.includes('evelyn') || titleLower.includes('kelly') || titleLower.includes('birkin') || 
+        titleLower.includes('vanity') || titleLower.includes('hobo') || titleLower.includes('capucines'));
+
+      if (isWatch) watches.push(p);
+      else if (isFootwear) shoes.push(p);
+      else if (isBag) bags.push(p);
+      else others.push(p);
+    });
+
+    return { bags, shoes, watches, others };
+  }, [products]);
+
+  const totalNewArrivalsPages = useMemo(() => {
+    const { bags, shoes, watches, others } = categorizedProducts;
+    const totalCount = bags.length + shoes.length + watches.length + others.length;
+    if (totalCount === 0) return 1;
+    const maxMain = Math.max(bags.length, shoes.length, watches.length);
+    const pagesByCat = Math.ceil(maxMain / 10);
+    const pagesByTotal = Math.ceil(totalCount / 30);
+    return Math.max(1, Math.max(pagesByCat, pagesByTotal));
+  }, [categorizedProducts]);
 
   const displayedNewArrivals = useMemo(() => {
-    const start = (newArrivalsPage - 1) * NEW_ARRIVALS_PER_PAGE;
-    return mixedNewArrivals.slice(start, start + NEW_ARRIVALS_PER_PAGE);
-  }, [mixedNewArrivals, newArrivalsPage]);
+    const { bags, shoes, watches, others } = categorizedProducts;
+    const pageIndex = newArrivalsPage - 1;
+
+    // 10 items from each category for the current page
+    const pageBags = bags.slice(pageIndex * 10, (pageIndex + 1) * 10);
+    const pageShoes = shoes.slice(pageIndex * 10, (pageIndex + 1) * 10);
+    const pageWatches = watches.slice(pageIndex * 10, (pageIndex + 1) * 10);
+
+    // Interleave in mixed order: Bag, Shoe, Watch, Bag, Shoe, Watch...
+    const mixed = [];
+    for (let i = 0; i < 10; i++) {
+      if (pageBags[i]) mixed.push(pageBags[i]);
+      if (pageShoes[i]) mixed.push(pageShoes[i]);
+      if (pageWatches[i]) mixed.push(pageWatches[i]);
+    }
+
+    // If any category had fewer than 10 products on this page, fill with remaining products up to 30
+    if (mixed.length < 30) {
+      const seen = new Set(mixed.map(p => p._id || p.id));
+      const pool = [...others, ...bags, ...shoes, ...watches];
+      for (const p of pool) {
+        const id = p._id || p.id;
+        if (!seen.has(id)) {
+          mixed.push(p);
+          seen.add(id);
+          if (mixed.length >= 30) break;
+        }
+      }
+    }
+
+    return mixed;
+  }, [categorizedProducts, newArrivalsPage]);
 
   const handlePageChange = (page) => {
     if (page < 1 || page > totalNewArrivalsPages) return;
@@ -715,7 +704,7 @@ Hello SMP Atelier, please confirm my order. Thank you!`;
         <div className="trust-guarantee-bar">
           <div className="trust-guarantee-item">
             <div className="trust-guarantee-icon-wrap">
-              <RealLockIcon />
+              <Lock size={20} strokeWidth={1.6} />
             </div>
             <div className="trust-guarantee-text">
               <span className="trust-guarantee-title">100% Secure Shopping</span>
@@ -724,7 +713,7 @@ Hello SMP Atelier, please confirm my order. Thank you!`;
 
           <div className="trust-guarantee-item">
             <div className="trust-guarantee-icon-wrap">
-              <RealHandshakeIcon />
+              <Handshake size={20} strokeWidth={1.6} />
             </div>
             <div className="trust-guarantee-text">
               <span className="trust-guarantee-title">Direct Dealing</span>
@@ -733,7 +722,7 @@ Hello SMP Atelier, please confirm my order. Thank you!`;
 
           <div className="trust-guarantee-item">
             <div className="trust-guarantee-icon-wrap">
-              <RealShieldCheckIcon />
+              <ShieldCheck size={20} strokeWidth={1.6} />
             </div>
             <div className="trust-guarantee-text">
               <span className="trust-guarantee-title">Quality Check Before Payment</span>
@@ -742,7 +731,7 @@ Hello SMP Atelier, please confirm my order. Thank you!`;
 
           <div className="trust-guarantee-item">
             <div className="trust-guarantee-icon-wrap">
-              <RealDeliveryTruckIcon />
+              <Truck size={20} strokeWidth={1.6} />
             </div>
             <div className="trust-guarantee-text">
               <span className="trust-guarantee-title">Free Delivery</span>
@@ -752,7 +741,7 @@ Hello SMP Atelier, please confirm my order. Thank you!`;
       </div>
 
       {/* ─────────────────────────────────────────────────────────────
-          PRODUCT LISTING: SHOP BY CATEGORIES SHORTCUT SECTION (Placed First)
+          PRODUCT LISTING: SHOP BY CATEGORIES SHORTCUT SECTION (Placed First, 3 in 1 Row on Mobile)
           ───────────────────────────────────────────────────────────── */}
       <section className="milina-brand-section" style={{ paddingTop: '16px', paddingBottom: '14px' }}>
         <h2 className="milina-category-row-title" style={{ fontSize: '18px', marginBottom: '14px', letterSpacing: '0.5px' }}>
@@ -760,11 +749,16 @@ Hello SMP Atelier, please confirm my order. Thank you!`;
         </h2>
         <div className="milina-category-shortcuts-grid">
           {categoryShortcuts.map((item, idx) => (
-            <Link key={idx} href={item.href} className="milina-brand-slide-card" style={{ flex: 'none' }} prefetch={false}>
-              <div className="milina-brand-slide-img-box" style={{ aspectRatio: '1 / 1' }}>
+            <Link
+              key={idx}
+              href={item.href}
+              className="milina-category-shortcut-card"
+              prefetch={false}
+            >
+              <div className="milina-category-shortcut-img-box">
                 <img src={item.img} alt={item.title} className="milina-brand-slide-img" loading="lazy" />
               </div>
-              <div className="milina-brand-slide-title" style={{ fontSize: '13px' }}>
+              <div className="milina-category-shortcut-title">
                 <span>{item.title}</span>
               </div>
             </Link>
