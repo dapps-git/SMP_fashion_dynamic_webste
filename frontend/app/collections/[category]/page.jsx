@@ -241,6 +241,36 @@ export default function CategoryListingPage() {
     }
   };
 
+  // Lock background scroll when search modal is open
+  useEffect(() => {
+    if (searchOpen) {
+      document.body.style.overflow = 'hidden';
+      document.body.style.touchAction = 'none';
+      document.documentElement.style.overflow = 'hidden';
+    } else {
+      document.body.style.overflow = '';
+      document.body.style.touchAction = '';
+      document.documentElement.style.overflow = '';
+    }
+    return () => {
+      document.body.style.overflow = '';
+      document.body.style.touchAction = '';
+      document.documentElement.style.overflow = '';
+    };
+  }, [searchOpen]);
+
+  // Live Search Results
+  const searchResults = useMemo(() => {
+    const q = searchQuery.trim().toLowerCase();
+    if (!q) return [];
+    return (products || []).filter((p) => {
+      const title = (p.title || '').toLowerCase();
+      const brand = (p.brand || '').toLowerCase();
+      const cat = (p.category || '').toLowerCase();
+      return title.includes(q) || brand.includes(q) || cat.includes(q);
+    }).slice(0, 8);
+  }, [products, searchQuery]);
+
   // Available brands in current category
   const categoryAvailableBrands = useMemo(() => {
     const brandSet = new Set();
@@ -808,6 +838,69 @@ export default function CategoryListingPage() {
             )}
           </div>
         </>
+      )}
+
+      {/* ─── Search Modal ─── */}
+      {searchOpen && (
+        <div className="search-modal-backdrop" onClick={() => setSearchOpen(false)}>
+          <div className="search-modal-inner" onClick={(e) => e.stopPropagation()}>
+            <div className="search-modal-bar-row">
+              <div className="search-modal-pill">
+                <Search size={18} className="search-modal-icon" />
+                <input
+                  type="text"
+                  value={searchQuery}
+                  onChange={(e) => setSearchQuery(e.target.value)}
+                  placeholder="Search footwear, bags, watches..."
+                  className="search-modal-input"
+                  aria-label="Search catalog"
+                  onKeyDown={(e) => {
+                    if (e.key === 'Escape') setSearchOpen(false);
+                  }}
+                />
+                {searchQuery && (
+                  <button type="button" onClick={() => setSearchQuery('')} className="search-modal-clear-btn" aria-label="Clear search">
+                    <X size={15} />
+                  </button>
+                )}
+              </div>
+              <button type="button" className="search-modal-close-text-btn" onClick={() => setSearchOpen(false)}>
+                Cancel
+              </button>
+            </div>
+
+            {searchQuery.trim() && (
+              <div className="search-results-section">
+                <div className="search-results-header">
+                  {searchResults.length > 0 ? `Found ${searchResults.length} products` : 'No products found'}
+                </div>
+                <div className="search-results-list">
+                  {searchResults.map((item) => (
+                    <Link
+                      key={item._id || item.id}
+                      href={`/product/${item._id || item.id}`}
+                      onClick={() => {
+                        trackProductClick(item._id || item.id);
+                        setSearchOpen(false);
+                      }}
+                      className="search-result-item"
+                    >
+                      <img src={item.image} alt={item.title} className="search-result-img" />
+                      <div className="search-result-info">
+                        <div className="search-result-brand">{item.brand || 'SMP Luxury'}</div>
+                        <div className="search-result-title">{item.title}</div>
+                        <div className="search-result-price-row">
+                          <span className="search-result-price">AED {item.price}</span>
+                        </div>
+                      </div>
+                      <ArrowRight size={16} color="#66300F" />
+                    </Link>
+                  ))}
+                </div>
+              </div>
+            )}
+          </div>
+        </div>
       )}
 
       {/* ─── Floating WhatsApp Concierge ─── */}

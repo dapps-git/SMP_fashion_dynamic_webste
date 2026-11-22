@@ -227,6 +227,24 @@ export default function ProductInnerPage() {
     } catch (e) {}
   };
 
+  // Lock background scroll when search modal is open
+  useEffect(() => {
+    if (searchOpen) {
+      document.body.style.overflow = 'hidden';
+      document.body.style.touchAction = 'none';
+      document.documentElement.style.overflow = 'hidden';
+    } else {
+      document.body.style.overflow = '';
+      document.body.style.touchAction = '';
+      document.documentElement.style.overflow = '';
+    }
+    return () => {
+      document.body.style.overflow = '';
+      document.body.style.touchAction = '';
+      document.documentElement.style.overflow = '';
+    };
+  }, [searchOpen]);
+
   const applyProductData = (data) => {
     setProduct(data);
     const colorOpts = getProductColorOptions(data);
@@ -628,7 +646,6 @@ Please confirm my order. Thank you!`;
                   onChange={(e) => setSearchQuery(e.target.value)}
                   placeholder="Search luxury heels, bags, watches..."
                   className="search-modal-input"
-                  autoFocus
                   onKeyDown={(e) => {
                     if (e.key === 'Escape') setSearchOpen(false);
                   }}
