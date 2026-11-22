@@ -235,12 +235,16 @@ export default function StorefrontPage() {
 
     const brandMap = new Map();
     catProducts.forEach((p) => {
-      const bName = (p.brand || '').trim();
-      if (bName && !brandMap.has(bName.toLowerCase())) {
-        brandMap.set(bName.toLowerCase(), {
-          brand: bName,
-          title: `${bName} ${catType === 'footwear' ? 'shoes' : catType} →`,
-          href: `/collections/${catType === 'footwear' ? 'shoes' : catType}?brand=${encodeURIComponent(bName)}`,
+      const rawBrand = (p.brand || '').trim();
+      if (!rawBrand) return;
+      const lower = rawBrand.toLowerCase();
+      if (!brandMap.has(lower)) {
+        // Normalize display name: Title case (e.g. Gina, Chanel, Dior)
+        const display = rawBrand.charAt(0).toUpperCase() + rawBrand.slice(1);
+        brandMap.set(lower, {
+          brand: display,
+          title: `${display} ${catType === 'footwear' ? 'shoes' : catType} →`,
+          href: `/collections/${catType === 'footwear' ? 'shoes' : catType}?brand=${encodeURIComponent(display)}`,
           img: p.image || ''
         });
       }
@@ -270,24 +274,24 @@ export default function StorefrontPage() {
   const shoesSlideCards = useMemo(() => getBrandCardsForCategory('footwear'), [products]);
   const watchesSlideCards = useMemo(() => getBrandCardsForCategory('watches'), [products]);
 
-  // "Shop by categories" Shortcut Cards strictly using real product images from DB
+  // "Shop by categories" Shortcut Cards strictly using compressed WebP group showcase images
   const categoryShortcuts = useMemo(() => [
     {
       title: 'ALL BAGS →',
       href: '/collections/bags',
-      img: bagsSlideCards[0]?.img || ''
+      img: '/category-bags.webp'
     },
     {
       title: 'ALL SHOES →',
       href: '/collections/shoes',
-      img: shoesSlideCards[0]?.img || ''
+      img: '/category-shoes.webp'
     },
     {
       title: 'ALL WATCHES →',
       href: '/collections/watches',
-      img: watchesSlideCards[0]?.img || ''
+      img: '/category-watches.webp'
     }
-  ].filter((item) => item.img), [bagsSlideCards, shoesSlideCards, watchesSlideCards]);
+  ], []);
 
   // ─── Mixed New Arrivals (30 Products Per Page: 10 Bags, 10 Shoes, 10 Watches Mixed) ───
   const [newArrivalsPage, setNewArrivalsPage] = useState(1);
@@ -747,23 +751,38 @@ Hello SMP Atelier, please confirm my order. Thank you!`;
         <h2 className="milina-category-row-title" style={{ fontSize: '18px', marginBottom: '14px', letterSpacing: '0.5px' }}>
           SHOP BY CATEGORIES
         </h2>
-        <div className="milina-category-shortcuts-grid">
-          {categoryShortcuts.map((item, idx) => (
-            <Link
-              key={idx}
-              href={item.href}
-              className="milina-category-shortcut-card"
-              prefetch={false}
-            >
-              <div className="milina-category-shortcut-img-box">
-                <img src={item.img} alt={item.title} className="milina-brand-slide-img" loading="lazy" />
+        {loading ? (
+          <div className="milina-category-shortcuts-grid" aria-label="Loading categories">
+            {Array.from({ length: 3 }).map((_, idx) => (
+              <div key={idx} className="milina-category-shortcut-card skeleton-card">
+                <div className="milina-category-shortcut-img-box" style={{ position: 'relative', overflow: 'hidden' }}>
+                  <div className="skeleton-product-shimmer-fill" />
+                </div>
+                <div className="milina-category-shortcut-title" style={{ padding: '8px 4px' }}>
+                  <div className="skeleton-box" style={{ width: '65%', height: '11px', margin: '0 auto' }} />
+                </div>
               </div>
-              <div className="milina-category-shortcut-title">
-                <span>{item.title}</span>
-              </div>
-            </Link>
-          ))}
-        </div>
+            ))}
+          </div>
+        ) : (
+          <div className="milina-category-shortcuts-grid">
+            {categoryShortcuts.map((item, idx) => (
+              <Link
+                key={idx}
+                href={item.href}
+                className="milina-category-shortcut-card"
+                prefetch={false}
+              >
+                <div className="milina-category-shortcut-img-box">
+                  <img src={item.img} alt={item.title} className="milina-brand-slide-img" loading="eager" />
+                </div>
+                <div className="milina-category-shortcut-title">
+                  <span>{item.title}</span>
+                </div>
+              </Link>
+            ))}
+          </div>
+        )}
       </section>
 
       {/* ─────────────────────────────────────────────────────────────
@@ -771,139 +790,185 @@ Hello SMP Atelier, please confirm my order. Thank you!`;
           (Shop by Brand button removed)
           ───────────────────────────────────────────────────────────── */}
       <section className="milina-brand-section" style={{ paddingTop: '0' }}>
-        {/* 1. Bags Row */}
-        {bagsSlideCards.length > 0 && (
-          <div className="milina-category-row">
-            <div className="milina-category-row-head">
-              <h3 className="milina-category-row-title">BAGS</h3>
-              <div className="milina-carousel-nav">
-                <button
-                  onClick={() => handleScrollSlider(bagsRef, 'prev', setBagsPage, bagsSlideCards.length)}
-                  className="milina-pdp-arrow-btn"
-                  aria-label="Previous bags"
-                >
-                  <ChevronLeft size={16} />
-                </button>
-                <span>{bagsPage}/{bagsSlideCards.length}</span>
-                <button
-                  onClick={() => handleScrollSlider(bagsRef, 'next', setBagsPage, bagsSlideCards.length)}
-                  className="milina-pdp-arrow-btn"
-                  aria-label="Next bags"
-                >
-                  <ChevronRight size={16} />
-                </button>
+        {loading ? (
+          <>
+            {/* Skeleton Row 1: BAGS */}
+            <div className="milina-category-row" aria-label="Loading bags">
+              <div className="milina-category-row-head">
+                <div className="skeleton-box" style={{ width: '80px', height: '18px' }} />
+                <div className="skeleton-box" style={{ width: '50px', height: '24px', borderRadius: '4px' }} />
+              </div>
+              <div className="milina-carousel-scroll">
+                {Array.from({ length: 6 }).map((_, idx) => (
+                  <div key={idx} className="milina-brand-slide-card skeleton-card">
+                    <div className="milina-brand-slide-img-box" style={{ position: 'relative', overflow: 'hidden' }}>
+                      <div className="skeleton-product-shimmer-fill" />
+                    </div>
+                    <div className="milina-brand-slide-title" style={{ padding: '8px 4px' }}>
+                      <div className="skeleton-box" style={{ width: '70%', height: '11px', margin: '0 auto' }} />
+                    </div>
+                  </div>
+                ))}
               </div>
             </div>
 
-            <div ref={bagsRef} className="milina-carousel-scroll">
-              {bagsSlideCards.map((card, idx) => (
-                <Link
-                  key={idx}
-                  href={card.href}
-                  onClick={() => trackProductClick(card.productId)}
-                  className="milina-brand-slide-card"
-                  prefetch={false}
-                >
-                  <div className="milina-brand-slide-img-box">
-                    <img src={card.img} alt={card.title} className="milina-brand-slide-img" loading="lazy" />
+            {/* Skeleton Row 2: SHOES */}
+            <div className="milina-category-row" aria-label="Loading shoes">
+              <div className="milina-category-row-head">
+                <div className="skeleton-box" style={{ width: '80px', height: '18px' }} />
+                <div className="skeleton-box" style={{ width: '50px', height: '24px', borderRadius: '4px' }} />
+              </div>
+              <div className="milina-carousel-scroll">
+                {Array.from({ length: 6 }).map((_, idx) => (
+                  <div key={idx} className="milina-brand-slide-card skeleton-card">
+                    <div className="milina-brand-slide-img-box" style={{ position: 'relative', overflow: 'hidden' }}>
+                      <div className="skeleton-product-shimmer-fill" />
+                    </div>
+                    <div className="milina-brand-slide-title" style={{ padding: '8px 4px' }}>
+                      <div className="skeleton-box" style={{ width: '70%', height: '11px', margin: '0 auto' }} />
+                    </div>
                   </div>
-                  <div className="milina-brand-slide-title">
-                    <span>{card.title}</span>
-                  </div>
-                </Link>
-              ))}
-            </div>
-          </div>
-        )}
-
-        {/* 2. Shoes Row */}
-        {shoesSlideCards.length > 0 && (
-          <div className="milina-category-row">
-            <div className="milina-category-row-head">
-              <h3 className="milina-category-row-title">SHOES</h3>
-              <div className="milina-carousel-nav">
-                <button
-                  onClick={() => handleScrollSlider(shoesRef, 'prev', setShoesPage, shoesSlideCards.length)}
-                  className="milina-pdp-arrow-btn"
-                  aria-label="Previous shoes"
-                >
-                  <ChevronLeft size={16} />
-                </button>
-                <span>{shoesPage}/{shoesSlideCards.length}</span>
-                <button
-                  onClick={() => handleScrollSlider(shoesRef, 'next', setShoesPage, shoesSlideCards.length)}
-                  className="milina-pdp-arrow-btn"
-                  aria-label="Next shoes"
-                >
-                  <ChevronRight size={16} />
-                </button>
+                ))}
               </div>
             </div>
-
-            <div ref={shoesRef} className="milina-carousel-scroll">
-              {shoesSlideCards.map((card, idx) => (
-                <Link
-                  key={idx}
-                  href={card.href}
-                  onClick={() => trackProductClick(card.productId)}
-                  className="milina-brand-slide-card"
-                  prefetch={false}
-                >
-                  <div className="milina-brand-slide-img-box">
-                    <img src={card.img} alt={card.title} className="milina-brand-slide-img" loading="lazy" />
+          </>
+        ) : (
+          <>
+            {/* 1. Bags Row */}
+            {bagsSlideCards.length > 0 && (
+              <div className="milina-category-row">
+                <div className="milina-category-row-head">
+                  <h3 className="milina-category-row-title">BAGS</h3>
+                  <div className="milina-carousel-nav">
+                    <button
+                      onClick={() => handleScrollSlider(bagsRef, 'prev', setBagsPage, bagsSlideCards.length)}
+                      className="milina-pdp-arrow-btn"
+                      aria-label="Previous bags"
+                    >
+                      <ChevronLeft size={16} />
+                    </button>
+                    <span>{bagsPage}/{bagsSlideCards.length}</span>
+                    <button
+                      onClick={() => handleScrollSlider(bagsRef, 'next', setBagsPage, bagsSlideCards.length)}
+                      className="milina-pdp-arrow-btn"
+                      aria-label="Next bags"
+                    >
+                      <ChevronRight size={16} />
+                    </button>
                   </div>
-                  <div className="milina-brand-slide-title">
-                    <span>{card.title}</span>
-                  </div>
-                </Link>
-              ))}
-            </div>
-          </div>
-        )}
+                </div>
 
-        {/* 3. Watches Row */}
-        {watchesSlideCards.length > 0 && (
-          <div className="milina-category-row">
-            <div className="milina-category-row-head">
-              <h3 className="milina-category-row-title">WATCHES</h3>
-              <div className="milina-carousel-nav">
-                <button
-                  onClick={() => handleScrollSlider(watchesRef, 'prev', setWatchesPage, watchesSlideCards.length)}
-                  className="milina-pdp-arrow-btn"
-                  aria-label="Previous watches"
-                >
-                  <ChevronLeft size={16} />
-                </button>
-                <span>{watchesPage}/{watchesSlideCards.length}</span>
-                <button
-                  onClick={() => handleScrollSlider(watchesRef, 'next', setWatchesPage, watchesSlideCards.length)}
-                  className="milina-pdp-arrow-btn"
-                  aria-label="Next watches"
-                >
-                  <ChevronRight size={16} />
-                </button>
+                <div ref={bagsRef} className="milina-carousel-scroll">
+                  {bagsSlideCards.map((card, idx) => (
+                    <Link
+                      key={idx}
+                      href={card.href}
+                      onClick={() => trackProductClick(card.productId)}
+                      className="milina-brand-slide-card"
+                      prefetch={false}
+                    >
+                      <div className="milina-brand-slide-img-box">
+                        <img src={card.img} alt={card.title} className="milina-brand-slide-img" loading="lazy" />
+                      </div>
+                      <div className="milina-brand-slide-title">
+                        <span>{card.title}</span>
+                      </div>
+                    </Link>
+                  ))}
+                </div>
               </div>
-            </div>
+            )}
 
-            <div ref={watchesRef} className="milina-carousel-scroll">
-              {watchesSlideCards.map((card, idx) => (
-                <Link
-                  key={idx}
-                  href={card.href}
-                  onClick={() => trackProductClick(card.productId)}
-                  className="milina-brand-slide-card"
-                  prefetch={false}
-                >
-                  <div className="milina-brand-slide-img-box">
-                    <img src={card.img} alt={card.title} className="milina-brand-slide-img" loading="lazy" />
+            {/* 2. Shoes Row */}
+            {shoesSlideCards.length > 0 && (
+              <div className="milina-category-row">
+                <div className="milina-category-row-head">
+                  <h3 className="milina-category-row-title">SHOES</h3>
+                  <div className="milina-carousel-nav">
+                    <button
+                      onClick={() => handleScrollSlider(shoesRef, 'prev', setShoesPage, shoesSlideCards.length)}
+                      className="milina-pdp-arrow-btn"
+                      aria-label="Previous shoes"
+                    >
+                      <ChevronLeft size={16} />
+                    </button>
+                    <span>{shoesPage}/{shoesSlideCards.length}</span>
+                    <button
+                      onClick={() => handleScrollSlider(shoesRef, 'next', setShoesPage, shoesSlideCards.length)}
+                      className="milina-pdp-arrow-btn"
+                      aria-label="Next shoes"
+                    >
+                      <ChevronRight size={16} />
+                    </button>
                   </div>
-                  <div className="milina-brand-slide-title">
-                    <span>{card.title}</span>
+                </div>
+
+                <div ref={shoesRef} className="milina-carousel-scroll">
+                  {shoesSlideCards.map((card, idx) => (
+                    <Link
+                      key={idx}
+                      href={card.href}
+                      onClick={() => trackProductClick(card.productId)}
+                      className="milina-brand-slide-card"
+                      prefetch={false}
+                    >
+                      <div className="milina-brand-slide-img-box">
+                        <img src={card.img} alt={card.title} className="milina-brand-slide-img" loading="lazy" />
+                      </div>
+                      <div className="milina-brand-slide-title">
+                        <span>{card.title}</span>
+                      </div>
+                    </Link>
+                  ))}
+                </div>
+              </div>
+            )}
+
+            {/* 3. Watches Row */}
+            {watchesSlideCards.length > 0 && (
+              <div className="milina-category-row">
+                <div className="milina-category-row-head">
+                  <h3 className="milina-category-row-title">WATCHES</h3>
+                  <div className="milina-carousel-nav">
+                    <button
+                      onClick={() => handleScrollSlider(watchesRef, 'prev', setWatchesPage, watchesSlideCards.length)}
+                      className="milina-pdp-arrow-btn"
+                      aria-label="Previous watches"
+                    >
+                      <ChevronLeft size={16} />
+                    </button>
+                    <span>{watchesPage}/{watchesSlideCards.length}</span>
+                    <button
+                      onClick={() => handleScrollSlider(watchesRef, 'next', setWatchesPage, watchesSlideCards.length)}
+                      className="milina-pdp-arrow-btn"
+                      aria-label="Next watches"
+                    >
+                      <ChevronRight size={16} />
+                    </button>
                   </div>
-                </Link>
-              ))}
-            </div>
-          </div>
+                </div>
+
+                <div ref={watchesRef} className="milina-carousel-scroll">
+                  {watchesSlideCards.map((card, idx) => (
+                    <Link
+                      key={idx}
+                      href={card.href}
+                      onClick={() => trackProductClick(card.productId)}
+                      className="milina-brand-slide-card"
+                      prefetch={false}
+                    >
+                      <div className="milina-brand-slide-img-box">
+                        <img src={card.img} alt={card.title} className="milina-brand-slide-img" loading="lazy" />
+                      </div>
+                      <div className="milina-brand-slide-title">
+                        <span>{card.title}</span>
+                      </div>
+                    </Link>
+                  ))}
+                </div>
+              </div>
+            )}
+          </>
         )}
       </section>
 
@@ -919,9 +984,18 @@ Hello SMP Atelier, please confirm my order. Thank you!`;
         </div>
 
         {loading ? (
-          <div className="milina-product-grid">
-            {Array.from({ length: 4 }).map((_, idx) => (
-              <div key={idx} style={{ background: '#FAF8F5', aspectRatio: '1/1', borderRadius: '6px' }} />
+          <div className="milina-product-grid" aria-label="Loading new arrivals">
+            {Array.from({ length: 8 }).map((_, idx) => (
+              <div key={idx} className="milina-product-card skeleton-card">
+                <div className="milina-product-img-wrap">
+                  <div className="skeleton-product-shimmer-fill" />
+                  <div className="skeleton-product-brand-tag" />
+                </div>
+                <div className="milina-product-info">
+                  <div className="skeleton-product-title-bar" />
+                  <div className="skeleton-product-price-bar" />
+                </div>
+              </div>
             ))}
           </div>
         ) : (

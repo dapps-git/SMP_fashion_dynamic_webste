@@ -507,10 +507,49 @@ Please confirm my order. Thank you!`;
 
   if (loading) {
     return (
-      <div style={{ minHeight: '100vh', display: 'flex', flexDirection: 'column', alignItems: 'center', justifyContent: 'center', background: '#FBF9F5', color: '#66300F', fontFamily: 'var(--font-sans)' }}>
-        <img src="/smp-logo.png" alt="SMP" style={{ width: '64px', marginBottom: '16px', opacity: 0.8 }} />
-        <div style={{ fontSize: '13px', letterSpacing: '1.5px', textTransform: 'uppercase', fontWeight: '600' }}>
-          Loading luxury product...
+      <div className="product-inner-page-wrap" style={{ background: '#FAF9F5', minHeight: '100vh' }}>
+        {/* Top Header Placeholder */}
+        <header className="milina-header">
+          <div className="milina-header-container">
+            <div style={{ width: '24px', height: '24px' }} />
+            <Link href="/" className="milina-logo-link">
+              <img src="/smp-logo.png" alt="SMP Logo" className="milina-logo-img" />
+            </Link>
+            <div style={{ width: '24px', height: '24px' }} />
+          </div>
+        </header>
+
+        {/* Breadcrumb Skeleton */}
+        <div style={{ maxWidth: '1180px', margin: '0 auto', padding: '16px 16px 0' }}>
+          <div className="skeleton-box" style={{ width: '130px', height: '14px', borderRadius: '3px' }} />
+        </div>
+
+        {/* PDP Skeleton Grid */}
+        <div className="milina-pdp-container">
+          <div className="milina-pdp-grid">
+            {/* LEFT: GALLERY SKELETON */}
+            <div className="milina-pdp-gallery">
+              <div className="milina-pdp-main-img-box skeleton-box" style={{ width: '100%', aspectRatio: '1/1', position: 'relative', overflow: 'hidden' }}>
+                <div className="skeleton-product-shimmer-fill" />
+              </div>
+            </div>
+
+            {/* RIGHT: DETAILS SKELETON */}
+            <div className="milina-pdp-details" style={{ display: 'flex', flexDirection: 'column', gap: '14px' }}>
+              <div className="skeleton-box" style={{ width: '30%', height: '12px' }} />
+              <div className="skeleton-box" style={{ width: '75%', height: '24px' }} />
+              <div className="skeleton-box" style={{ width: '25%', height: '22px' }} />
+              <div style={{ borderTop: '1px solid #ECE6DC', margin: '8px 0' }} />
+              <div className="skeleton-box" style={{ width: '40%', height: '14px' }} />
+              <div style={{ display: 'flex', gap: '8px' }}>
+                <div className="skeleton-box" style={{ width: '48px', height: '48px', borderRadius: '4px' }} />
+                <div className="skeleton-box" style={{ width: '48px', height: '48px', borderRadius: '4px' }} />
+                <div className="skeleton-box" style={{ width: '48px', height: '48px', borderRadius: '4px' }} />
+              </div>
+              <div className="skeleton-box" style={{ width: '100%', height: '48px', borderRadius: '6px', marginTop: '12px' }} />
+              <div className="skeleton-box" style={{ width: '100%', height: '48px', borderRadius: '6px' }} />
+            </div>
+          </div>
         </div>
       </div>
     );

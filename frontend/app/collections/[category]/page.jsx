@@ -271,9 +271,9 @@ export default function CategoryListingPage() {
     }).slice(0, 8);
   }, [products, searchQuery]);
 
-  // Available brands in current category
+  // Available brands in current category (Strictly deduplicated case-insensitively)
   const categoryAvailableBrands = useMemo(() => {
-    const brandSet = new Set();
+    const brandMap = new Map();
     products.forEach((p) => {
       const pCat = (p.category || '').toLowerCase();
       const pCatName = (p.categoryName || '').toLowerCase();
@@ -311,10 +311,16 @@ export default function CategoryListingPage() {
       }
 
       if (match && p.brand) {
-        brandSet.add(p.brand.trim());
+        const rawBrand = p.brand.trim();
+        const lower = rawBrand.toLowerCase();
+        if (rawBrand && !brandMap.has(lower)) {
+          // Normalize display: preserve clean capitalized name (e.g. Gina, Chanel, Dior)
+          const display = rawBrand.charAt(0).toUpperCase() + rawBrand.slice(1);
+          brandMap.set(lower, display);
+        }
       }
     });
-    return Array.from(brandSet);
+    return Array.from(brandMap.values());
   }, [products, isFootwear, isBags, isWatches]);
 
   const cartTotalAmount = useMemo(() => {
@@ -487,32 +493,42 @@ export default function CategoryListingPage() {
               ALL BRANDS
             </button>
 
-            {categoryAvailableBrands.map((bName) => {
-              const isSelected = activeBrand.toLowerCase() === bName.toLowerCase();
-              return (
-                <button
-                  key={bName}
-                  type="button"
-                  onClick={() => handleBrandSelect(bName)}
-                  style={{
-                    background: 'none',
-                    border: 'none',
-                    padding: '8px 0 10px',
-                    borderBottom: isSelected ? '2px solid #66300F' : '2px solid transparent',
-                    color: isSelected ? '#66300F' : '#777777',
-                    fontSize: '11px',
-                    fontWeight: isSelected ? '600' : '400',
-                    textTransform: 'uppercase',
-                    letterSpacing: '1.2px',
-                    cursor: 'pointer',
-                    transition: 'all 0.15s ease',
-                    whiteSpace: 'nowrap'
-                  }}
-                >
-                  {bName}
-                </button>
-              );
-            })}
+            {loading ? (
+              Array.from({ length: 6 }).map((_, idx) => (
+                <div
+                  key={idx}
+                  className="skeleton-box"
+                  style={{ width: '65px', height: '14px', borderRadius: '2px', flexShrink: 0, margin: '8px 0' }}
+                />
+              ))
+            ) : (
+              categoryAvailableBrands.map((bName) => {
+                const isSelected = activeBrand.toLowerCase() === bName.toLowerCase();
+                return (
+                  <button
+                    key={bName}
+                    type="button"
+                    onClick={() => handleBrandSelect(bName)}
+                    style={{
+                      background: 'none',
+                      border: 'none',
+                      padding: '8px 0 10px',
+                      borderBottom: isSelected ? '2px solid #66300F' : '2px solid transparent',
+                      color: isSelected ? '#66300F' : '#777777',
+                      fontSize: '11px',
+                      fontWeight: isSelected ? '600' : '400',
+                      textTransform: 'uppercase',
+                      letterSpacing: '1.2px',
+                      cursor: 'pointer',
+                      transition: 'all 0.15s ease',
+                      whiteSpace: 'nowrap'
+                    }}
+                  >
+                    {bName}
+                  </button>
+                );
+              })
+            )}
           </div>
         </div>
       </div>
@@ -520,8 +536,19 @@ export default function CategoryListingPage() {
       {/* ─── Product Grid Section (Screenshot 4) ─── */}
       <main style={{ flex: 1, padding: '16px 12px 40px', maxWidth: '1280px', width: '100%', margin: '0 auto', boxSizing: 'border-box', overflowX: 'hidden' }}>
         {loading ? (
-          <div style={{ textAlign: 'center', padding: '60px 0', color: '#777' }}>
-            <p style={{ fontSize: '14px', fontWeight: '500' }}>Loading luxury catalog...</p>
+          <div className="milina-product-grid" aria-label="Loading products">
+            {Array.from({ length: 8 }).map((_, idx) => (
+              <div key={idx} className="milina-product-card skeleton-card">
+                <div className="milina-product-img-wrap">
+                  <div className="skeleton-product-shimmer-fill" />
+                  <div className="skeleton-product-brand-tag" />
+                </div>
+                <div className="milina-product-info">
+                  <div className="skeleton-product-title-bar" />
+                  <div className="skeleton-product-price-bar" />
+                </div>
+              </div>
+            ))}
           </div>
         ) : filteredProducts.length === 0 ? (
           <div style={{ textAlign: 'center', padding: '60px 20px', background: '#FAF9F5', borderRadius: '12px', border: '1px dashed #D5CEBF' }}>
