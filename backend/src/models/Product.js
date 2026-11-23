@@ -54,4 +54,11 @@ const ProductSchema = new mongoose.Schema({
   }
 });
 
+// Indexes for high-speed queries on product listings, categories, and new arrivals
+ProductSchema.index({ createdAt: -1 });
+ProductSchema.index({ category: 1, createdAt: -1 });
+ProductSchema.index({ brand: 1 });
+ProductSchema.index({ featured: 1 });
+ProductSchema.index({ gender: 1 });
+
 module.exports = mongoose.model('Product', ProductSchema);

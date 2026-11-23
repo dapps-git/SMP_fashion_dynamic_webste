@@ -22,6 +22,34 @@ const app = express();
 const PORT = process.env.PORT || 5000;
 const JWT_SECRET = process.env.JWT_SECRET || 'smp_fashion_jwt_sec_99f38e21a7c490bc891f7c0042';
 
+// ─── High-Speed In-Memory Cache with Instant Mutation Invalidation ───
+const cacheStore = new Map();
+const DEFAULT_CACHE_TTL = 60 * 1000; // 60 seconds
+
+function getCache(key) {
+  const item = cacheStore.get(key);
+  if (!item) return null;
+  if (Date.now() > item.expiresAt) {
+    cacheStore.delete(key);
+    return null;
+  }
+  return item.data;
+}
+
+function setCache(key, data, ttl = DEFAULT_CACHE_TTL) {
+  cacheStore.set(key, { data, expiresAt: Date.now() + ttl });
+}
+
+function invalidateCache(prefix) {
+  if (!prefix) {
+    cacheStore.clear();
+    return;
+  }
+  for (const key of cacheStore.keys()) {
+    if (key.startsWith(prefix)) cacheStore.delete(key);
+  }
+}
+
 // ─── Subpath Compatibility for cPanel Passenger (/SMP) ───────
 app.use((req, res, next) => {
   if (req.url.startsWith('/SMP') || req.url.startsWith('/smp')) {
@@ -421,11 +449,22 @@ app.get('/api/auth/verify', authenticateToken, (req, res) => {
 // Public GET for storefront
 app.get('/api/categories', async (req, res) => {
   try {
+    const cached = getCache('categories_list');
+    if (cached) {
+      res.setHeader('X-Cache', 'HIT');
+      res.setHeader('Cache-Control', 'public, max-age=30, stale-while-revalidate=120');
+      return res.json(cached);
+    }
     if (mongoose.connection.readyState === 1) {
-      const cats = await Category.find().sort({ createdAt: 1 });
+      const cats = await Category.find().sort({ createdAt: 1 }).lean();
+      setCache('categories_list', cats, 120000);
+      res.setHeader('X-Cache', 'MISS');
+      res.setHeader('Cache-Control', 'public, max-age=30, stale-while-revalidate=120');
       return res.json(cats);
     }
-    return res.json(fileDb.getCategories());
+    const localCats = fileDb.getCategories();
+    setCache('categories_list', localCats, 15000);
+    return res.json(localCats);
   } catch (e) { 
     return res.json(fileDb.getCategories()); 
   }
@@ -438,6 +477,8 @@ app.post('/api/categories', authenticateToken, async (req, res) => {
     if (!name) return res.status(400).json({ error: 'Category name required' });
     const slug = name.toLowerCase().replace(/[^a-z0-9]+/g, '-').replace(/(^-|-$)/g, '');
     const cleanImage = toWebpCloudinaryUrl(image || '');
+    invalidateCache('categories_');
+    invalidateCache('stats_');
     if (mongoose.connection.readyState === 1) {
       const cat = await Category.create({ name, slug, description: description || '', image: cleanImage, itemCount: 0 });
       return res.status(201).json(cat);
@@ -445,6 +486,7 @@ app.post('/api/categories', authenticateToken, async (req, res) => {
     const cat = fileDb.createCategory({ name, description, image: cleanImage });
     res.status(201).json(cat);
   } catch (e) {
+    invalidateCache('categories_');
     const cat = fileDb.createCategory(req.body);
     res.status(201).json(cat);
   }
@@ -452,6 +494,8 @@ app.post('/api/categories', authenticateToken, async (req, res) => {
 
 app.delete('/api/categories/:id', authenticateToken, async (req, res) => {
   try {
+    invalidateCache('categories_');
+    invalidateCache('stats_');
     if (mongoose.connection.readyState === 1) {
       await Category.findByIdAndDelete(req.params.id);
     } else {
@@ -459,6 +503,7 @@ app.delete('/api/categories/:id', authenticateToken, async (req, res) => {
     }
     res.json({ success: true });
   } catch (e) {
+    invalidateCache('categories_');
     fileDb.deleteCategory(req.params.id);
     res.json({ success: true });
   }
@@ -467,11 +512,24 @@ app.delete('/api/categories/:id', authenticateToken, async (req, res) => {
 // ─── Brands ───────────────────────────────────────────────────
 app.get('/api/brands', async (req, res) => {
   try {
-    if (mongoose.connection.readyState === 1) {
-      const brands = await Brand.find({}).sort({ name: 1 });
-      if (brands && brands.length > 0) return res.json(brands);
+    const cached = getCache('brands_list');
+    if (cached) {
+      res.setHeader('X-Cache', 'HIT');
+      res.setHeader('Cache-Control', 'public, max-age=60, stale-while-revalidate=180');
+      return res.json(cached);
     }
-    return res.json(fileDb.getBrands());
+    if (mongoose.connection.readyState === 1) {
+      const brands = await Brand.find({}).sort({ name: 1 }).lean();
+      if (brands && brands.length > 0) {
+        setCache('brands_list', brands, 180000);
+        res.setHeader('X-Cache', 'MISS');
+        res.setHeader('Cache-Control', 'public, max-age=60, stale-while-revalidate=180');
+        return res.json(brands);
+      }
+    }
+    const localBrands = fileDb.getBrands();
+    setCache('brands_list', localBrands, 20000);
+    return res.json(localBrands);
   } catch (e) {
     return res.json(fileDb.getBrands());
   }
@@ -482,6 +540,7 @@ app.post('/api/brands', authenticateToken, async (req, res) => {
     const { name, description, logo } = req.body;
     if (!name) return res.status(400).json({ error: 'Brand name is required' });
     const slug = name.toLowerCase().replace(/[^a-z0-9]+/g, '-').replace(/(^-|-$)/g, '');
+    invalidateCache('brands_');
     if (mongoose.connection.readyState === 1) {
       const brand = await Brand.create({ name, slug, description: description || '', logo: logo || '' });
       return res.status(201).json(brand);
@@ -489,6 +548,7 @@ app.post('/api/brands', authenticateToken, async (req, res) => {
     const brand = fileDb.createBrand({ name, description, logo });
     res.status(201).json(brand);
   } catch (e) {
+    invalidateCache('brands_');
     const brand = fileDb.createBrand(req.body);
     res.status(201).json(brand);
   }
@@ -496,6 +556,7 @@ app.post('/api/brands', authenticateToken, async (req, res) => {
 
 app.delete('/api/brands/:id', authenticateToken, async (req, res) => {
   try {
+    invalidateCache('brands_');
     if (mongoose.connection.readyState === 1) {
       await Brand.findByIdAndDelete(req.params.id);
     } else {
@@ -503,6 +564,7 @@ app.delete('/api/brands/:id', authenticateToken, async (req, res) => {
     }
     res.json({ success: true });
   } catch (e) {
+    invalidateCache('brands_');
     fileDb.deleteBrand(req.params.id);
     res.json({ success: true });
   }
@@ -539,6 +601,14 @@ app.post('/api/upload-multiple', authenticateToken, handleUpload, async (req, re
 app.get('/api/products', async (req, res) => {
   try {
     const { category, search, featured, gender, brand } = req.query;
+    const cacheKey = `products_${category || ''}_${search || ''}_${featured || ''}_${gender || ''}_${brand || ''}`;
+    const cached = getCache(cacheKey);
+    if (cached) {
+      res.setHeader('X-Cache', 'HIT');
+      res.setHeader('Cache-Control', 'public, max-age=15, stale-while-revalidate=60');
+      return res.json(cached);
+    }
+
     if (mongoose.connection.readyState === 1) {
       let query = {};
       if (category && category !== 'all') query.category = category.toLowerCase();
@@ -553,15 +623,19 @@ app.get('/api/products', async (req, res) => {
           { description: { $regex: search, $options: 'i' } }
         ];
       }
-      const products = await Product.find(query).sort({ createdAt: -1 });
+      const products = await Product.find(query).sort({ createdAt: -1 }).lean();
       const normalizedProducts = products.map(p => {
-        const obj = p.toObject ? p.toObject() : { ...p };
-        obj.id = obj.id || (obj._id ? obj._id.toString() : '');
-        return obj;
+        p.id = p.id || (p._id ? p._id.toString() : '');
+        return p;
       });
+      setCache(cacheKey, normalizedProducts, 60000);
+      res.setHeader('X-Cache', 'MISS');
+      res.setHeader('Cache-Control', 'public, max-age=15, stale-while-revalidate=60');
       return res.json(normalizedProducts);
     }
-    return res.json(fileDb.getProducts(category, search, gender, brand));
+    const localProds = fileDb.getProducts(category, search, gender, brand);
+    setCache(cacheKey, localProds, 10000);
+    return res.json(localProds);
   } catch (e) { 
     return res.json(fileDb.getProducts(req.query.category, req.query.search, req.query.gender, req.query.brand)); 
   }
@@ -570,25 +644,36 @@ app.get('/api/products', async (req, res) => {
 app.get('/api/products/:id', async (req, res) => {
   try {
     const paramId = req.params.id;
+    const cacheKey = `product_${paramId}`;
+    const cached = getCache(cacheKey);
+    if (cached) {
+      res.setHeader('X-Cache', 'HIT');
+      res.setHeader('Cache-Control', 'public, max-age=30, stale-while-revalidate=120');
+      return res.json(cached);
+    }
+
     if (mongoose.connection.readyState === 1) {
       let prod = null;
       if (mongoose.Types.ObjectId.isValid(paramId)) {
-        prod = await Product.findById(paramId);
+        prod = await Product.findById(paramId).lean();
       }
       if (!prod) {
-        prod = await Product.findOne({ id: paramId });
+        prod = await Product.findOne({ id: paramId }).lean();
       }
       if (!prod) {
-        prod = await Product.findOne({ slug: paramId });
+        prod = await Product.findOne({ slug: paramId }).lean();
       }
       if (prod) {
-        const obj = prod.toObject ? prod.toObject() : { ...prod };
-        obj.id = obj.id || (obj._id ? obj._id.toString() : '');
-        return res.json(obj);
+        prod.id = prod.id || (prod._id ? prod._id.toString() : '');
+        setCache(cacheKey, prod, 60000);
+        res.setHeader('X-Cache', 'MISS');
+        res.setHeader('Cache-Control', 'public, max-age=30, stale-while-revalidate=120');
+        return res.json(prod);
       }
     }
     const prod = fileDb.getProductById(paramId);
     if (!prod) return res.status(404).json({ error: 'Product not found' });
+    setCache(cacheKey, prod, 10000);
     res.json(prod);
   } catch (e) {
     try {
@@ -782,14 +867,20 @@ app.post('/api/products', authenticateToken, handleUpload, async (req, res) => {
       if (catObj) productPayload.categoryName = catObj.name;
       const product = await Product.create(productPayload);
       if (catObj) await Category.findByIdAndUpdate(catObj._id, { $inc: { itemCount: 1 } });
+      invalidateCache('products_');
+      invalidateCache('stats_');
       return res.status(201).json(product);
     }
 
     const product = fileDb.createProduct(productPayload);
+    invalidateCache('products_');
+    invalidateCache('stats_');
     res.status(201).json(product);
   } catch (e) {
     try {
       const fallbackProd = fileDb.createProduct(req.body);
+      invalidateCache('products_');
+      invalidateCache('stats_');
       return res.status(201).json(fallbackProd);
     } catch (err) {
       res.status(500).json({ error: e.message });
@@ -913,6 +1004,9 @@ app.put('/api/products/:id', authenticateToken, handleUpload, async (req, res) =
         updated = await Product.findOneAndUpdate({ id: paramId }, updateFields, { new: true });
       }
       if (updated) {
+        invalidateCache('products_');
+        invalidateCache(`product_${paramId}`);
+        invalidateCache('stats_');
         const obj = updated.toObject ? updated.toObject() : { ...updated };
         obj.id = obj.id || (obj._id ? obj._id.toString() : '');
         return res.json(obj);
@@ -921,6 +1015,9 @@ app.put('/api/products/:id', authenticateToken, handleUpload, async (req, res) =
     }
 
     const updated = fileDb.updateProduct(paramId, updateFields);
+    invalidateCache('products_');
+    invalidateCache(`product_${paramId}`);
+    invalidateCache('stats_');
     res.json(updated);
   } catch (e) { 
     console.error('Update product error:', e);
@@ -950,9 +1047,15 @@ app.delete('/api/products/:id', authenticateToken, async (req, res) => {
         try { await cloudinary.uploader.destroy(prod.imagePublicId); } catch (_) {}
       }
       await Product.deleteOne({ _id: prod._id });
+      invalidateCache('products_');
+      invalidateCache(`product_${paramId}`);
+      invalidateCache('stats_');
       return res.json({ success: true, deletedId: paramId });
     } else {
       fileDb.deleteProduct(paramId);
+      invalidateCache('products_');
+      invalidateCache(`product_${paramId}`);
+      invalidateCache('stats_');
       return res.json({ success: true, deletedId: paramId });
     }
   } catch (e) {

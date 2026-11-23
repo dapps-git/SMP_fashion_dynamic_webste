@@ -3,6 +3,8 @@
 import { useState, useEffect, useMemo } from 'react';
 import { useParams, useRouter } from 'next/navigation';
 import Link from 'next/link';
+import { INITIAL_PRODUCTS } from '../../initialData';
+import { optimizeCloudinaryUrl } from '../../cloudinary';
 import {
   ArrowLeft,
   ArrowRight,
@@ -127,15 +129,65 @@ export default function ProductInnerPage() {
   const router = useRouter();
   const id = params?.id;
 
-  const [product, setProduct] = useState(null);
+  const [product, setProduct] = useState(() => {
+    if (typeof window !== 'undefined' && id) {
+      try {
+        const cached = sessionStorage.getItem('smp_cached_products');
+        if (cached) {
+          const list = JSON.parse(cached);
+          const found = list.find((p) => String(p._id) === String(id) || String(p.id) === String(id) || p.slug === id);
+          if (found) return found;
+        }
+      } catch (_) {}
+    }
+    const foundInitial = INITIAL_PRODUCTS.find((p) => String(p._id) === String(id) || String(p.id) === String(id) || p.slug === id);
+    return foundInitial || null;
+  });
   const [categories, setCategories] = useState([]);
-  const [allProducts, setAllProducts] = useState([]);
-  const [loading, setLoading] = useState(true);
+  const [allProducts, setAllProducts] = useState(() => {
+    if (typeof window !== 'undefined') {
+      try {
+        const cached = sessionStorage.getItem('smp_cached_products');
+        if (cached) return JSON.parse(cached);
+      } catch (_) {}
+    }
+    return INITIAL_PRODUCTS || [];
+  });
+  const [loading, setLoading] = useState(() => {
+    if (typeof window !== 'undefined' && id) {
+      try {
+        const cached = sessionStorage.getItem('smp_cached_products');
+        if (cached) {
+          const list = JSON.parse(cached);
+          const found = list.find((p) => String(p._id) === String(id) || String(p.id) === String(id) || p.slug === id);
+          if (found) return false;
+        }
+      } catch (_) {}
+    }
+    const foundInitial = INITIAL_PRODUCTS.find((p) => String(p._id) === String(id) || String(p.id) === String(id) || p.slug === id);
+    return !foundInitial;
+  });
   const [selectedVariant, setSelectedVariant] = useState(null);
   const [activeImageIndex, setActiveImageIndex] = useState(0);
   const [selectedSize, setSelectedSize] = useState('');
   const [quantity, setQuantity] = useState(1);
   const [lightboxOpen, setLightboxOpen] = useState(false);
+
+  // Initialize selectedVariant and size from product
+  useEffect(() => {
+    if (product && !selectedVariant) {
+      const colorOpts = getProductColorOptions(product);
+      if (colorOpts.length > 0) {
+        setSelectedVariant(colorOpts[0]);
+        const firstSizes = (colorOpts[0].sizes && colorOpts[0].sizes.length > 0)
+          ? colorOpts[0].sizes
+          : (product.sizes || []);
+        if (firstSizes.length > 0) setSelectedSize(firstSizes[0]);
+      } else if (product.sizes && product.sizes.length > 0) {
+        setSelectedSize(product.sizes[0]);
+      }
+    }
+  }, [product, selectedVariant]);
 
   // Cart & Mobile Drawer State
   const [cart, setCart] = useState([]);
@@ -263,39 +315,25 @@ export default function ProductInnerPage() {
 
   const fetchProduct = async () => {
     try {
-      setLoading(true);
+      if (!product) setLoading(true);
       let foundData = null;
 
-      // 1. Try relative /api/products/:id first (routed safely via Next.js proxy)
       try {
-        const res = await fetch(`/api/products/${id}`);
+        const res = await fetch(`${API_BASE}/products/${id}`);
         if (res.ok) foundData = await res.json();
       } catch (_) {}
-
-      // 2. Try direct API_BASE if not found
-      if (!foundData && API_BASE) {
-        try {
-          const res = await fetch(`${API_BASE}/products/${id}`);
-          if (res.ok) foundData = await res.json();
-        } catch (_) {}
-      }
 
       if (foundData) {
         applyProductData(foundData);
         return;
       }
 
-      // 3. Robust fallback: search in all products list
+      // Robust fallback: search in all products list
       let list = [];
       try {
-        const res = await fetch('/api/products');
+        const res = await fetch(`${API_BASE}/products`);
         if (res.ok) list = await res.json();
-      } catch (_) {
-        try {
-          const res = await fetch(`${API_BASE}/products`);
-          if (res.ok) list = await res.json();
-        } catch (_) {}
-      }
+      } catch (_) {}
 
       const prods = Array.isArray(list) ? list : (list.products || []);
       const match = prods.find((p) => 
@@ -307,12 +345,9 @@ export default function ProductInnerPage() {
 
       if (match) {
         applyProductData(match);
-      } else {
-        setProduct(null);
       }
     } catch (err) {
-      console.warn('Live product fetch error:', err);
-      setProduct(null);
+      console.warn('Live product fetch notice:', err);
     } finally {
       setLoading(false);
     }
@@ -752,7 +787,7 @@ Please confirm my order. Thank you!`;
                           className="search-result-item"
                         >
                           <img
-                            src={item.image}
+                            src={optimizeCloudinaryUrl(item.image, 140)}
                             alt={item.title}
                             className="search-result-img"
                           />
@@ -853,7 +888,7 @@ Please confirm my order. Thank you!`;
           <div className="milina-pdp-gallery">
             <div className="milina-pdp-main-img-box">
               <img
-                src={activeImage}
+                src={optimizeCloudinaryUrl(activeImage, 1000)}
                 alt={`${product.title} - ${activeColor}`}
                 className="milina-pdp-main-img"
                 onError={(e) => {

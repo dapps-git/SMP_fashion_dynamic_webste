@@ -2,6 +2,8 @@
 
 import React, { useState, useEffect, useMemo, useRef } from 'react';
 import Link from 'next/link';
+import { INITIAL_PRODUCTS, INITIAL_BRANDS } from './initialData';
+import { optimizeCloudinaryUrl } from './cloudinary';
 import {
   Search,
   Menu,
@@ -52,9 +54,31 @@ const INITIAL_FALLBACK_BRANDS = [
 ];
 
 export default function StorefrontPage() {
-  const [products, setProducts] = useState([]);
-  const [brandsList, setBrandsList] = useState(INITIAL_FALLBACK_BRANDS);
-  const [loading, setLoading] = useState(true);
+  const [products, setProducts] = useState(() => {
+    if (typeof window !== 'undefined') {
+      try {
+        const cached = sessionStorage.getItem('smp_cached_products');
+        if (cached) {
+          const parsed = JSON.parse(cached);
+          if (Array.isArray(parsed) && parsed.length > 0) return parsed;
+        }
+      } catch (_) {}
+    }
+    return INITIAL_PRODUCTS && INITIAL_PRODUCTS.length > 0 ? INITIAL_PRODUCTS : [];
+  });
+  const [brandsList, setBrandsList] = useState(() => {
+    if (typeof window !== 'undefined') {
+      try {
+        const cached = sessionStorage.getItem('smp_cached_brands');
+        if (cached) {
+          const parsed = JSON.parse(cached);
+          if (Array.isArray(parsed) && parsed.length > 0) return parsed;
+        }
+      } catch (_) {}
+    }
+    return (INITIAL_BRANDS && INITIAL_BRANDS.length > 0) ? INITIAL_BRANDS : INITIAL_FALLBACK_BRANDS;
+  });
+  const [loading, setLoading] = useState(false);
 
   // Search & Navigation Modals
   const [searchQuery, setSearchQuery] = useState('');
@@ -122,52 +146,40 @@ export default function StorefrontPage() {
   const totalCartCount = cart.reduce((sum, item) => sum + item.quantity, 0);
   const totalCartPrice = cart.reduce((sum, item) => sum + item.price * item.quantity, 0);
 
-  // Fetch Products & Brands strictly from Admin API
+  // Fast Parallel Background Synchronization with Live Admin API
   useEffect(() => {
     let isMounted = true;
     const fetchData = async () => {
-      setLoading(true);
       try {
-        let data = null;
-        try {
-          const res = await fetch('/api/products');
-          if (res.ok) data = await res.json();
-        } catch (_) {}
+        const prodUrl = API_BASE ? `${API_BASE}/products` : '/api/products';
+        const brandUrl = API_BASE ? `${API_BASE}/brands` : '/api/brands';
 
-        if (!data && API_BASE) {
-          try {
-            const res = await fetch(`${API_BASE}/products`);
-            if (res.ok) data = await res.json();
-          } catch (_) {}
+        const [prodRes, brandRes] = await Promise.allSettled([
+          fetch(prodUrl),
+          fetch(brandUrl)
+        ]);
+
+        if (prodRes.status === 'fulfilled' && prodRes.value.ok) {
+          const data = await prodRes.value.json();
+          const list = Array.isArray(data) ? data : (data.products || []);
+          if (isMounted && list.length > 0) {
+            setProducts(list);
+            try { sessionStorage.setItem('smp_cached_products', JSON.stringify(list)); } catch (_) {}
+          }
         }
 
-        if (isMounted && data) {
-          setProducts(Array.isArray(data) ? data : (data.products || []));
+        if (brandRes.status === 'fulfilled' && brandRes.value.ok) {
+          const brandData = await brandRes.value.json();
+          if (isMounted && Array.isArray(brandData) && brandData.length > 0) {
+            setBrandsList(brandData);
+            try { sessionStorage.setItem('smp_cached_brands', JSON.stringify(brandData)); } catch (_) {}
+          }
         }
       } catch (err) {
-        console.warn('Products fetch notice:', err);
+        console.warn('Sync notice:', err);
       } finally {
         if (isMounted) setLoading(false);
       }
-
-      try {
-        let brandData = null;
-        try {
-          const brandRes = await fetch('/api/brands');
-          if (brandRes.ok) brandData = await brandRes.json();
-        } catch (_) {}
-
-        if (!brandData && API_BASE) {
-          try {
-            const brandRes = await fetch(`${API_BASE}/brands`);
-            if (brandRes.ok) brandData = await brandRes.json();
-          } catch (_) {}
-        }
-
-        if (isMounted && Array.isArray(brandData) && brandData.length > 0) {
-          setBrandsList(brandData);
-        }
-      } catch (e) {}
     };
 
     fetchData();
@@ -245,7 +257,7 @@ export default function StorefrontPage() {
           brand: display,
           title: `${display} ${catType === 'footwear' ? 'shoes' : catType} →`,
           href: `/collections/${catType === 'footwear' ? 'shoes' : catType}?brand=${encodeURIComponent(display)}`,
-          img: p.image || ''
+          img: optimizeCloudinaryUrl(p.image || '', 400)
         });
       }
     });
@@ -264,7 +276,7 @@ export default function StorefrontPage() {
     const allCard = {
       title: `all ${catType === 'footwear' ? 'shoes' : catType} →`,
       href: `/collections/${catType === 'footwear' ? 'shoes' : catType}`,
-      img: allCardImg
+      img: optimizeCloudinaryUrl(allCardImg, 400)
     };
 
     return [allCard, ...brandCards];
@@ -751,38 +763,22 @@ Hello SMP Atelier, please confirm my order. Thank you!`;
         <h2 className="milina-category-row-title" style={{ fontSize: '18px', marginBottom: '14px', letterSpacing: '0.5px' }}>
           SHOP BY CATEGORIES
         </h2>
-        {loading ? (
-          <div className="milina-category-shortcuts-grid" aria-label="Loading categories">
-            {Array.from({ length: 3 }).map((_, idx) => (
-              <div key={idx} className="milina-category-shortcut-card skeleton-card">
-                <div className="milina-category-shortcut-img-box" style={{ position: 'relative', overflow: 'hidden' }}>
-                  <div className="skeleton-product-shimmer-fill" />
-                </div>
-                <div className="milina-category-shortcut-title" style={{ padding: '8px 4px' }}>
-                  <div className="skeleton-box" style={{ width: '65%', height: '11px', margin: '0 auto' }} />
-                </div>
+        <div className="milina-category-shortcuts-grid">
+          {categoryShortcuts.map((item, idx) => (
+            <Link
+              key={idx}
+              href={item.href}
+              className="milina-category-shortcut-card"
+            >
+              <div className="milina-category-shortcut-img-box">
+                <img src={item.img} alt={item.title} className="milina-brand-slide-img" loading="eager" />
               </div>
-            ))}
-          </div>
-        ) : (
-          <div className="milina-category-shortcuts-grid">
-            {categoryShortcuts.map((item, idx) => (
-              <Link
-                key={idx}
-                href={item.href}
-                className="milina-category-shortcut-card"
-                prefetch={false}
-              >
-                <div className="milina-category-shortcut-img-box">
-                  <img src={item.img} alt={item.title} className="milina-brand-slide-img" loading="eager" />
-                </div>
-                <div className="milina-category-shortcut-title">
-                  <span>{item.title}</span>
-                </div>
-              </Link>
-            ))}
-          </div>
-        )}
+              <div className="milina-category-shortcut-title">
+                <span>{item.title}</span>
+              </div>
+            </Link>
+          ))}
+        </div>
       </section>
 
       {/* ─────────────────────────────────────────────────────────────
@@ -1007,11 +1003,10 @@ Hello SMP Atelier, please confirm my order. Thank you!`;
                   href={`/product/${prod._id || prod.id}`}
                   onClick={() => trackProductClick(prod._id || prod.id)}
                   className="milina-product-card"
-                  prefetch={false}
                 >
                   <div className="milina-product-img-wrap">
                     <img
-                      src={prod.image}
+                      src={optimizeCloudinaryUrl(prod.image, 500)}
                       alt={prod.title}
                       className="milina-product-img"
                       loading="lazy"
@@ -1245,7 +1240,7 @@ Hello SMP Atelier, please confirm my order. Thank you!`;
                       }}
                       className="search-result-item"
                     >
-                      <img src={item.image} alt={item.title} className="search-result-img" />
+                      <img src={optimizeCloudinaryUrl(item.image, 140)} alt={item.title} className="search-result-img" />
                       <div className="search-result-info">
                         <div className="search-result-brand">{item.brand || 'SMP Luxury'}</div>
                         <div className="search-result-title">{item.title}</div>

@@ -3,6 +3,8 @@
 import React, { useState, useEffect, useMemo, useRef } from 'react';
 import Link from 'next/link';
 import { useParams, useSearchParams, useRouter } from 'next/navigation';
+import { INITIAL_PRODUCTS, INITIAL_CATEGORIES, INITIAL_BRANDS } from '../../initialData';
+import { optimizeCloudinaryUrl } from '../../cloudinary';
 import {
   Search,
   Menu,
@@ -46,10 +48,37 @@ export default function CategoryListingPage() {
   const categoryParam = (params?.category || 'all').toLowerCase();
   const brandQuery = searchParams.get('brand') || 'all';
 
-  const [products, setProducts] = useState([]);
-  const [categories, setCategories] = useState([]);
-  const [brands, setBrands] = useState([]);
-  const [loading, setLoading] = useState(true);
+  const [products, setProducts] = useState(() => {
+    if (typeof window !== 'undefined') {
+      try {
+        const cached = sessionStorage.getItem('smp_cached_products');
+        if (cached) {
+          const list = JSON.parse(cached);
+          if (Array.isArray(list) && list.length > 0) return list;
+        }
+      } catch (_) {}
+    }
+    return INITIAL_PRODUCTS && INITIAL_PRODUCTS.length > 0 ? INITIAL_PRODUCTS : [];
+  });
+  const [categories, setCategories] = useState(() => {
+    if (typeof window !== 'undefined') {
+      try {
+        const cached = sessionStorage.getItem('smp_cached_categories');
+        if (cached) return JSON.parse(cached);
+      } catch (_) {}
+    }
+    return INITIAL_CATEGORIES || [];
+  });
+  const [brands, setBrands] = useState(() => {
+    if (typeof window !== 'undefined') {
+      try {
+        const cached = sessionStorage.getItem('smp_cached_brands');
+        if (cached) return JSON.parse(cached);
+      } catch (_) {}
+    }
+    return INITIAL_BRANDS || [];
+  });
+  const [loading, setLoading] = useState(false);
 
   const trackProductClick = (id) => {
     if (!id) return;
@@ -87,47 +116,49 @@ export default function CategoryListingPage() {
     } catch (e) {}
   }, []);
 
-  // Fetch data
+  // Concurrent Background Synchronization
   useEffect(() => {
-    fetchProducts();
-    fetchCategories();
-    fetchBrands();
+    let isMounted = true;
+    const loadAll = async () => {
+      try {
+        const [pRes, cRes, bRes] = await Promise.allSettled([
+          fetch(`${API_BASE}/products`),
+          fetch(`${API_BASE}/categories`),
+          fetch(`${API_BASE}/brands`)
+        ]);
+
+        if (pRes.status === 'fulfilled' && pRes.value.ok) {
+          const pData = await pRes.value.json();
+          const list = Array.isArray(pData) ? pData : (pData.products || []);
+          if (isMounted && list.length > 0) {
+            setProducts(list);
+            try { sessionStorage.setItem('smp_cached_products', JSON.stringify(list)); } catch (_) {}
+          }
+        }
+        if (cRes.status === 'fulfilled' && cRes.value.ok) {
+          const cData = await cRes.value.json();
+          if (isMounted && Array.isArray(cData) && cData.length > 0) {
+            setCategories(cData);
+            try { sessionStorage.setItem('smp_cached_categories', JSON.stringify(cData)); } catch (_) {}
+          }
+        }
+        if (bRes.status === 'fulfilled' && bRes.value.ok) {
+          const bData = await bRes.value.json();
+          if (isMounted && Array.isArray(bData) && bData.length > 0) {
+            setBrands(bData);
+            try { sessionStorage.setItem('smp_cached_brands', JSON.stringify(bData)); } catch (_) {}
+          }
+        }
+      } catch (err) {
+        console.warn('Collections fetch error:', err);
+      } finally {
+        if (isMounted) setLoading(false);
+      }
+    };
+
+    loadAll();
+    return () => { isMounted = false; };
   }, []);
-
-  const fetchProducts = async () => {
-    try {
-      setLoading(true);
-      const res = await fetch(`${API_BASE}/products`);
-      if (res.ok) {
-        const data = await res.json();
-        setProducts(Array.isArray(data) ? data : (data.products || []));
-      }
-    } catch (err) {
-      console.warn('Failed to load products:', err);
-    } finally {
-      setLoading(false);
-    }
-  };
-
-  const fetchCategories = async () => {
-    try {
-      const res = await fetch(`${API_BASE}/categories`);
-      if (res.ok) {
-        const data = await res.json();
-        setCategories(Array.isArray(data) ? data : []);
-      }
-    } catch (e) {}
-  };
-
-  const fetchBrands = async () => {
-    try {
-      const res = await fetch(`${API_BASE}/brands`);
-      if (res.ok) {
-        const data = await res.json();
-        setBrands(Array.isArray(data) ? data : []);
-      }
-    } catch (e) {}
-  };
 
   // Determine Category Display Info
   const isFootwear = categoryParam === 'shoes' || categoryParam === 'footwear';
@@ -601,12 +632,11 @@ export default function CategoryListingPage() {
                     href={`/product/${productId}`}
                     onClick={() => trackProductClick(productId)}
                     className="milina-product-card"
-                    prefetch={false}
                   >
                     {/* Photo Container */}
                     <div className="milina-product-img-wrap">
                       <img
-                        src={product.image}
+                        src={optimizeCloudinaryUrl(product.image, 500)}
                         alt={product.title}
                         className="milina-product-img"
                         loading={idx < 4 ? "eager" : "lazy"}
