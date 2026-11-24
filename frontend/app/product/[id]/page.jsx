@@ -60,7 +60,7 @@ const playAddToCartSound = () => {
     gain1.connect(ctx.destination);
     osc1.start(now);
     osc1.stop(now + 0.38);
-  } catch (err) {}
+  } catch (err) { }
 };
 
 function resolveColorHex(name = '', code = '') {
@@ -83,8 +83,8 @@ function getProductColorOptions(product) {
   if (!product) return [];
   const rawVariants = Array.isArray(product.variants) ? product.variants : [];
   const variants = rawVariants.filter(v => v && typeof v === 'object');
-  
-  const isImageInVariants = product.image && variants.some((v) => 
+
+  const isImageInVariants = product.image && variants.some((v) =>
     v.images && v.images.length > 0 && (v.images[0] === product.image || v.images.includes(product.image))
   );
 
@@ -138,7 +138,7 @@ export default function ProductInnerPage() {
           const found = list.find((p) => String(p._id) === String(id) || String(p.id) === String(id) || p.slug === id);
           if (found) return found;
         }
-      } catch (_) {}
+      } catch (_) { }
     }
     const foundInitial = INITIAL_PRODUCTS.find((p) => String(p._id) === String(id) || String(p.id) === String(id) || p.slug === id);
     return foundInitial || null;
@@ -149,7 +149,7 @@ export default function ProductInnerPage() {
       try {
         const cached = sessionStorage.getItem('smp_cached_products');
         if (cached) return JSON.parse(cached);
-      } catch (_) {}
+      } catch (_) { }
     }
     return INITIAL_PRODUCTS || [];
   });
@@ -162,7 +162,7 @@ export default function ProductInnerPage() {
           const found = list.find((p) => String(p._id) === String(id) || String(p.id) === String(id) || p.slug === id);
           if (found) return false;
         }
-      } catch (_) {}
+      } catch (_) { }
     }
     const foundInitial = INITIAL_PRODUCTS.find((p) => String(p._id) === String(id) || String(p.id) === String(id) || p.slug === id);
     return !foundInitial;
@@ -224,7 +224,7 @@ export default function ProductInnerPage() {
     try {
       const saved = localStorage.getItem('smp_cart_items') || localStorage.getItem('smp_cart');
       if (saved) setCart(JSON.parse(saved));
-    } catch (e) {}
+    } catch (e) { }
   }, []);
 
   const totalCartCount = useMemo(() => {
@@ -242,8 +242,8 @@ export default function ProductInnerPage() {
     fetchCategories();
     fetchAllProducts();
     try {
-      fetch(`${API_BASE}/products/${id}/click`, { method: 'POST', keepalive: true }).catch(() => {});
-    } catch (_) {}
+      fetch(`${API_BASE}/products/${id}/click`, { method: 'POST', keepalive: true }).catch(() => { });
+    } catch (_) { }
   }, [id]);
 
   const fetchAllProducts = async () => {
@@ -253,7 +253,7 @@ export default function ProductInnerPage() {
         const data = await res.json();
         setAllProducts(Array.isArray(data) ? data : (data.products || []));
       }
-    } catch (e) {}
+    } catch (e) { }
   };
 
   const liveSearchResults = useMemo(() => {
@@ -276,7 +276,7 @@ export default function ProductInnerPage() {
         const data = await res.json();
         setCategories(data);
       }
-    } catch (e) {}
+    } catch (e) { }
   };
 
   // Lock background scroll when search modal is open
@@ -321,7 +321,7 @@ export default function ProductInnerPage() {
       try {
         const res = await fetch(`${API_BASE}/products/${id}`);
         if (res.ok) foundData = await res.json();
-      } catch (_) {}
+      } catch (_) { }
 
       if (foundData) {
         applyProductData(foundData);
@@ -333,12 +333,12 @@ export default function ProductInnerPage() {
       try {
         const res = await fetch(`${API_BASE}/products`);
         if (res.ok) list = await res.json();
-      } catch (_) {}
+      } catch (_) { }
 
       const prods = Array.isArray(list) ? list : (list.products || []);
-      const match = prods.find((p) => 
-        String(p._id) === String(id) || 
-        String(p.id) === String(id) || 
+      const match = prods.find((p) =>
+        String(p._id) === String(id) ||
+        String(p.id) === String(id) ||
         p.slug === id ||
         (p.title && p.title.toLowerCase().replace(/[^a-z0-9]+/g, '-') === id)
       );
@@ -388,7 +388,7 @@ export default function ProductInnerPage() {
   const activeImage = variantImages[activeImageIndex] || variantImages[0] || product?.image;
   const activeColor = currentVariant?.colorName || product?.color || '';
   const activeStock = currentVariant?.stock !== undefined ? currentVariant.stock : (product?.stock ?? 15);
-  
+
   const categoryLower = ((product?.category || product?.categoryName || '') + ' ' + (product?.title || '')).toLowerCase();
   const isFootwear = categoryLower.includes('footwear') || categoryLower.includes('shoe') || categoryLower.includes('heel') || categoryLower.includes('sneaker') || categoryLower.includes('boot') || categoryLower.includes('sandal') || categoryLower.includes('slide') || categoryLower.includes('ballerina') || categoryLower.includes('loafer');
   const sizeLabel = isFootwear ? 'Shoe size' : 'Size';
@@ -484,7 +484,7 @@ export default function ProductInnerPage() {
     ];
 
     const formattedMessage =
-`🛍️ *NEW ORDER - SMP Super Master Products*
+      `🛍️ *NEW ORDER - SMP Super Master Products*
 ━━━━━━━━━━━━━━━━━━━━━
 *Product:* ${product.title}
 *Brand:* ${product.brand || 'SMP Luxury'}${activeColor ? `\n*Color:* ${activeColor}` : ''}${selectedSize ? `\n*Size:* ${selectedSize}` : ''}
@@ -883,7 +883,7 @@ Please confirm my order. Thank you!`;
       {/* Main Product Showcase Section (Milina Screenshot 5 & 6) */}
       <div className="milina-pdp-container">
         <div className="milina-pdp-grid">
-          
+
           {/* LEFT: GALLERY WITH EXPAND ICON & < 1/5 > COUNTER */}
           <div className="milina-pdp-gallery">
             <div className="milina-pdp-main-img-box">
@@ -936,7 +936,7 @@ Please confirm my order. Thank you!`;
 
           {/* RIGHT: PRODUCT DETAILS (Screenshots 5 & 6) */}
           <div className="milina-pdp-details">
-            
+
             {/* Brand Header */}
             <div className="milina-pdp-brand" style={{ textTransform: 'uppercase', letterSpacing: '1.8px', fontSize: '11px', fontWeight: '400', color: '#888' }}>
               {product.brand || 'SMP ATELIER'}
@@ -1156,9 +1156,9 @@ Please confirm my order. Thank you!`;
             >
               <X size={20} />
             </button>
-            <img 
-              src={activeImage} 
-              alt={product.title} 
+            <img
+              src={activeImage}
+              alt={product.title}
               onError={(e) => {
                 if (product?.image && e.currentTarget.src !== product.image) {
                   e.currentTarget.src = product.image;

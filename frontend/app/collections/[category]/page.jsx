@@ -56,7 +56,7 @@ export default function CategoryListingPage() {
           const list = JSON.parse(cached);
           if (Array.isArray(list) && list.length > 0) return list;
         }
-      } catch (_) {}
+      } catch (_) { }
     }
     return INITIAL_PRODUCTS && INITIAL_PRODUCTS.length > 0 ? INITIAL_PRODUCTS : [];
   });
@@ -65,7 +65,7 @@ export default function CategoryListingPage() {
       try {
         const cached = sessionStorage.getItem('smp_cached_categories');
         if (cached) return JSON.parse(cached);
-      } catch (_) {}
+      } catch (_) { }
     }
     return INITIAL_CATEGORIES || [];
   });
@@ -74,7 +74,7 @@ export default function CategoryListingPage() {
       try {
         const cached = sessionStorage.getItem('smp_cached_brands');
         if (cached) return JSON.parse(cached);
-      } catch (_) {}
+      } catch (_) { }
     }
     return INITIAL_BRANDS || [];
   });
@@ -83,8 +83,8 @@ export default function CategoryListingPage() {
   const trackProductClick = (id) => {
     if (!id) return;
     try {
-      fetch(`${API_BASE}/products/${id}/click`, { method: 'POST', keepalive: true }).catch(() => {});
-    } catch (_) {}
+      fetch(`${API_BASE}/products/${id}/click`, { method: 'POST', keepalive: true }).catch(() => { });
+    } catch (_) { }
   };
 
   // Filters & Sorting
@@ -113,7 +113,7 @@ export default function CategoryListingPage() {
     try {
       const saved = localStorage.getItem('smp_cart_items') || localStorage.getItem('smp_cart');
       if (saved) setCart(JSON.parse(saved));
-    } catch (e) {}
+    } catch (e) { }
   }, []);
 
   // Concurrent Background Synchronization
@@ -132,21 +132,21 @@ export default function CategoryListingPage() {
           const list = Array.isArray(pData) ? pData : (pData.products || []);
           if (isMounted && list.length > 0) {
             setProducts(list);
-            try { sessionStorage.setItem('smp_cached_products', JSON.stringify(list)); } catch (_) {}
+            try { sessionStorage.setItem('smp_cached_products', JSON.stringify(list)); } catch (_) { }
           }
         }
         if (cRes.status === 'fulfilled' && cRes.value.ok) {
           const cData = await cRes.value.json();
           if (isMounted && Array.isArray(cData) && cData.length > 0) {
             setCategories(cData);
-            try { sessionStorage.setItem('smp_cached_categories', JSON.stringify(cData)); } catch (_) {}
+            try { sessionStorage.setItem('smp_cached_categories', JSON.stringify(cData)); } catch (_) { }
           }
         }
         if (bRes.status === 'fulfilled' && bRes.value.ok) {
           const bData = await bRes.value.json();
           if (isMounted && Array.isArray(bData) && bData.length > 0) {
             setBrands(bData);
-            try { sessionStorage.setItem('smp_cached_brands', JSON.stringify(bData)); } catch (_) {}
+            try { sessionStorage.setItem('smp_cached_brands', JSON.stringify(bData)); } catch (_) { }
           }
         }
       } catch (err) {
@@ -188,19 +188,19 @@ export default function CategoryListingPage() {
       const brandLower = (p.brand || '').toLowerCase();
 
       // Clear watch markers
-      const isWatchMarker = brandLower.includes('rolex') || brandLower.includes('relox') || brandLower.includes('richard') || 
-        brandLower.includes('patek') || brandLower.includes('audemars') || brandLower.includes('cartier') || 
+      const isWatchMarker = brandLower.includes('rolex') || brandLower.includes('relox') || brandLower.includes('richard') ||
+        brandLower.includes('patek') || brandLower.includes('audemars') || brandLower.includes('cartier') ||
         brandLower.includes('omega') || brandLower.includes('chopard') || brandLower.includes('chaumet') ||
         titleLower.includes('gmt') || titleLower.includes('submariner') || titleLower.includes('watch') || titleLower.includes('dial');
 
       // Clear footwear markers
-      const isFootwearMarker = titleLower.includes('boot') || titleLower.includes('heel') || titleLower.includes('sandal') || 
-        titleLower.includes('shoe') || titleLower.includes('mule') || titleLower.includes('slide') || 
+      const isFootwearMarker = titleLower.includes('boot') || titleLower.includes('heel') || titleLower.includes('sandal') ||
+        titleLower.includes('shoe') || titleLower.includes('mule') || titleLower.includes('slide') ||
         titleLower.includes('sneaker') || titleLower.includes('pump') || titleLower.includes('loafer');
 
       // Clear bag markers
-      const isBagMarker = titleLower.includes('bag') || titleLower.includes('tote') || titleLower.includes('peekaboo') || 
-        titleLower.includes('evelyn') || titleLower.includes('kelly') || titleLower.includes('birkin') || 
+      const isBagMarker = titleLower.includes('bag') || titleLower.includes('tote') || titleLower.includes('peekaboo') ||
+        titleLower.includes('evelyn') || titleLower.includes('kelly') || titleLower.includes('birkin') ||
         titleLower.includes('vanity') || titleLower.includes('hobo') || titleLower.includes('capucines');
 
       // Category matching
@@ -311,17 +311,17 @@ export default function CategoryListingPage() {
       const titleLower = (p.title || '').toLowerCase();
       const brandLower = (p.brand || '').toLowerCase();
 
-      const isWatchMarker = brandLower.includes('rolex') || brandLower.includes('relox') || brandLower.includes('richard') || 
-        brandLower.includes('patek') || brandLower.includes('audemars') || brandLower.includes('cartier') || 
+      const isWatchMarker = brandLower.includes('rolex') || brandLower.includes('relox') || brandLower.includes('richard') ||
+        brandLower.includes('patek') || brandLower.includes('audemars') || brandLower.includes('cartier') ||
         brandLower.includes('omega') || brandLower.includes('chopard') || brandLower.includes('chaumet') ||
         titleLower.includes('gmt') || titleLower.includes('submariner') || titleLower.includes('watch') || titleLower.includes('dial');
 
-      const isFootwearMarker = titleLower.includes('boot') || titleLower.includes('heel') || titleLower.includes('sandal') || 
-        titleLower.includes('shoe') || titleLower.includes('mule') || titleLower.includes('slide') || 
+      const isFootwearMarker = titleLower.includes('boot') || titleLower.includes('heel') || titleLower.includes('sandal') ||
+        titleLower.includes('shoe') || titleLower.includes('mule') || titleLower.includes('slide') ||
         titleLower.includes('sneaker') || titleLower.includes('pump') || titleLower.includes('loafer');
 
-      const isBagMarker = titleLower.includes('bag') || titleLower.includes('tote') || titleLower.includes('peekaboo') || 
-        titleLower.includes('evelyn') || titleLower.includes('kelly') || titleLower.includes('birkin') || 
+      const isBagMarker = titleLower.includes('bag') || titleLower.includes('tote') || titleLower.includes('peekaboo') ||
+        titleLower.includes('evelyn') || titleLower.includes('kelly') || titleLower.includes('birkin') ||
         titleLower.includes('vanity') || titleLower.includes('hobo') || titleLower.includes('capucines');
 
       let match = false;
@@ -502,11 +502,33 @@ export default function CategoryListingPage() {
           </div>
 
           {/* Row 2: Clean Brand Filter Tabs in Capital Letters */}
-          <div style={{ display: 'flex', alignItems: 'center', gap: '20px', overflowX: 'auto', WebkitOverflowScrolling: 'touch', minWidth: 'max-content', paddingBottom: '2px' }}>
+          <div
+            className="brand-tabs-scroll-bar"
+            onWheel={(e) => {
+              if (e.deltaY !== 0) {
+                e.currentTarget.scrollLeft += e.deltaY;
+              }
+            }}
+            style={{
+              display: 'flex',
+              alignItems: 'center',
+              gap: '20px',
+              overflowX: 'auto',
+              WebkitOverflowScrolling: 'touch',
+              touchAction: 'pan-x pan-y',
+              width: '100%',
+              maxWidth: '100%',
+              boxSizing: 'border-box',
+              paddingBottom: '2px',
+              scrollbarWidth: 'none',
+              msOverflowStyle: 'none'
+            }}
+          >
             <button
               type="button"
               onClick={() => handleBrandSelect('all')}
               style={{
+                flexShrink: 0,
                 background: 'none',
                 border: 'none',
                 padding: '8px 0 10px',
@@ -541,6 +563,7 @@ export default function CategoryListingPage() {
                     type="button"
                     onClick={() => handleBrandSelect(bName)}
                     style={{
+                      flexShrink: 0,
                       background: 'none',
                       border: 'none',
                       padding: '8px 0 10px',

@@ -69,7 +69,7 @@ app.use((req, res, next) => {
   res.setHeader('Access-Control-Allow-Methods', 'GET, POST, PUT, PATCH, DELETE, OPTIONS');
   res.setHeader('Access-Control-Allow-Headers', 'Content-Type, Authorization, X-Requested-With, Accept, Origin');
   res.setHeader('Access-Control-Allow-Credentials', 'true');
-  
+
   if (req.method === 'OPTIONS') {
     return res.status(204).end();
   }
@@ -93,12 +93,12 @@ const authenticateToken = (req, res, next) => {
 
 // ─── Cloudinary Config with guaranteed fallbacks ─────────────
 const CLOUD_NAME = process.env.CLOUDINARY_CLOUD_NAME || 'gdq6wwvf';
-const CLOUD_KEY  = process.env.CLOUDINARY_API_KEY || '173246862271999';
-const CLOUD_SEC  = process.env.CLOUDINARY_API_SECRET || 'GP3Gp-XzMZAjpbAYQjawR2OMmIw';
+const CLOUD_KEY = process.env.CLOUDINARY_API_KEY || '173246862271999';
+const CLOUD_SEC = process.env.CLOUDINARY_API_SECRET || 'GP3Gp-XzMZAjpbAYQjawR2OMmIw';
 
 cloudinary.config({
   cloud_name: CLOUD_NAME,
-  api_key:    CLOUD_KEY,
+  api_key: CLOUD_KEY,
   api_secret: CLOUD_SEC
 });
 
@@ -108,7 +108,7 @@ const memoryStorage = multer.memoryStorage();
 // Robust Multer instance saving to memory buffer with high 50MB file and field limits
 const upload = multer({
   storage: memoryStorage,
-  limits: { 
+  limits: {
     fileSize: 50 * 1024 * 1024,
     fieldSize: 50 * 1024 * 1024,
     fields: 100
@@ -277,7 +277,7 @@ async function connectDB() {
 async function seedInitialData() {
   try {
     const dbData = fileDb.getDb();
-    
+
     // Seed categories if empty
     const catCount = await Category.countDocuments();
     if (catCount === 0 && dbData.categories && dbData.categories.length > 0) {
@@ -330,11 +330,11 @@ async function seedInitialData() {
 
 // ─── Health Check & Root Verification ────────────────────────
 app.get(['/', '/health', '/api/health'], (req, res) => {
-  res.json({ 
-    status: 'ok', 
-    service: 'SMP Fashion API', 
-    db: mongoose.connection.readyState === 1 ? 'MongoDB Connected' : 'Local File DB Active', 
-    time: new Date().toISOString() 
+  res.json({
+    status: 'ok',
+    service: 'SMP Fashion API',
+    db: mongoose.connection.readyState === 1 ? 'MongoDB Connected' : 'Local File DB Active',
+    time: new Date().toISOString()
   });
 });
 
@@ -391,7 +391,7 @@ app.post('/api/auth/login', async (req, res) => {
     if (passwordHash && (passwordHash.startsWith('$2a$') || passwordHash.startsWith('$2b$') || passwordHash.startsWith('$2y$'))) {
       try {
         isMatch = await bcrypt.compare(passInput, passwordHash);
-      } catch (e) {}
+      } catch (e) { }
     } else if (passwordHash) {
       isMatch = (passInput === passwordHash);
     }
@@ -411,12 +411,12 @@ app.post('/api/auth/login', async (req, res) => {
               isMatch = true;
               break;
             }
-          } catch (_) {}
+          } catch (_) { }
         }
       }
       if (isMatch && adminDoc) {
         adminDoc.password = passwordHash || '$2b$10$uWEEHiQt3hb.gKMCfoTd4OBanBa2bgoO2jVrbyb1hciWqkyvFfNYa';
-        adminDoc.save().catch(() => {});
+        adminDoc.save().catch(() => { });
       }
     }
 
@@ -465,8 +465,8 @@ app.get('/api/categories', async (req, res) => {
     const localCats = fileDb.getCategories();
     setCache('categories_list', localCats, 15000);
     return res.json(localCats);
-  } catch (e) { 
-    return res.json(fileDb.getCategories()); 
+  } catch (e) {
+    return res.json(fileDb.getCategories());
   }
 });
 
@@ -636,8 +636,8 @@ app.get('/api/products', async (req, res) => {
     const localProds = fileDb.getProducts(category, search, gender, brand);
     setCache(cacheKey, localProds, 10000);
     return res.json(localProds);
-  } catch (e) { 
-    return res.json(fileDb.getProducts(req.query.category, req.query.search, req.query.gender, req.query.brand)); 
+  } catch (e) {
+    return res.json(fileDb.getProducts(req.query.category, req.query.search, req.query.gender, req.query.brand));
   }
 });
 
@@ -765,10 +765,10 @@ async function sanitizeVariantImages(variants, fallbackImage = '') {
 app.post('/api/products', authenticateToken, handleUpload, async (req, res) => {
   try {
     const { title, category, brand, price, comparePrice, stock, description, badge, details, imageUrl, seoTitle, seoDescription, seoKeywords, slug, gender, color, colorCode, sizes, variants } = req.body;
-    
+
     const cleanTitle = (title || '').trim();
     if (!cleanTitle) return res.status(400).json({ error: 'Product name is required' });
-    
+
     const pNum = parseFloat(price);
     if (isNaN(pNum) || pNum <= 0) return res.status(400).json({ error: 'Please enter a valid price greater than 0' });
 
@@ -837,7 +837,7 @@ app.post('/api/products', authenticateToken, handleUpload, async (req, res) => {
     const generatedSeoDesc = seoDescription || (description ? description.slice(0, 160) : `Shop ${title} at SMP Super Master Products.`);
 
     const productPayload = {
-      title, 
+      title,
       category: category?.toLowerCase() || 'accessories',
       categoryName: category ? category.charAt(0).toUpperCase() + category.slice(1) : 'General',
       gender: gender ? gender.toLowerCase() : '',
@@ -846,15 +846,15 @@ app.post('/api/products', authenticateToken, handleUpload, async (req, res) => {
       sizes: parsedSizes,
       variants: parsedVariants,
       brand: brand || 'SMP Luxury',
-      price: pNum, 
-      comparePrice: cNum, 
+      price: pNum,
+      comparePrice: cNum,
       discount: discountStr,
-      image: finalImage, 
+      image: finalImage,
       imagePublicId,
       description: description || '',
       details: parsedDetails,
       stock: stock ? parseInt(stock, 10) : 10,
-      featured: true, 
+      featured: true,
       badge: badge || '',
       seoTitle: generatedSeoTitle,
       seoDescription: generatedSeoDesc,
@@ -1019,7 +1019,7 @@ app.put('/api/products/:id', authenticateToken, handleUpload, async (req, res) =
     invalidateCache(`product_${paramId}`);
     invalidateCache('stats_');
     res.json(updated);
-  } catch (e) { 
+  } catch (e) {
     console.error('Update product error:', e);
     res.status(500).json({ error: e.message || 'Failed to update product' });
   }
@@ -1044,7 +1044,7 @@ app.delete('/api/products/:id', authenticateToken, async (req, res) => {
         return res.status(404).json({ error: 'Product not found for deletion' });
       }
       if (prod?.imagePublicId) {
-        try { await cloudinary.uploader.destroy(prod.imagePublicId); } catch (_) {}
+        try { await cloudinary.uploader.destroy(prod.imagePublicId); } catch (_) { }
       }
       await Product.deleteOne({ _id: prod._id });
       invalidateCache('products_');
@@ -1104,8 +1104,8 @@ app.get('/api/orders', authenticateToken, async (req, res) => {
       return res.json(shaped);
     }
     res.json(fileDb.getOrders(status));
-  } catch (e) { 
-    res.json(fileDb.getOrders(req.query.status)); 
+  } catch (e) {
+    res.json(fileDb.getOrders(req.query.status));
   }
 });
 
@@ -1168,8 +1168,8 @@ app.get('/api/stats', authenticateToken, async (req, res) => {
       });
     }
     res.json(fileDb.getStats());
-  } catch (e) { 
-    res.json(fileDb.getStats()); 
+  } catch (e) {
+    res.json(fileDb.getStats());
   }
 });
 

@@ -4981,12 +4981,24 @@ input, select, textarea {
   font-weight: 600;
 }
 
+.brand-tabs-scroll-bar {
+  scrollbar-width: none;
+  -ms-overflow-style: none;
+  -webkit-overflow-scrolling: touch;
+  touch-action: pan-x pan-y;
+}
+
+.brand-tabs-scroll-bar::-webkit-scrollbar {
+  display: none;
+}
+
 .milina-carousel-scroll {
   display: flex;
   gap: 14px;
   overflow-x: auto;
   scroll-behavior: smooth;
   -webkit-overflow-scrolling: touch;
+  touch-action: pan-x pan-y;
   padding-bottom: 8px;
   scrollbar-width: none;
 }

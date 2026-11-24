@@ -62,7 +62,7 @@ export default function StorefrontPage() {
           const parsed = JSON.parse(cached);
           if (Array.isArray(parsed) && parsed.length > 0) return parsed;
         }
-      } catch (_) {}
+      } catch (_) { }
     }
     return INITIAL_PRODUCTS && INITIAL_PRODUCTS.length > 0 ? INITIAL_PRODUCTS : [];
   });
@@ -74,7 +74,7 @@ export default function StorefrontPage() {
           const parsed = JSON.parse(cached);
           if (Array.isArray(parsed) && parsed.length > 0) return parsed;
         }
-      } catch (_) {}
+      } catch (_) { }
     }
     return (INITIAL_BRANDS && INITIAL_BRANDS.length > 0) ? INITIAL_BRANDS : INITIAL_FALLBACK_BRANDS;
   });
@@ -113,7 +113,7 @@ export default function StorefrontPage() {
       if (saved) {
         setCart(JSON.parse(saved));
       }
-    } catch (e) {}
+    } catch (e) { }
   }, []);
 
   const updateCart = (newCart) => {
@@ -121,7 +121,7 @@ export default function StorefrontPage() {
     try {
       localStorage.setItem('smp_cart_items', JSON.stringify(newCart));
       localStorage.setItem('smp_cart', JSON.stringify(newCart));
-    } catch (e) {}
+    } catch (e) { }
   };
 
   const removeFromCart = (productId) => {
@@ -164,7 +164,7 @@ export default function StorefrontPage() {
           const list = Array.isArray(data) ? data : (data.products || []);
           if (isMounted && list.length > 0) {
             setProducts(list);
-            try { sessionStorage.setItem('smp_cached_products', JSON.stringify(list)); } catch (_) {}
+            try { sessionStorage.setItem('smp_cached_products', JSON.stringify(list)); } catch (_) { }
           }
         }
 
@@ -172,7 +172,7 @@ export default function StorefrontPage() {
           const brandData = await brandRes.value.json();
           if (isMounted && Array.isArray(brandData) && brandData.length > 0) {
             setBrandsList(brandData);
-            try { sessionStorage.setItem('smp_cached_brands', JSON.stringify(brandData)); } catch (_) {}
+            try { sessionStorage.setItem('smp_cached_brands', JSON.stringify(brandData)); } catch (_) { }
           }
         }
       } catch (err) {
@@ -211,19 +211,19 @@ export default function StorefrontPage() {
       const brandLower = (p.brand || '').toLowerCase();
 
       // Clear watch markers
-      const isWatchMarker = brandLower.includes('rolex') || brandLower.includes('relox') || brandLower.includes('richard') || 
-        brandLower.includes('patek') || brandLower.includes('audemars') || brandLower.includes('cartier') || 
+      const isWatchMarker = brandLower.includes('rolex') || brandLower.includes('relox') || brandLower.includes('richard') ||
+        brandLower.includes('patek') || brandLower.includes('audemars') || brandLower.includes('cartier') ||
         brandLower.includes('omega') || brandLower.includes('chopard') || brandLower.includes('chaumet') ||
         titleLower.includes('gmt') || titleLower.includes('submariner') || titleLower.includes('watch') || titleLower.includes('dial');
 
       // Clear footwear markers
-      const isFootwearMarker = titleLower.includes('boot') || titleLower.includes('heel') || titleLower.includes('sandal') || 
-        titleLower.includes('shoe') || titleLower.includes('mule') || titleLower.includes('slide') || 
+      const isFootwearMarker = titleLower.includes('boot') || titleLower.includes('heel') || titleLower.includes('sandal') ||
+        titleLower.includes('shoe') || titleLower.includes('mule') || titleLower.includes('slide') ||
         titleLower.includes('sneaker') || titleLower.includes('pump') || titleLower.includes('loafer');
 
       // Clear bag markers
-      const isBagMarker = titleLower.includes('bag') || titleLower.includes('tote') || titleLower.includes('peekaboo') || 
-        titleLower.includes('evelyn') || titleLower.includes('kelly') || titleLower.includes('birkin') || 
+      const isBagMarker = titleLower.includes('bag') || titleLower.includes('tote') || titleLower.includes('peekaboo') ||
+        titleLower.includes('evelyn') || titleLower.includes('kelly') || titleLower.includes('birkin') ||
         titleLower.includes('vanity') || titleLower.includes('hobo') || titleLower.includes('capucines');
 
       if (catType === 'footwear') {
@@ -324,19 +324,19 @@ export default function StorefrontPage() {
       const brandLower = (p.brand || '').toLowerCase();
 
       const isWatch = pCat === 'watches' || pCatName.includes('watch') ||
-        brandLower.includes('rolex') || brandLower.includes('relox') || brandLower.includes('richard') || 
-        brandLower.includes('patek') || brandLower.includes('audemars') || brandLower.includes('cartier') || 
+        brandLower.includes('rolex') || brandLower.includes('relox') || brandLower.includes('richard') ||
+        brandLower.includes('patek') || brandLower.includes('audemars') || brandLower.includes('cartier') ||
         brandLower.includes('omega') || brandLower.includes('chopard') || brandLower.includes('chaumet') ||
         titleLower.includes('gmt') || titleLower.includes('submariner') || titleLower.includes('watch') || titleLower.includes('dial');
 
       const isFootwear = !isWatch && (pCat === 'footwear' || pCat === 'shoes' || pCatName.includes('shoe') || pCatName.includes('footwear') ||
-        titleLower.includes('boot') || titleLower.includes('heel') || titleLower.includes('sandal') || 
-        titleLower.includes('shoe') || titleLower.includes('mule') || titleLower.includes('slide') || 
+        titleLower.includes('boot') || titleLower.includes('heel') || titleLower.includes('sandal') ||
+        titleLower.includes('shoe') || titleLower.includes('mule') || titleLower.includes('slide') ||
         titleLower.includes('sneaker') || titleLower.includes('pump') || titleLower.includes('loafer'));
 
       const isBag = !isWatch && !isFootwear && (pCat === 'bags' || pCatName.includes('bag') ||
-        titleLower.includes('bag') || titleLower.includes('tote') || titleLower.includes('peekaboo') || 
-        titleLower.includes('evelyn') || titleLower.includes('kelly') || titleLower.includes('birkin') || 
+        titleLower.includes('bag') || titleLower.includes('tote') || titleLower.includes('peekaboo') ||
+        titleLower.includes('evelyn') || titleLower.includes('kelly') || titleLower.includes('birkin') ||
         titleLower.includes('vanity') || titleLower.includes('hobo') || titleLower.includes('capucines'));
 
       if (isWatch) watches.push(p);
@@ -405,8 +405,8 @@ export default function StorefrontPage() {
   const trackProductClick = (id) => {
     if (!id) return;
     try {
-      fetch(`${API_BASE}/products/${id}/click`, { method: 'POST', keepalive: true }).catch(() => {});
-    } catch (_) {}
+      fetch(`${API_BASE}/products/${id}/click`, { method: 'POST', keepalive: true }).catch(() => { });
+    } catch (_) { }
   };
 
   // Lock background scroll when search modal is open
@@ -459,25 +459,25 @@ export default function StorefrontPage() {
 
     const orderItems = isCartOrder
       ? cart.map((item) => ({
-          productId: item.id,
-          title: item.title,
-          price: item.price,
-          quantity: item.quantity,
-          image: item.image,
-          color: item.color || '',
-          size: item.size || ''
-        }))
+        productId: item.id,
+        title: item.title,
+        price: item.price,
+        quantity: item.quantity,
+        image: item.image,
+        color: item.color || '',
+        size: item.size || ''
+      }))
       : [
-          {
-            productId: orderModalProduct?.id,
-            title: orderModalProduct?.title,
-            price: orderModalProduct?.price,
-            quantity: quantity,
-            image: orderModalProduct?.image,
-            color: orderModalProduct?.color || '',
-            size: orderModalProduct?.size || ''
-          }
-        ];
+        {
+          productId: orderModalProduct?.id,
+          title: orderModalProduct?.title,
+          price: orderModalProduct?.price,
+          quantity: quantity,
+          image: orderModalProduct?.image,
+          color: orderModalProduct?.color || '',
+          size: orderModalProduct?.size || ''
+        }
+      ];
 
     const totalAmount = isCartOrder ? totalCartPrice : (orderModalProduct?.price || 0) * quantity;
 
@@ -854,7 +854,18 @@ Hello SMP Atelier, please confirm my order. Thank you!`;
                   </div>
                 </div>
 
-                <div ref={bagsRef} className="milina-carousel-scroll">
+                <div
+                  ref={bagsRef}
+                  className="milina-carousel-scroll"
+                  onWheel={(e) => {
+                    if (e.deltaY !== 0 && !e.shiftKey) {
+                      const el = e.currentTarget;
+                      if (el.scrollWidth > el.clientWidth) {
+                        el.scrollLeft += e.deltaY;
+                      }
+                    }
+                  }}
+                >
                   {bagsSlideCards.map((card, idx) => (
                     <Link
                       key={idx}
@@ -899,7 +910,18 @@ Hello SMP Atelier, please confirm my order. Thank you!`;
                   </div>
                 </div>
 
-                <div ref={shoesRef} className="milina-carousel-scroll">
+                <div
+                  ref={shoesRef}
+                  className="milina-carousel-scroll"
+                  onWheel={(e) => {
+                    if (e.deltaY !== 0 && !e.shiftKey) {
+                      const el = e.currentTarget;
+                      if (el.scrollWidth > el.clientWidth) {
+                        el.scrollLeft += e.deltaY;
+                      }
+                    }
+                  }}
+                >
                   {shoesSlideCards.map((card, idx) => (
                     <Link
                       key={idx}
@@ -944,7 +966,18 @@ Hello SMP Atelier, please confirm my order. Thank you!`;
                   </div>
                 </div>
 
-                <div ref={watchesRef} className="milina-carousel-scroll">
+                <div
+                  ref={watchesRef}
+                  className="milina-carousel-scroll"
+                  onWheel={(e) => {
+                    if (e.deltaY !== 0 && !e.shiftKey) {
+                      const el = e.currentTarget;
+                      if (el.scrollWidth > el.clientWidth) {
+                        el.scrollLeft += e.deltaY;
+                      }
+                    }
+                  }}
+                >
                   {watchesSlideCards.map((card, idx) => (
                     <Link
                       key={idx}
